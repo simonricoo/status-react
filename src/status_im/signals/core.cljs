@@ -37,7 +37,7 @@
                      [address password (:realm-error db)]}))
                 :create-account
                 (fn [_]
-                  {:accounts.create/create-account (:password create)})
+                  {:accounts.create/create-account (select-keys create [:id :password])})
                 :recover-account
                 (fn [{:keys [db]}]
                   (let [{:keys [password passphrase]} (:accounts/recover db)]
