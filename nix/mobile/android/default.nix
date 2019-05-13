@@ -1,5 +1,5 @@
 { config, stdenv, stdenvNoCC, callPackage,
-  pkgs, mkFilter, androidenv, fetchurl, openjdk, nodejs, bash, gradle, perl, zlib,
+  pkgs, mkFilter, androidenv, fetchurl, openjdk, nodejs, bash, gradle, gnupg, perl, zlib,
   status-go, nodeProjectName, projectNodePackage, developmentNodePackages }:
 
 with stdenv;
@@ -49,6 +49,9 @@ let
     export ANDROID_NDK_HOME="$ANDROID_NDK_ROOT"
     export ANDROID_NDK="$ANDROID_NDK_ROOT"
     export PATH="$ANDROID_HOME/bin:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools:$PATH"
+    export LEIN_FAST_TRAMPOLINE=y
+    export LEIN_OFFLINE=y
+    export LEIN_GPG=${gnupg}/bin/gpg
   '';
 
 in

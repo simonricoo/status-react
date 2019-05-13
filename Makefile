@@ -94,24 +94,24 @@ release-windows-desktop: ##@build build release for desktop release
 
 prod-build: export TARGET_OS ?= all
 prod-build:
-	lein prod-build
-	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.android.js
+	lein prod-buildd && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.android.jsd && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.ios.js
 
 prod-build-android: export TARGET_OS ?= android
 prod-build-android:
-	lein prod-build-android
+	lein prod-build-androidd && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-ios: export TARGET_OS ?= ios
 prod-build-ios:
-	lein prod-build-ios
+	lein prod-build-iosd && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-desktop: export TARGET_OS ?= $(HOST_OS)
 prod-build-desktop:
 	git clean -qdxf -f ./index.desktop.js desktop/ && \
-	lein prod-build-desktop
+	lein prod-build-desktopd && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.desktop.js
 
 #--------------
