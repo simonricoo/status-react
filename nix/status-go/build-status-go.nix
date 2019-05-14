@@ -1,10 +1,11 @@
 { buildGoPackage, go, xcodeWrapper, stdenv, utils }:
 
-{ owner, repo, rev, version, goPackagePath, src, host,
+{ owner, repo, rev, version, goPackagePath, src, sha256, host,
   nativeBuildInputs ? [],
   buildPhase, buildMessage,
   installPhase ? "",
   postInstall ? "",
+  preFixup ? "",
   outputs, meta } @ args':
 
 with stdenv;
@@ -17,7 +18,9 @@ let
   buildStatusGo = buildGoPackage (args // {
     name = "${repo}-${version}-${host}";
 
-    nativeBuildInputs = nativeBuildInputs ++ lib.optional isDarwin xcodeWrapper;
+    nativeBuildInputs = 
+      nativeBuildInputs ++
+      lib.optional isDarwin xcodeWrapper;
 
     # Fixes Cgo related build failures (see https://github.com/NixOS/nixpkgs/issues/25959 )
     hardeningDisable = [ "fortify" ];
@@ -25,10 +28,11 @@ let
     # gomobile doesn't seem to be able to pass -ldflags with multiple values correctly to go build, so we just patch files here  
     patchPhase = ''
       date=$(date -u '+%Y-%m-%d.%H:%M:%S')
+      sha1="${lib.strings.substring 0 8 sha256}"
 
       substituteInPlace cmd/statusd/main.go --replace \
         "buildStamp = \"N/A\"" \
-        "buildStamp = \"$date\""
+        "Build = \"$sha1\"; buildStamp = \"$date\""
       substituteInPlace params/version.go --replace \
         "var Version string" \
         "var Version string = \"${version}\""
@@ -64,8 +68,8 @@ let
       runHook postInstall
     '';
 
-    # remove hardcoded paths to go package in /nix/store, otherwise Nix will fail the build
-    preFixup = ''
+    # replace hardcoded paths to go package in /nix/store, otherwise Nix will fail the build
+    preFixup = preFixup + ''
       find $out -type f -exec ${removeExpr removeReferences} '{}' + || true
       return
     '';
