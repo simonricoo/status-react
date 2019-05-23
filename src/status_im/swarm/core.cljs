@@ -213,9 +213,9 @@
   (read-feed cofx
              (assoc update-params
                     :on-success #(re-frame/dispatch
-                                  [:swarm.callback/update-feed-success])
+                                  [:swarm.callback/post-feed-update-success])
                     :on-error #(re-frame/dispatch
-                                [:swarm.callback/update-feed-error
+                                [:swarm.callback/post-feed-update-error
                                  (assoc update-params :error %)]))))
 
 (handlers/register-handler-fx
