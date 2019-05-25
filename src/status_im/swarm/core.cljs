@@ -5,7 +5,8 @@
             [status-im.native-module.core :as status]
             [clojure.string :as string]
             [status-im.utils.handlers :as handlers]
-            [status-im.js-dependencies :as dependencies]))
+            [status-im.js-dependencies :as dependencies]
+            [status-im.ethereum.core :as ethereum]))
 
 (def utils dependencies/web3-utils)
 
@@ -14,6 +15,8 @@
 ;; we currently use a swarm gateway but this detail is not relevant
 ;; outside of this namespace
 (def swarm-gateway "https://swarm-gateways.net")
+#_(def swarm-gateway "https://swarm.epiclabs.io")
+#_(def swarm-gateway "https://test-swarm.status.im")
 (def bzz-url (str swarm-gateway "/bzz:/"))
 (def bzz-feed-url (str swarm-gateway "/bzz-feed:/"))
 
@@ -104,15 +107,19 @@
 
 (fx/defn upload-data
   [cofx {:keys [data on-success on-failure]}]
+  (println data)
+  (println on-success) (println on-failure)
   {:http-post (cond-> {:url bzz-url
                        :data data
                        :opts {:headers {"Content-Type" "application/json"}}
-                       :timeout-ms 5000
+                       :timeout-ms 10000
                        :success-event-creator
                        (fn [{:keys [response-body]}]
-                         (on-success response-body))}
-                on-failure
-                (assoc :failure-event-creator on-failure))})
+                         (println response-body)
+                         (println :test)
+                         (on-success response-body))
+                       :failure-event-creator
+                       (fn [error] [:println error])})})
 
 (fx/defn post-feed-update
   [cofx {:keys [data signature feed-template] :as update-params}]
@@ -125,6 +132,12 @@
           on-failure (fn [error]
                        [:swarm.callback/post-feed-update-error
                         (assoc update-params :error error)])]
+      (println (bzz-post-feed-update-url {:topic topic
+                                          :user user
+                                          :level level
+                                          :time time
+                                          :protocol-version protocolVersion
+                                          :signature signature}))
       {:http-post (cond-> {:url (bzz-post-feed-update-url {:topic topic
                                                            :user user
                                                            :level level
@@ -198,15 +211,18 @@
                                 (assoc update-params :signature signature)]))}})
 
 (fx/defn update-feed
-  [cofx data]
-  (when-let [user-address (get-in cofx [:db :account/account :address])]
+  [{:keys [db] :as cofx} data]
+  (when-let [user-address (ethereum/current-address db)]
+    (println user-address)
     (upload-data cofx
                  {:data data
                   :on-success (fn [swarm-hash]
+                                (println swarm-hash)
                                 [:swarm.callback/upload-data-success
-                                 {:user (str "0x" user-address)
+                                 {:user user-address
                                   :name status-profile-topic
-                                  :data swarm-hash}])})))
+                                  :data swarm-hash}])
+                  :on-error (fn [error] [:println :error])})))
 
 (fx/defn verify-feed
   [cofx update-params]
@@ -254,6 +270,11 @@
    (println update-params)))
 
 (handlers/register-handler-fx
+ :println
+ (fn [cofx [_ update-params]]
+   (println update-params)))
+
+(handlers/register-handler-fx
  :swarm.callback/read-feed-success
  (fn [cofx [_ params]]
    (read-file cofx params)))
@@ -275,9 +296,9 @@
 
 (handlers/register-handler-fx
  :read-feed
- (fn [cofx _]
-   (when-let [user-address (get-in cofx [:db :account/account :address])]
-     (read-feed cofx {:user (str "0x" user-address)
+ (fn [{:keys [db] :as cofx} _]
+   (when-let [user-address (ethereum/current-address db)]
+     (read-feed cofx {:user user-address
                       :name status-profile-topic
                       :on-success (fn [response]
                                     [:swarm.callback/verify-feed-success response])
@@ -290,9 +311,9 @@
    (when-let [user-address (get-in cofx [:db :account/account :address])]
      (upload-data cofx {:data data
                         :on-success (fn [response]
-                                      [:swarm.callback/verify-feed-success response])
+                                      (println response))
                         :on-failure (fn [response]
-                                      [:swarm.callback/verify-feed-success response])}))))
+                                      (println response))}))))
 
 (handlers/register-handler-fx
  :read-profile
