@@ -83,3 +83,10 @@
     {:db                 (assoc db :account/account new-account)
      :data-store/base-tx [{:transaction   (accounts-store/save-account-tx new-account)
                            :success-event success-event}]}))
+
+(fx/defn update-public-profile
+  [{{:keys [account/account] :as db} :db :as cofx} public-profile]
+  (let [new-account (assoc account :settings settings)]
+    {:db                 (assoc db :account/account new-account)
+     :data-store/base-tx [{:transaction   (accounts-store/save-account-tx new-account)
+                           :success-event success-event}]}))

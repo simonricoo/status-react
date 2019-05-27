@@ -242,3 +242,6 @@
 (def v22 (update (update v21 :properties dissoc :mainnet-warning-shown?)
                  :properties merge
                  {:mainnet-warning-shown-version {:type :string :optional true}}))
+
+(def v23 (update v22 :properties merge
+                 {:profile-hint {:type :string :optional true}}))
