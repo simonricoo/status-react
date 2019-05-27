@@ -2,11 +2,48 @@
   (:refer-clojure :exclude [cat])
   (:require [status-im.utils.fx :as fx]
             [re-frame.core :as re-frame]
+            [cljs.spec.alpha :as spec]
             [status-im.native-module.core :as status]
             [clojure.string :as string]
             [status-im.utils.handlers :as handlers]
             [status-im.js-dependencies :as dependencies]
-            [status-im.ethereum.core :as ethereum]))
+            [status-im.ethereum.core :as ethereum]
+            [status-im.utils.datetime :as datetime]
+            [status-im.utils.types :as types]
+            [status-im.contact.db :as contact.db]
+            [status-im.utils.http :as http]))
+
+(spec/def :swarm.timeline/protocol "timeline")
+(spec/def :swarm.timeline/version "1.0.0")
+(spec/def :swarm.timeline/timestamp integer?)
+(spec/def :swarm.timeline/author string?)
+(spec/def :swarm.timeline/type string?)
+(spec/def :swarm.timeline/content map?)
+(spec/def :swarm.timeline/references (spec/coll-of string?))
+(spec/def :swarm.timeline/signature string?)
+(spec/def :swarm.timeline/previous string?)
+
+(spec/def :swarm.timeline/chapter
+  (spec/keys :req-un [:swarm.timeline/protocol
+                      :swarm.timeline/version
+                      :swarm.timeline/timestamp
+                      :swarm.timeline/author
+                      :swarm.timeline/type
+                      :swarm.timeline/content]
+             :opt-un [:swarm.timeline/references
+                      :swarm.timeline/previous
+                      :swarm.timeline/signature]))
+
+(defn make-chapter
+  [{:keys [now db]}]
+  (types/clj->json
+   (let [account (:account/account db)]
+     {:protocol "timeline"
+      :version "1.0.0"
+      :timestamp now
+      :author (ethereum/current-address db)
+      :type "application/json"
+      :content (select-keys account [:name :photo-path :ens-name])})))
 
 (def utils dependencies/web3-utils)
 
@@ -19,6 +56,8 @@
 #_(def swarm-gateway "https://test-swarm.status.im")
 (def bzz-url (str swarm-gateway "/bzz:/"))
 (def bzz-feed-url (str swarm-gateway "/bzz-feed:/"))
+
+(def gateway-timeout 5000)
 
 (defn bzz-read-feed-url
   [name user]
@@ -96,231 +135,130 @@
 
 (re-frame/reg-fx
  ::sign-digest
- (fn [{:keys [digest callback]}]
-   (status/private-sign-hash
-    digest
-    callback)))
+ (fn [{:keys [digest callback]}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; swarm api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fx/defn upload-data
-  [cofx {:keys [data on-success on-failure]}]
-  (println data)
-  (println on-success) (println on-failure)
-  {:http-post (cond-> {:url bzz-url
-                       :data data
-                       :opts {:headers {"Content-Type" "application/json"}}
-                       :timeout-ms 10000
-                       :success-event-creator
-                       (fn [{:keys [response-body]}]
-                         (println response-body)
-                         (println :test)
-                         (on-success response-body))
-                       :failure-event-creator
-                       (fn [error] [:println error])})})
+(defn upload-data
+  [{:keys [data on-success on-failure]}]
+  {:http-post {:url bzz-url
+               :data data
+               :opts {:headers {"Content-Type" "application/json"}}
+               :timeout-ms 10000
+               :on-success
+               (fn [{:keys [response-body]}]
+                 (println response-body)
+                 (println :test)
+                 (on-success response-body))
+               :on-failure
+               (fn [error] (on-failure error))}})
 
-(fx/defn post-feed-update
-  [cofx {:keys [data signature feed-template] :as update-params}]
+(defn post-feed-update
+  [{:keys [data feed-template] :as update-params} signature]
   (let [{:keys [feed epoch protocolVersion]} feed-template
         {:keys [topic user]} feed
-        {:keys [time level]} epoch]
-    (let [on-success (fn [response]
-                       [:swarm.callback/post-feed-update-success
-                        (assoc update-params :response (js/JSON.parse response))])
-          on-failure (fn [error]
-                       [:swarm.callback/post-feed-update-error
-                        (assoc update-params :error error)])]
-      (println (bzz-post-feed-update-url {:topic topic
-                                          :user user
-                                          :level level
-                                          :time time
-                                          :protocol-version protocolVersion
-                                          :signature signature}))
-      {:http-post (cond-> {:url (bzz-post-feed-update-url {:topic topic
-                                                           :user user
-                                                           :level level
-                                                           :time time
-                                                           :protocol-version protocolVersion
-                                                           :signature signature})
-                           :data data
-                           :timeout-ms 5000
-                           :success-event-creator
-                           (fn [{:keys [response-body]}]
-                             (on-success response-body))}
-                    on-failure
-                    (assoc :failure-event-creator on-failure))})))
+        {:keys [time level]} epoch
+        url (bzz-post-feed-update-url
+             {:topic topic
+              :user user
+              :level level
+              :time time
+              :protocol-version protocolVersion
+              :signature signature})
+        on-success
+        (fn [{:keys [response-body]}]
+          (println (assoc update-params
+                          :response
+                          (js/JSON.parse response-body))))
+        on-error
+        (fn [error]
+          (println (assoc update-params
+                          :error
+                          error)))]
+    (http/post url data on-success on-error {:timeout-ms gateway-timeout})))
 
-(fx/defn get-feed-template
-  [cofx {:keys [name user] :as update-params}]
-  (let [on-success (fn [response]
-                     (let [feed-template (js->clj (js/JSON.parse response)
-                                                  :keywordize-keys true)]
-                       [:swarm.callback/get-feed-template-success
-                        (assoc update-params :feed-template feed-template)]))
-        on-failure (fn [error]
-                     [:swarm.callback/get-feed-template-failure
-                      (assoc update-params :error error)])]
-    {:http-get (cond-> {:url (bzz-read-feed-template-url name user)
-                        :timeout-ms 5000
-                        :success-event-creator
-                        (fn [response]
-                          (on-success response))}
-                 on-failure
-                 (assoc :failure-event-creator on-failure))}))
+(defn sign-feed-update
+  [{:keys [data feed-template] :as update-params}]
+  (status/private-sign-hash (digest data feed-template)
+                            (fn [signature]
+                              (post-feed-update update-params
+                                                signature))))
 
-(fx/defn read-file
-  [cofx {:keys [swarm-hash on-success on-failure]}]
-  {:http-get (cond-> {:url (str bzz-url swarm-hash "/")
-                      :timeout-ms 5000
-                      :success-event-creator
-                      (fn [response]
-                        (on-success response))}
-               on-failure
-               (assoc :failure-event-creator on-failure))})
+(defn get-feed-template
+  [{:keys [name user] :as update-params}]
+  (let [on-success
+        (fn [response]
+          (let [feed-template (js->clj (js/JSON.parse response)
+                                       :keywordize-keys true)]
+            (sign-feed-update (assoc update-params
+                                     :feed-template
+                                     feed-template))))
+        on-error
+        (fn [error]
+          (println (assoc update-params
+                          :error
+                          error)))]
+    (http/get (bzz-read-feed-template-url name user)
+              on-success
+              on-error
+              {:timeout-ms gateway-timeout})))
 
-(fx/defn read-feed
-  [cofx {:keys [user name on-success on-failure]}]
+(defn read-file
+  [{:keys [swarm-hash on-success on-failure]}]
+  (http/get (str bzz-url swarm-hash "/")
+            on-success
+            on-failure
+            {:timeout-ms gateway-timeout}))
+
+(defn read-feed
+  [{:keys [user name on-success on-failure]}]
+  (println :read-feed user name on-success on-failure)
   (println (bzz-read-feed-url name user))
-  {:http-get (cond-> {:url (bzz-read-feed-url name user)
-                      :timeout-ms 5000
-                      :success-event-creator
-                      (fn [response]
-                        (on-success response))}
-               on-failure
-               (assoc :failure-event-creator on-failure))})
-
-(fx/defn read-profile
-  [cofx {:keys [user on-success on-failure]}]
-  (read-feed cofx {:user user
-                   :name status-profile-topic
-                   :on-success (fn [swarm-hash]
-                                 (println swarm-hash)
-                                 [:swarm.profile.callback/read-feed-success
-                                  {:swarm-hash swarm-hash
-                                   :on-success on-success
-                                   :on-failure on-failure}])}))
-
-(fx/defn sign-feed-update
-  [cofx {:keys [data feed-template] :as update-params}]
-  {::sign-digest {:digest (digest data feed-template)
-                  :callback (fn [signature]
-                              (re-frame/dispatch
-                               [:swarm.callback/sign-digest-success
-                                (assoc update-params :signature signature)]))}})
-
-(fx/defn update-feed
-  [{:keys [db] :as cofx} data]
-  (when-let [user-address (ethereum/current-address db)]
-    (println user-address)
-    (upload-data cofx
-                 {:data data
-                  :on-success (fn [swarm-hash]
-                                (println swarm-hash)
-                                [:swarm.callback/upload-data-success
-                                 {:user user-address
-                                  :name status-profile-topic
-                                  :data swarm-hash}])
-                  :on-error (fn [error] [:println :error])})))
+  {:http-get {:url (bzz-read-feed-url name user)
+              :timeout-ms gateway-timeout
+              :on-success on-success
+              :on-failure #(println :read-error %) #_on-failure}})
 
 (fx/defn verify-feed
   [cofx update-params]
-  (read-feed cofx
-             (assoc update-params
-                    :on-success #(re-frame/dispatch
-                                  [:swarm.callback/post-feed-update-success])
-                    :on-error #(re-frame/dispatch
-                                [:swarm.callback/post-feed-update-error
-                                 (assoc update-params :error %)]))))
+  (read-feed (assoc update-params
+                    :on-success println
+                    :on-error println)))
 
-(handlers/register-handler-fx
- :swarm.callback/upload-data-success
- (fn [cofx [_ update-params]]
-   (get-feed-template cofx update-params)))
+(fx/defn update-feed
+  [{:keys [db] :as cofx} feed-name data]
+  (when-let [user-address (ethereum/current-address db)]
+    (upload-data {:data data
+                  :on-success
+                  (fn [swarm-hash]
+                    (get-feed-template {:user user-address
+                                        :name feed-name
+                                        :data swarm-hash}))
+                  :on-failure println})))
 
-(handlers/register-handler-fx
- :swarm.callback/get-feed-template-success
- (fn [cofx [_ update-params]]
-   (sign-feed-update cofx update-params)))
+(fx/defn update-profile
+  {:events [:swarm/update-profile]}
+  [{:keys [db] :as cofx}]
+  (when-let [user-address (ethereum/current-address db)]
+    (update-feed cofx
+                 status-profile-topic
+                 (make-chapter cofx))))
 
-(handlers/register-handler-fx
- :swarm.callback/get-feed-template-failure
- (fn [cofx [_ update-params]]
-   #_(println update-params)))
-
-(handlers/register-handler-fx
- :swarm.callback/sign-digest-success
- (fn [cofx [_ update-params]]
-   (post-feed-update cofx update-params)))
-
-(handlers/register-handler-fx
- :swarm.callback/post-feed-update-success
- (fn [cofx [_ update-params]]
-   (verify-feed cofx update-params)))
-
-(handlers/register-handler-fx
- :swarm.callback/post-feed-update-error
- (fn [cofx [_ update-params]]
-   #_(println update-params)))
-
-(handlers/register-handler-fx
- :swarm.callback/verify-feed-success
- (fn [cofx [_ update-params]]
-   (println update-params)))
-
-(handlers/register-handler-fx
- :println
- (fn [cofx [_ update-params]]
-   (println update-params)))
-
-(handlers/register-handler-fx
- :swarm.callback/read-feed-success
- (fn [cofx [_ params]]
-   (read-file cofx params)))
-
-(handlers/register-handler-fx
- :swarm.callback/read-file-success
- (fn [cofx [_ update-params]]
-   (println update-params)))
-
-(handlers/register-handler-fx
- :swarm.profile.callback/read-feed-success
- (fn [cofx [_ params]]
-   (read-file cofx params)))
-
-(handlers/register-handler-fx
- :update-feed
- (fn [cofx [_ data]]
-   (update-feed cofx data)))
-
-(handlers/register-handler-fx
- :read-feed
- (fn [{:keys [db] :as cofx} _]
-   (when-let [user-address (ethereum/current-address db)]
-     (read-feed cofx {:user user-address
-                      :name status-profile-topic
-                      :on-success (fn [response]
-                                    [:swarm.callback/verify-feed-success response])
-                      :on-failure (fn [response]
-                                    [:swarm.callback/verify-feed-success response])}))))
-
-(handlers/register-handler-fx
- :upload-data
- (fn [cofx [_ data]]
-   (when-let [user-address (get-in cofx [:db :account/account :address])]
-     (upload-data cofx {:data data
-                        :on-success (fn [response]
-                                      (println response))
-                        :on-failure (fn [response]
-                                      (println response))}))))
-
-(handlers/register-handler-fx
- :read-profile
- (fn [cofx _]
-   (when-let [user-address (get-in cofx [:db :account/account :address])]
-     (read-profile cofx {:user (str "0x" user-address)
-                         :on-success (fn [response]
-                                       [:swarm.callback/verify-feed-success response])
-                         :on-failure (fn [response]
-                                       [:swarm.callback/verify-feed-success response])}))))
+(fx/defn read-profile
+  {:events [:swarm/read-profile]}
+  [{:keys [db] :as cofx} public-key]
+  (when-let [user-address (if public-key
+                            (-> public-key
+                                contact.db/public-key->address
+                                ethereum/normalized-address)
+                            (ethereum/current-address db))]
+    (read-feed {:user user-address
+                :name status-profile-topic
+                :on-success
+                (fn [swarm-hash]
+                  (read-file {:swarm-hash swarm-hash
+                              :on-success println
+                              :on-failure println}))
+                :on-failure println})))

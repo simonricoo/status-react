@@ -34,9 +34,15 @@
             [status-im.utils.utils :as utils]
             [status-im.wallet.core :as wallet]))
 
-(defn- http-get [{:keys [url response-validator success-event-creator failure-event-creator timeout-ms]}]
-  (let [on-success #(re-frame/dispatch (success-event-creator %))
-        on-error   (when failure-event-creator #(re-frame/dispatch (failure-event-creator %)))
+(defn- http-get
+  [{:keys [url response-validator timeout-ms
+           on-success on-error
+           success-event-creator failure-event-creator]}]
+  (let [on-success (or on-success
+                       #(re-frame/dispatch (success-event-creator %)))
+        on-error   (or on-error
+                       (when failure-event-creator
+                         #(re-frame/dispatch (failure-event-creator %))))
         opts       {:valid-response? response-validator
                     :timeout-ms      timeout-ms}]
     (http/get url on-success on-error opts)))
@@ -47,7 +53,8 @@
 
 (defn- http-raw-get [{:keys [url success-event-creator failure-event-creator timeout-ms]}]
   (let [on-success #(when-let [event (success-event-creator %)] (re-frame/dispatch event))
-        on-error   (when failure-event-creator #(re-frame/dispatch (failure-event-creator %)))
+        on-error   (when failure-event-creator
+                     #(re-frame/dispatch (failure-event-creator %)))
         opts       {:timeout-ms      timeout-ms}]
     (http/raw-get url on-success on-error opts)))
 
@@ -61,9 +68,14 @@
    (doseq [call calls]
      (http-get call))))
 
-(defn- http-post [{:keys [url data response-validator success-event-creator failure-event-creator timeout-ms opts]}]
-  (let [on-success #(re-frame/dispatch (success-event-creator %))
-        on-error   (when failure-event-creator #(re-frame/dispatch (failure-event-creator %)))
+(defn- http-post
+  [{:keys [url data response-validator timeout-ms opts
+           success-event-creator failure-event-creator
+           on-success on-error]}]
+  (let [on-success (or on-success
+                       #(re-frame/dispatch (success-event-creator %)))
+        on-error   (or on-error
+                       (when failure-event-creator #(re-frame/dispatch (failure-event-creator %))))
         all-opts   (assoc opts
                           :valid-response? response-validator
                           :timeout-ms      timeout-ms)]

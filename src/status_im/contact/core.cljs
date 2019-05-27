@@ -39,6 +39,7 @@
      :fcm-token     fcm-token}))
 
 (fx/defn upsert-contact
+  {:events [:swarm.timeline/read-profile-success]}
   [{:keys [db] :as cofx}
    {:keys [public-key] :as contact}]
   (fx/merge cofx
