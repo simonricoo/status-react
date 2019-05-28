@@ -1,17 +1,14 @@
 (ns status-im.swarm.core
   (:refer-clojure :exclude [cat])
-  (:require [status-im.utils.fx :as fx]
+  (:require [cljs.spec.alpha :as spec]
             [re-frame.core :as re-frame]
-            [cljs.spec.alpha :as spec]
-            [status-im.native-module.core :as status]
-            [clojure.string :as string]
-            [status-im.utils.handlers :as handlers]
-            [status-im.js-dependencies :as dependencies]
-            [status-im.ethereum.core :as ethereum]
-            [status-im.utils.datetime :as datetime]
-            [status-im.utils.types :as types]
             [status-im.contact.db :as contact.db]
-            [status-im.utils.http :as http]))
+            [status-im.ethereum.core :as ethereum]
+            [status-im.js-dependencies :as dependencies]
+            [status-im.native-module.core :as status]
+            [status-im.utils.fx :as fx]
+            [status-im.utils.http :as http]
+            [status-im.utils.types :as types]))
 
 (spec/def :swarm.timeline/protocol "timeline")
 (spec/def :swarm.timeline/version "1.0.0")
@@ -45,7 +42,7 @@
       :type "application/json"
       :content (select-keys account [:name :photo-path :ens-name])})))
 
-(def utils dependencies/web3-utils)
+(defn utils (dependencies/web3-utils))
 
 (def status-profile-topic "status-profile")
 
@@ -54,6 +51,7 @@
 (def swarm-gateway "https://swarm-gateways.net")
 #_(def swarm-gateway "https://swarm.epiclabs.io")
 #_(def swarm-gateway "https://test-swarm.status.im")
+
 (def bzz-url (str swarm-gateway "/bzz:/"))
 (def bzz-feed-url (str swarm-gateway "/bzz-feed:/"))
 
@@ -85,15 +83,15 @@
 
 (defn number-to-hex
   [n]
-  (subs (.numberToHex utils n) 2))
+  (subs (.numberToHex (utils) n) 2))
 
 (defn pad-left
   [str n]
-  (.padLeft utils str n))
+  (.padLeft (utils) str n))
 
 (defn pad-right
   [str n]
-  (.padRight utils str n))
+  (.padRight (utils) str n))
 
 (defn UInt32LE
   "Converts an integer into little endian in an hex encoded string"
@@ -108,16 +106,16 @@
 
 (defn utf8-to-hex
   [s]
-  (subs (.utf8ToHex utils s) 2))
+  (subs (.utf8ToHex (utils) s) 2))
 
 (defn sha3 [s]
-  (.sha3 utils s))
+  (.sha3 (utils) s))
 
 (defn hex-to-bytes [s]
-  (.hexToBytes utils s))
+  (.hexToBytes (utils) s))
 
 (defn bytes-to-hex [b]
-  (.bytesToHex utils b))
+  (.bytesToHex (utils) b))
 
 (defn digest
   [data {:keys [feed epoch protocolVersion]}]
@@ -214,8 +212,6 @@
 
 (defn read-feed
   [{:keys [user name on-success on-failure]}]
-  (println :read-feed user name on-success on-failure)
-  (println (bzz-read-feed-url name user))
   {:http-get {:url (bzz-read-feed-url name user)
               :timeout-ms gateway-timeout
               :on-success on-success
