@@ -42,7 +42,7 @@
       :type "application/json"
       :content (select-keys account [:name :photo-path :ens-name])})))
 
-(defn utils (dependencies/web3-utils))
+(defn utils [] (dependencies/web3-utils))
 
 (def status-profile-topic "status-profile")
 

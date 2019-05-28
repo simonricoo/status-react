@@ -96,7 +96,7 @@
 
 (defn private-sign-hash [hash callback]
   (when (and @node-started status)
-    (.signHash status hash callback)))
+    (.signHash (status) hash callback)))
 
 (defn hash-transaction [rpcParams callback]
   (when (and @node-started (status))
