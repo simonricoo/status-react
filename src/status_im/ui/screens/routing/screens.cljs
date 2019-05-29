@@ -33,6 +33,7 @@
             [status-im.ui.screens.hardwallet.settings.views :as hardwallet.settings]
             [status-im.ui.screens.hardwallet.setup.views :as hardwallet.setup]
             [status-im.ui.screens.hardwallet.success.views :as hardwallet.success]
+            [status-im.ui.screens.keycard.onboarding.views :as keycard.onboarding]
             [status-im.ui.screens.help-center.views :as help-center]
             [status-im.ui.screens.home.views :as home]
             [status-im.ui.screens.intro.views :as intro]
@@ -98,6 +99,7 @@
    :enter-pin-modal                  [:modal hardwallet.pin/enter-pin]
    :hardwallet-setup                 hardwallet.setup/hardwallet-setup
    :hardwallet-success               hardwallet.success/hardwallet-success
+   :keycard-onboarding-intro         keycard.onboarding/intro
    :home                             home/home-wrapper
    :chat                             chat/chat
    :profile                          profile.contact/profile
