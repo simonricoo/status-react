@@ -77,4 +77,5 @@
       "subscriptions.data" (ethereum.subscriptions/handle-signal cofx event)
       "subscriptions.error" (ethereum.subscriptions/handle-error cofx event)
       "status.chats.did-change" (chat.loading/load-chats-from-rpc cofx)
+      "status.chats.new-messages" (chat.loading/load-new-messages-from-rpc cofx event)
       (log/debug "Event " type " not handled"))))

@@ -494,6 +494,9 @@ RCT_EXPORT_METHOD(callRPC:(NSString *)payload
                   callback:(RCTResponseSenderBlock)callback) {
     dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *result = StatusgoCallRPC(payload);
+        if ([payload containsString:@"status_"]){
+            NSLog(@"IGORM -> rrr %@", payload);
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             callback(@[result]);
         });
@@ -504,6 +507,9 @@ RCT_EXPORT_METHOD(callPrivateRPC:(NSString *)payload
                   callback:(RCTResponseSenderBlock)callback) {
     dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *result = StatusgoCallPrivateRPC(payload);
+        if ([payload containsString:@"status_"]){
+            NSLog(@"IGORM -> rrr %@", payload);
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             callback(@[result]);
         });

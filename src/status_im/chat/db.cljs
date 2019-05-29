@@ -6,6 +6,8 @@
             [status-im.contact.db :as contact.db]
             [status-im.group-chats.db :as group-chats.db]
             [status-im.mailserver.core :as mailserver]
+            [status-im.utils.gfycat.core :as gfycat]
+            [taoensso.timbre :as log]
             [status-im.transport.partitioned-topic :as topic]
             [status-im.utils.gfycat.core :as gfycat]))
 

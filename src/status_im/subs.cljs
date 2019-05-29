@@ -2,6 +2,7 @@
   (:require [cljs.spec.alpha :as spec]
             [clojure.string :as string]
             [re-frame.core :as re-frame]
+            [taoensso.timbre :as log]
             [status-im.accounts.db :as accounts.db]
             [status-im.browser.core :as browser]
             [status-im.chat.commands.core :as commands]
@@ -627,7 +628,13 @@
    (:public? chat)))
 
 (re-frame/reg-sub
- :chats/current-chat-messages-stream
+ :chats/current-chat-messages-stream-from-rpc
+ :<- [:chats/current-chat]
+ (fn [current-chat]
+   (:messages-stream current-chat)))
+
+(re-frame/reg-sub
+ :chats/current-chat-messages-stream-legacy
  :<- [:chats/current-chat-messages]
  :<- [:chats/current-chat-message-groups]
  :<- [:chats/current-chat-referenced-messages]
@@ -642,6 +649,13 @@
         messages referenced-messages
         messages-gaps range all-loaded? public?)
        chat.db/messages-stream)))
+
+(re-frame/reg-sub
+ :chats/current-chat-messages-stream
+ :<- [(if config/use-status-go-protocol?
+        :chats/current-chat-messages-stream-from-rpc
+        :chats/current-chat-messages-stream-legacy)]
+ (fn [messages-stream] messages-stream))
 
 (re-frame/reg-sub
  :chats/current-chat-intro-status

@@ -26,7 +26,8 @@
    "status_joinPublicChat" {}
    "status_chats" {}
    "status_startOneOnOneChat" {}
-   "status_removeChat" {}})
+   "status_removeChat" {}
+   "status_getMessagesBefore" {}})
 
 (defn call
   [{:keys [method params on-success on-error]}]

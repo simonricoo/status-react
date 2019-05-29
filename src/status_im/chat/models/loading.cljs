@@ -104,21 +104,18 @@
     (load-chats-from-rpc cofx)
     (initialize-chats-legacy cofx from to)))
 
-(defn load-more-messages
-  "Loads more messages for current chat"
+(defn load-more-messages-legacy
   [{{:keys [current-chat-id] :as db} :db
     get-stored-messages :get-stored-messages
     get-referenced-messages :get-referenced-messages
     get-unviewed-message-ids :get-unviewed-message-ids :as cofx}]
-  ;; TODO: re-implement functionality for status-go protocol
-  (when-not (or config/use-status-go-protocol?
-                (get-in db [:chats current-chat-id :all-loaded?]))
+  (when-not (get-in db [:chats current-chat-id :all-loaded?])
     (let [previous-pagination-info   (get-in db [:chats current-chat-id :pagination-info])
           {:keys [messages
                   pagination-info
                   all-loaded?]}      (get-stored-messages current-chat-id previous-pagination-info)
           already-loaded-messages    (get-in db [:chats current-chat-id :messages])
-          ;; We remove those messages that are already loaded, as we might get some duplicates
+            ;; We remove those messages that are already loaded, as we might get some duplicates
           new-messages               (remove (comp already-loaded-messages :message-id)
                                              messages)
           indexed-messages           (index-messages new-messages)
@@ -142,3 +139,40 @@
                 (mailserver/load-gaps current-chat-id)
                 (group-chat-messages current-chat-id new-messages)
                 (chat-model/mark-messages-seen current-chat-id)))))
+
+(defn load-more-messages
+  "Loads more messages for current chat"
+  [{{:keys [current-chat-id] :as db} :db :as cofx}]
+  (if config/use-status-go-protocol?
+    (let [current-message-stream (get-in db [:chats current-chat-id :messages-stream])
+          oldest-message (last current-message-stream)]
+      (log/info "IGORM -> getMessagesBefore" (:clock-value oldest-message))
+      (fx/merge cofx
+                {:json-rpc/call [{:method "status_getMessagesBefore"
+                                  :params [current-chat-id
+                                           (str (:clock-value oldest-message))
+                                           10]
+                                  :on-success
+                                  #(re-frame/dispatch [:chat/messages-appended [current-chat-id %]])
+                                  :on-error
+                                  #(log/error "can't get messages from the protocol:" %)}]}))
+    (load-more-messages-legacy cofx)))
+
+(fx/defn append-chats
+  {:events [:chat/messages-appended]}
+  [{:keys [db] :as cofx} [chat-id messages]]
+  (let [old-stream (get-in db [:chats chat-id :messages-stream])
+        new-stream (if old-stream (concat old-stream messages) messages)
+        db' (assoc-in db [:chats chat-id :messages-stream] new-stream)]
+    (log/info "IGORM -> messages-appended" messages)
+    (fx/merge cofx {:db db'})))
+
+(fx/defn load-new-messages-from-rpc
+  [cofx event]
+  ;; if there are no active chats -- do nothing
+  ;; if there is an active chat and clock value of the last item of incoming messages
+  ;;    if oldest new message is newer than newest old -- append
+  ;;    if newest new message is older than oldest old -- do nothing
+  ;;    else refresh between timestamps
+  (log/info "IGORM -> got new messages" event))
+

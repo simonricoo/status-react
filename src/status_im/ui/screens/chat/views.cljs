@@ -378,25 +378,22 @@
                         initial-threshold
                         default-threshold)
           flat-list-conf
-          {:data                      (take m-limit messages)
+          {:data                      messages
            :ref                       #(reset! messages-list-ref %)
            :footer                    [chat-intro-header-container chat no-messages]
            :key-fn                    #(or (:message-id %) (:value %))
            :render-fn                 (fn [message idx]
+
                                         [message-row
                                          {:group-chat         group-chat
                                           :modal?             modal?
                                           :current-public-key current-public-key
-                                          :row                message
+                                          :row                (update-in message [:type] keyword)
                                           :idx                idx
                                           :list-ref           messages-list-ref}])
            :inverted                  true
            :onEndReachedThreshold     threshold
-           :onEndReached              (fn []
-                                        (swap! messages-limit increment-limit)
-                                        (when (> @messages-limit (count messages))
-                                          (re-frame/dispatch
-                                           [:chat.ui/load-more-messages])))
+           :onEndReached              #(re-frame/dispatch [:chat.ui/load-more-messages])
            :keyboardShouldPersistTaps :handled}
           group-header {:header [group-chat-footer chat-id]}]
       (if pending-invite-inviter-name
