@@ -13,7 +13,8 @@
     :enter-pin-login
     :hardwallet-setup
     :hardwallet-success
-    :keycard-onboarding-intro})
+    :keycard-onboarding-intro
+    :keycard-onboarding-start})
 
 (defn login-stack [view-id]
   {:name    :login-stack
@@ -38,6 +39,9 @@
 
 (defn intro-stack []
   (-> (login-stack :intro)
-      (update :screens conj :intro :keycard-onboarding-intro)
+      (update :screens conj
+              :intro
+              :keycard-onboarding-intro
+              :keycard-onboarding-start)
       (assoc :name :intro-stack)
       (assoc :config {:initialRouteName :intro})))

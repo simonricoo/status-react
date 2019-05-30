@@ -100,6 +100,7 @@
    :hardwallet-setup                 hardwallet.setup/hardwallet-setup
    :hardwallet-success               hardwallet.success/hardwallet-success
    :keycard-onboarding-intro         keycard.onboarding/intro
+   :keycard-onboarding-start         keycard.onboarding/start
    :home                             home/home-wrapper
    :chat                             chat/chat
    :profile                          profile.contact/profile

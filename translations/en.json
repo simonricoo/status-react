@@ -1053,5 +1053,13 @@
     "report-bug-email-template": "1. Issue Description\n(Describe the feature you would like, or briefly summarise the bug and what you did, what you expected to happen, and what actually happens. Sections below)\n\n\n2. Steps to reproduce\n(Describe how we can replicate the bug step by step.)\n-Open Status\n-...\n-Step 3, etc.\n\n\n3. Expected behavior\n(Describe what you expected to happen.)\n\n\n4. Actual behavior\n(Describe what actually happened.)\n\n\n5. Attach screenshots that can demo the problem, please\n",
     "keycard-onboarding-intro-header": "Store your key on Keycard",
     "keycard-onboarding-intro-text": "A secure, contactless, open source Hardwallet. Android only.",
-    "learn-more-about-keycard": "Learn more about Keycard"
+    "learn-more-about-keycard": "Learn more about Keycard",
+    "keycard-onboarding-start-header": "Hold card to the back\n of your phone to start",
+    "keycard-onboarding-start-text": "And maintain card to phone contact\n during the setup. The setup will take around 4 minutes",
+    "keycard-onboarding-start-step1": "Create a passcode",
+    "keycard-onboarding-start-step1-text": "Around 1 minute. Create a 6-digit code to encrypt your key",
+    "keycard-onboarding-start-step2": "Write down PUK and the pairing code",
+    "keycard-onboarding-start-step2-text": "Around 1 minute. You are going to need a piece of paper and a pencil for that",
+    "keycard-onboarding-start-step3": "Back up the recovery phrase",
+    "keycard-onboarding-start-step3-text": "Around 1 minute. Also a piece of paper and a pencil are necessary"
 }
