@@ -14,7 +14,8 @@
     :hardwallet-setup
     :hardwallet-success
     :keycard-onboarding-intro
-    :keycard-onboarding-start})
+    :keycard-onboarding-start
+    :keycard-onboarding-puk-code})
 
 (defn login-stack [view-id]
   {:name    :login-stack
@@ -42,6 +43,7 @@
       (update :screens conj
               :intro
               :keycard-onboarding-intro
-              :keycard-onboarding-start)
+              :keycard-onboarding-start
+              :keycard-onboarding-puk-code)
       (assoc :name :intro-stack)
       (assoc :config {:initialRouteName :intro})))

@@ -834,7 +834,7 @@
     "puk-code": "PUK code",
     "puk-code-explanation": "If you forget your PIN or enter it incorrectly 3 times, you'll need this code to unlock your card.",
     "pair-code": "Pair code",
-    "pair-code-explanation": "Pairs card to a different device with the same Status account on it",
+    "pair-code-explanation": "Pairs card to a different device with the same Status account on it.",
     "secret-keys-confirmation-title": "Did you write them down?",
     "secret-keys-confirmation-text": "Record these now because you won't see this screen again",
     "secret-keys-confirmation-confirm": "GOT IT",
@@ -1061,5 +1061,6 @@
     "keycard-onboarding-start-step2": "Write down PUK and the pairing code",
     "keycard-onboarding-start-step2-text": "Around 1 minute. You are going to need a piece of paper and a pencil for that",
     "keycard-onboarding-start-step3": "Back up the recovery phrase",
-    "keycard-onboarding-start-step3-text": "Around 1 minute. Also a piece of paper and a pencil are necessary"
+    "keycard-onboarding-start-step3-text": "Around 1 minute. Also a piece of paper and a pencil are necessary",
+    "keycard-onboarding-puk-code-header": "Write codes down\n and store them securely"
 }
