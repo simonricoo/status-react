@@ -216,3 +216,53 @@
       [components.common/bottom-button
        {:on-press #(re-frame/dispatch [:keycard.onboarding.puk-code.ui/next-pressed])
         :forward? true}]]]]])
+
+(defn- loading [title-label]
+  [react/view styles/container
+   [toolbar/toolbar {:transparent? true
+                     :style        {:margin-top 32}}
+    nil nil]
+   [react/view {:flex            1
+                :flex-direction  :column
+                :justify-content :space-between
+                :align-items     :center}
+    [react/view {:flex-direction :column
+                 :align-items    :center}
+     [react/view {:margin-top 16}
+      [react/activity-indicator {:animating true
+                                 :size      :large}]]
+     [react/view {:margin-top 16}
+      [react/text {:number-of-lines 2
+                   :style           {:typography :header
+                                     :text-align :center}}
+       (i18n/label title-label)]]
+     [react/view {:margin-top 16
+                  :width      311}
+      [react/text {:number-of-lines 3
+                   :style           {:font-size   15
+                                     :line-height 22
+                                     :color       colors/gray
+                                     :text-align  :center}}
+       (i18n/label :t/this-will-take-few-seconds)]]]
+    [react/view {:flex            1
+                 :align-items     :center
+                 :justify-content :center}
+     [react/image {:source      (resources/get-image :keycard-phone)
+                   :resize-mode :center
+                   :style       {:width  160
+                                 :height 170}}]
+     [react/view {:margin-top 10}
+      [react/text {:style {:text-align  :center
+                           :color       colors/gray
+                           :font-size   15
+                           :line-height 22}}
+       (i18n/label :t/hold-card)]]]]])
+
+(defn preparing []
+  (loading :t/keycard-onboarding-preparing-header))
+
+(defn pairing []
+  (loading :t/keycard-onboarding-pairing-header))
+
+(defn finishing []
+  (loading :t/keycard-onboarding-finishing-header))

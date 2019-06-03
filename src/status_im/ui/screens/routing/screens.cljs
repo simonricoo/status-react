@@ -102,6 +102,9 @@
    :keycard-onboarding-intro         keycard.onboarding/intro
    :keycard-onboarding-start         keycard.onboarding/start
    :keycard-onboarding-puk-code      keycard.onboarding/puk-code
+   :keycard-onboarding-preparing     keycard.onboarding/preparing
+   :keycard-onboarding-pairing       keycard.onboarding/pairing
+   :keycard-onboarding-finishing     keycard.onboarding/finishing
    :home                             home/home-wrapper
    :chat                             chat/chat
    :profile                          profile.contact/profile

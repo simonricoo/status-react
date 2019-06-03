@@ -1062,5 +1062,8 @@
     "keycard-onboarding-start-step2-text": "Around 1 minute. You are going to need a piece of paper and a pencil for that",
     "keycard-onboarding-start-step3": "Back up the recovery phrase",
     "keycard-onboarding-start-step3-text": "Around 1 minute. Also a piece of paper and a pencil are necessary",
-    "keycard-onboarding-puk-code-header": "Write codes down\n and store them securely"
+    "keycard-onboarding-puk-code-header": "Write codes down\n and store them securely",
+    "keycard-onboarding-preparing-header": "Preparing the card...",
+    "keycard-onboarding-pairing-header": "Pairing the card...",
+    "keycard-onboarding-finishing-header": "Finishing up"
 }
