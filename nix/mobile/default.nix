@@ -1,4 +1,4 @@
-{ config, stdenv, pkgs, callPackage, target-os,
+{ config, stdenv, pkgs, callPackage, fetchurl, target-os,
   gradle, status-go, composeXcodeWrapper, nodejs }:
 
 with stdenv;
@@ -9,10 +9,28 @@ let
     version = "10.1";
   };
   xcodeWrapper = composeXcodeWrapper xcodewrapperArgs;
-  androidPlatform = callPackage ./android.nix { inherit config gradle; };
+  androidPlatform = callPackage ./android { inherit config pkgs mkFilter nodejs gradle status-go nodeProjectName developmentNodePackages; projectNodePackage = projectNodePackage'; };
+  iosPlatform = callPackage ./ios { inherit config pkgs mkFilter status-go nodeProjectName developmentNodePackages; projectNodePackage = projectNodePackage'; };
   selectedSources =
     [ status-go ] ++
-    lib.optional platform.targetAndroid androidPlatform;
+    lib.optional platform.targetAndroid androidPlatform ++
+    lib.optional platform.targetIOS iosPlatform;
+
+  developmentNodePackages = import ./node2nix/development { inherit pkgs nodejs; };
+  projectNodePackage = import ./node2nix/StatusIm { inherit pkgs nodejs; };
+  projectNodePackage' = projectNodePackage.package.override(oldAttrs: (realmOverrides oldAttrs) // {
+    # Ensure that a package.json is present where node2nix's node-env.nix expects it, instead of the package.json.orig
+    postPatch = ''
+      outputPackage="$out/lib/node_modules/${nodeProjectName}/package.json"
+      mkdir -p $(dirname $outputPackage)
+      cp $src/package.json.orig $outputPackage
+      chmod +w $outputPackage
+      unset outputPackage
+    '';
+  });
+  nodeProjectName = "StatusIm";
+  realmOverrides = import ./realm-overrides { inherit stdenv target-os nodeProjectName fetchurl nodejs; };
+  mkFilter = import ./mkFilter.nix { inherit lib; };
 
 in
   {
@@ -22,6 +40,6 @@ in
     buildInputs =
       status-go.buildInputs ++
       lib.catAttrs "buildInputs" selectedSources ++
-      lib.optional (platform.targetIOS && isDarwin) xcodeWrapper;
+      lib.optional (platform.targetIOS && isDarwin) xcodeWrapper; # TODO: move this to iosPlatform
     shellHook = lib.concatStrings (lib.catAttrs "shellHook" selectedSources);
   }

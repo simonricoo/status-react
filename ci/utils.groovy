@@ -102,7 +102,7 @@ def installJSDeps(platform) {
   def maxAttempts = 10
   def installed = false
   /* prepare environment for specific platform build */
-  nix.shell "scripts/prepare-for-platform.sh ${platform}"
+  nix.shell "scripts/prepare-for-desktop-platform.sh"
   while (!installed && attempt <= maxAttempts) {
     println "#${attempt} attempt to install npm deps"
     nix.shell 'yarn install --frozen-lockfile'

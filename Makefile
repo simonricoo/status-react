@@ -41,7 +41,7 @@ endif
 
 clean: SHELL := /bin/sh
 clean: ##@prepare Remove all output folders
-	git clean -dxf -f
+	test -d node_modules && chmod -R 744 node_modules; git clean -dxf -f
 
 clean-nix: SHELL := /bin/sh
 clean-nix: ##@prepare Remove complete nix setup
@@ -94,22 +94,25 @@ release-windows-desktop: ##@build build release for desktop release
 
 prod-build: export TARGET_OS ?= all
 prod-build:
-	scripts/prepare-for-platform.sh android && \
-	scripts/prepare-for-platform.sh ios && \
 	lein prod-build
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.android.js
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.ios.js
 
 prod-build-android: export TARGET_OS ?= android
 prod-build-android:
 	lein prod-build-android
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-ios: export TARGET_OS ?= ios
 prod-build-ios:
 	lein prod-build-ios
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-desktop: export TARGET_OS ?= $(HOST_OS)
 prod-build-desktop:
 	git clean -qdxf -f ./index.desktop.js desktop/ && \
 	lein prod-build-desktop
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.desktop.js
 
 #--------------
 # REPL
