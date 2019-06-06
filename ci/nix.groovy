@@ -15,7 +15,7 @@ def shell(Map opts = [:], String cmd) {
   /* Previous merge overwrites the array */
   opts.keep = (opts.keep + defaults.keep).unique()
 
-  def isPure = opts.pure && env.TARGET_OS != 'windows' && env.TARGET_OS != 'ios'
+  def isPure = opts.pure && (env.TARGET_OS == 'android' || env.TARGET_OS == 'linux')
   def keepFlags = opts.keep.collect { var -> "--keep ${var} " }
   def argsFlags = opts.args.collect { key,val -> "--argstr ${key} \'${val}\'" }
   sh """

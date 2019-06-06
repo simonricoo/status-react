@@ -32,7 +32,6 @@ in with stdenv'; stdenv'.mkDerivation rec {
     watchman
   ] ++ nodePkgBuildInputs
     ++ lib.optional isDarwin cocoapods
-    ++ lib.optional (isDarwin && !platform.targetIOS) clang
     ++ lib.optional (!isDarwin) gcc7
     ++ lib.catAttrs "buildInputs" selectedSources;
   shellHook = lib.concatStrings (lib.catAttrs "shellHook" selectedSources);

@@ -7,7 +7,7 @@ with stdenv;
 let
   platform = callPackage ../platform.nix { inherit target-os; };
   linuxPlatform = callPackage ./linux { inherit status-go; };
-  darwinPlatform = callPackage ./macos { inherit status-go darwin; };
+  darwinPlatform = callPackage ./macos { inherit status-go; };
   windowsPlatform = callPackage ./windows { };
   snoreNotifySources = callPackage ./cmake/snorenotify { };
   qtkeychainSources = callPackage ./cmake/qtkeychain { };
