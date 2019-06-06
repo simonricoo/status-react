@@ -1065,5 +1065,8 @@
     "keycard-onboarding-puk-code-header": "Write codes down\n and store them securely",
     "keycard-onboarding-preparing-header": "Preparing the card...",
     "keycard-onboarding-pairing-header": "Pairing the card...",
-    "keycard-onboarding-finishing-header": "Finishing up"
+    "keycard-onboarding-finishing-header": "Finishing up",
+    "connection-with-the-card-lost": "Connection with the card\n has been lost",
+    "connection-with-the-card-lost-text": "To resume the setup hold the card to\n the back of your phone and maintain\n card to phone contact",
+    "cancel-keycard-setup": "Cancel Keycard setup"
 }

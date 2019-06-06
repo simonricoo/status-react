@@ -18,7 +18,8 @@
     :keycard-onboarding-puk-code
     :keycard-onboarding-preparing
     :keycard-onboarding-pairing
-    :keycard-onboarding-finishing})
+    :keycard-onboarding-finishing
+    :keycard-onboarding-connection-lost})
 
 (defn login-stack [view-id]
   {:name    :login-stack
@@ -50,6 +51,7 @@
               :keycard-onboarding-puk-code
               :keycard-onboarding-preparing
               :keycard-onboarding-pairing
-              :keycard-onboarding-finishing)
+              :keycard-onboarding-finishing
+              :keycard-onboarding-connection-lost)
       (assoc :name :intro-stack)
       (assoc :config {:initialRouteName :intro})))

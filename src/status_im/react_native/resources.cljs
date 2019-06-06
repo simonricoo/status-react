@@ -14,6 +14,7 @@
    :keycard-lock        (js-require/js-require "./resources/images/ui/keycard-lock.png")
    :keycard             (js-require/js-require "./resources/images/ui/keycard.png")
    :keycard-phone       (js-require/js-require "./resources/images/ui/keycard-phone.png")
+   :keycard-connection  (js-require/js-require "./resources/images/ui/keycard-connection.png")
    :hold-card-animation (js-require/js-require "./resources/images/ui/hold-card-animation.gif")
    :warning-sign        (js-require/js-require "./resources/images/ui/warning-sign.png")
    :phone-nfc-on        (js-require/js-require "./resources/images/ui/phone-nfc-on.png")

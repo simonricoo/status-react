@@ -266,3 +266,37 @@
 
 (defn finishing []
   (loading :t/keycard-onboarding-finishing-header))
+
+(defn connection-lost []
+  [react/view {:flex             1
+               :justify-content  :center
+               :align-items      :center
+               :background-color "rgba(4, 4, 15, 0.4)"}
+   [react/view {:background-color colors/white
+                :height           478
+                :width            "85%"
+                :border-radius    16
+                :flex-direction   :column
+                :justify-content  :space-between
+                :align-items      :center}
+    [react/view {:margin-top 32}
+     [react/text {:style           {:typography :title
+                                    :text-align :center}
+                  :number-of-lines 2}
+      (i18n/label :t/connection-with-the-card-lost)]
+     [react/view {:margin-top 16}
+      [react/text {:style           {:color      colors/gray
+                                     :text-align :center}
+                   :number-of-lines 3}
+       (i18n/label :t/connection-with-the-card-lost-text)]]]
+    [react/view {:margin-top 16}
+     [react/image {:source      (resources/get-image :keycard-connection)
+                   :resize-mode :center
+                   :style       {:width  200
+                                 :height 200}}]]
+    [react/view {:margin-bottom 43}
+     [react/touchable-highlight
+      {:on-press #()}
+      [react/text {:style {:color      colors/red
+                           :text-align :center}}
+       (i18n/label :t/cancel-keycard-setup)]]]]])

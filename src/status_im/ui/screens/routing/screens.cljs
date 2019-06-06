@@ -82,107 +82,108 @@
             [status-im.ui.screens.wallet.custom-tokens.views :as custom-tokens]))
 
 (def all-screens
-  {:login                            login/login
-   :progress                         progress/progress
-   :create-account                   accounts.create/create-account
-   :recover                          recover/recover
-   :accounts                         accounts/accounts
-   :intro                            intro/intro
-   :hardwallet-authentication-method hardwallet.authentication/hardwallet-authentication-method
-   :hardwallet-connect               hardwallet.connect/hardwallet-connect
-   :hardwallet-connect-settings      hardwallet.connect/hardwallet-connect
-   :hardwallet-connect-sign          hardwallet.connect/hardwallet-connect
-   :hardwallet-connect-modal         [:modal hardwallet.connect/hardwallet-connect]
-   :enter-pin-login                  hardwallet.pin/enter-pin
-   :enter-pin-settings               hardwallet.pin/enter-pin
-   :enter-pin-sign                   hardwallet.pin/enter-pin
-   :enter-pin-modal                  [:modal hardwallet.pin/enter-pin]
-   :hardwallet-setup                 hardwallet.setup/hardwallet-setup
-   :hardwallet-success               hardwallet.success/hardwallet-success
-   :keycard-onboarding-intro         keycard.onboarding/intro
-   :keycard-onboarding-start         keycard.onboarding/start
-   :keycard-onboarding-puk-code      keycard.onboarding/puk-code
-   :keycard-onboarding-preparing     keycard.onboarding/preparing
-   :keycard-onboarding-pairing       keycard.onboarding/pairing
-   :keycard-onboarding-finishing     keycard.onboarding/finishing
-   :home                             home/home-wrapper
-   :chat                             chat/chat
-   :profile                          profile.contact/profile
-   :new                              add-new/add-new
-   :new-chat                         new-chat/new-chat
-   :qr-scanner                       qr-scanner/qr-scanner
-   :profile-qr-viewer                [:modal profile.user/qr-viewer]
-   :take-picture                     extensions.camera.views/take-picture
-   :extension-screen-holder          extensions.views/screen-holder
-   :new-group                        group/new-group
-   :add-participants-toggle-list     group/add-participants-toggle-list
-   :contact-toggle-list              group/contact-toggle-list
-   :group-chat-profile               profile.group-chat/group-chat-profile
-   :new-public-chat                  new-public-chat/new-public-chat
-   :open-dapp                        open-dapp/open-dapp
-   :browser                          browser/browser
-   :stickers                         stickers/packs
-   :stickers-pack                    stickers/pack
-   :stickers-pack-modal              [:modal stickers/pack-modal]
-   :tribute-learn-more               [:modal tr-to-talk/learn-more]
-   :chat-modal                       [:modal chat/chat-modal]
-   :show-extension-modal             [:modal extensions.add/show-extension-modal]
-   :wallet-send-transaction-modal    [:modal send/send-transaction-modal]
-   :wallet-transaction-sent-modal    [:modal transaction-sent/transaction-sent-modal]
-   :wallet-transaction-fee           [:modal wallet.transaction-fee/transaction-fee]
-   :wallet-onboarding-setup-modal    [:modal wallet.onboarding/modal]
-   :wallet-sign-message-modal        [:modal sign-message/sign-message-modal]
-   :wallet                           wallet.main/wallet
-   :collectibles-list                collectibles/collectibles-list
-   :wallet-onboarding-setup          wallet.onboarding/screen
-   :wallet-send-transaction-chat     send/send-transaction
-   :contact-code                     wallet.components/contact-code
-   :wallet-send-transaction          send/send-transaction
-   :recent-recipients                wallet.components/recent-recipients
-   :wallet-transaction-sent          transaction-sent/transaction-sent
-   :recipient-qr-code                wallet.components/recipient-qr-code
-   :wallet-send-assets               wallet.components/send-assets
-   :wallet-request-transaction       request/request-transaction
-   :wallet-send-transaction-request  request/send-transaction-request
-   :wallet-request-assets            wallet.components/request-assets
-   :unsigned-transactions            wallet-transactions/transactions
-   :transactions-history             wallet-transactions/transactions
-   :wallet-transaction-details       wallet-transactions/transaction-details
-   :wallet-settings-hook             wallet-settings/settings-hook
-   :selection-modal-screen           [:modal screens.extensions/selection-modal-screen]
-   :wallet-settings-assets           wallet-settings/manage-assets
-   :wallet-add-custom-token          custom-tokens/add-custom-token
-   :wallet-custom-token-details      custom-tokens/custom-token-details
-   :wallet-transactions-filter       [:modal wallet-transactions/filter-history]
-   :my-profile                       profile.user/my-profile
-   :my-profile-ext-settings          profile.user/extensions-settings
-   :contacts-list                    contacts-list/contacts-list
-   :blocked-users-list               contacts-list/blocked-users-list
-   :profile-photo-capture            photo-capture/profile-photo-capture
-   :about-app                        about-app/about-app
-   :bootnodes-settings               bootnodes-settings/bootnodes-settings
-   :installations                    pairing/installations
-   :edit-bootnode                    edit-bootnode/edit-bootnode
-   :offline-messaging-settings       offline-messaging-settings/offline-messaging-settings
-   :edit-mailserver                  edit-mailserver/edit-mailserver
-   :help-center                      help-center/help-center
-   :dapps-permissions                dapps-permissions/dapps-permissions
-   :manage-dapps-permissions         dapps-permissions/manage
-   :extensions-settings              screens.extensions/extensions-settings
-   :edit-extension                   extensions.add/edit-extension
-   :show-extension                   extensions.add/show-extension
-   :network-settings                 network-settings/network-settings
-   :network-details                  network-details/network-details
-   :edit-network                     edit-network/edit-network
-   :log-level-settings               log-level-settings/log-level-settings
-   :fleet-settings                   fleet-settings/fleet-settings
-   :currency-settings                currency-settings/currency-settings
-   :backup-seed                      profile.seed/backup-seed
-   :tribute-to-talk                  tr-to-talk/tribute-to-talk
-   :reset-card                       hardwallet.settings/reset-card
-   :keycard-settings                 hardwallet.settings/keycard-settings
-   :mobile-network-settings          mobile-network-settings/mobile-network-settings
-   :welcome                          [:modal home/welcome]})
+  {:login                              login/login
+   :progress                           progress/progress
+   :create-account                     accounts.create/create-account
+   :recover                            recover/recover
+   :accounts                           accounts/accounts
+   :intro                              intro/intro
+   :hardwallet-authentication-method   hardwallet.authentication/hardwallet-authentication-method
+   :hardwallet-connect                 hardwallet.connect/hardwallet-connect
+   :hardwallet-connect-settings        hardwallet.connect/hardwallet-connect
+   :hardwallet-connect-sign            hardwallet.connect/hardwallet-connect
+   :hardwallet-connect-modal           [:modal hardwallet.connect/hardwallet-connect]
+   :enter-pin-login                    hardwallet.pin/enter-pin
+   :enter-pin-settings                 hardwallet.pin/enter-pin
+   :enter-pin-sign                     hardwallet.pin/enter-pin
+   :enter-pin-modal                    [:modal hardwallet.pin/enter-pin]
+   :hardwallet-setup                   hardwallet.setup/hardwallet-setup
+   :hardwallet-success                 hardwallet.success/hardwallet-success
+   :keycard-onboarding-intro           keycard.onboarding/intro
+   :keycard-onboarding-start           keycard.onboarding/start
+   :keycard-onboarding-puk-code        keycard.onboarding/puk-code
+   :keycard-onboarding-preparing       keycard.onboarding/preparing
+   :keycard-onboarding-pairing         keycard.onboarding/pairing
+   :keycard-onboarding-finishing       keycard.onboarding/finishing
+   :keycard-onboarding-connection-lost keycard.onboarding/connection-lost
+   :home                               home/home-wrapper
+   :chat                               chat/chat
+   :profile                            profile.contact/profile
+   :new                                add-new/add-new
+   :new-chat                           new-chat/new-chat
+   :qr-scanner                         qr-scanner/qr-scanner
+   :profile-qr-viewer                  [:modal profile.user/qr-viewer]
+   :take-picture                       extensions.camera.views/take-picture
+   :extension-screen-holder            extensions.views/screen-holder
+   :new-group                          group/new-group
+   :add-participants-toggle-list       group/add-participants-toggle-list
+   :contact-toggle-list                group/contact-toggle-list
+   :group-chat-profile                 profile.group-chat/group-chat-profile
+   :new-public-chat                    new-public-chat/new-public-chat
+   :open-dapp                          open-dapp/open-dapp
+   :browser                            browser/browser
+   :stickers                           stickers/packs
+   :stickers-pack                      stickers/pack
+   :stickers-pack-modal                [:modal stickers/pack-modal]
+   :tribute-learn-more                 [:modal tr-to-talk/learn-more]
+   :chat-modal                         [:modal chat/chat-modal]
+   :show-extension-modal               [:modal extensions.add/show-extension-modal]
+   :wallet-send-transaction-modal      [:modal send/send-transaction-modal]
+   :wallet-transaction-sent-modal      [:modal transaction-sent/transaction-sent-modal]
+   :wallet-transaction-fee             [:modal wallet.transaction-fee/transaction-fee]
+   :wallet-onboarding-setup-modal      [:modal wallet.onboarding/modal]
+   :wallet-sign-message-modal          [:modal sign-message/sign-message-modal]
+   :wallet                             wallet.main/wallet
+   :collectibles-list                  collectibles/collectibles-list
+   :wallet-onboarding-setup            wallet.onboarding/screen
+   :wallet-send-transaction-chat       send/send-transaction
+   :contact-code                       wallet.components/contact-code
+   :wallet-send-transaction            send/send-transaction
+   :recent-recipients                  wallet.components/recent-recipients
+   :wallet-transaction-sent            transaction-sent/transaction-sent
+   :recipient-qr-code                  wallet.components/recipient-qr-code
+   :wallet-send-assets                 wallet.components/send-assets
+   :wallet-request-transaction         request/request-transaction
+   :wallet-send-transaction-request    request/send-transaction-request
+   :wallet-request-assets              wallet.components/request-assets
+   :unsigned-transactions              wallet-transactions/transactions
+   :transactions-history               wallet-transactions/transactions
+   :wallet-transaction-details         wallet-transactions/transaction-details
+   :wallet-settings-hook               wallet-settings/settings-hook
+   :selection-modal-screen             [:modal screens.extensions/selection-modal-screen]
+   :wallet-settings-assets             wallet-settings/manage-assets
+   :wallet-add-custom-token            custom-tokens/add-custom-token
+   :wallet-custom-token-details        custom-tokens/custom-token-details
+   :wallet-transactions-filter         [:modal wallet-transactions/filter-history]
+   :my-profile                         profile.user/my-profile
+   :my-profile-ext-settings            profile.user/extensions-settings
+   :contacts-list                      contacts-list/contacts-list
+   :blocked-users-list                 contacts-list/blocked-users-list
+   :profile-photo-capture              photo-capture/profile-photo-capture
+   :about-app                          about-app/about-app
+   :bootnodes-settings                 bootnodes-settings/bootnodes-settings
+   :installations                      pairing/installations
+   :edit-bootnode                      edit-bootnode/edit-bootnode
+   :offline-messaging-settings         offline-messaging-settings/offline-messaging-settings
+   :edit-mailserver                    edit-mailserver/edit-mailserver
+   :help-center                        help-center/help-center
+   :dapps-permissions                  dapps-permissions/dapps-permissions
+   :manage-dapps-permissions           dapps-permissions/manage
+   :extensions-settings                screens.extensions/extensions-settings
+   :edit-extension                     extensions.add/edit-extension
+   :show-extension                     extensions.add/show-extension
+   :network-settings                   network-settings/network-settings
+   :network-details                    network-details/network-details
+   :edit-network                       edit-network/edit-network
+   :log-level-settings                 log-level-settings/log-level-settings
+   :fleet-settings                     fleet-settings/fleet-settings
+   :currency-settings                  currency-settings/currency-settings
+   :backup-seed                        profile.seed/backup-seed
+   :tribute-to-talk                    tr-to-talk/tribute-to-talk
+   :reset-card                         hardwallet.settings/reset-card
+   :keycard-settings                   hardwallet.settings/keycard-settings
+   :mobile-network-settings            mobile-network-settings/mobile-network-settings
+   :welcome                            [:modal home/welcome]})
 
 (defn get-screen [screen]
   (get all-screens screen #(throw (str "Screen " screen " is not defined."))))
