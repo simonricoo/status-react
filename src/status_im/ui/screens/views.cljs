@@ -14,7 +14,9 @@
             [status-im.ui.screens.mobile-network-settings.view :as mobile-network-settings]
             [status-im.ui.screens.home.sheet.views :as home.sheet]
             [status-im.ui.screens.routing.core :as routing]
-            [status-im.ui.screens.signing.views :as signing]))
+            [status-im.ui.screens.signing.views :as signing]
+            [status-im.utils.dimensions :as dimensions]
+            [status-im.constants :as constants]))
 
 (defonce rand-label (when js/goog.DEBUG (rand/id)))
 
@@ -48,9 +50,29 @@
 
       [bottom-sheet/bottom-sheet opts])))
 
+(defn dimensions-fit-two-pane? [dimensions]
+  (let [width (get dimensions :width)]
+    (>= width constants/two-pane-min-width)))
+
+(defn reset-component [view-id component two-pane?]
+  (when-not @initial-view-id
+    (reset! initial-view-id @view-id))
+  (when (and @initial-view-id
+             (or
+              js/goog.DEBUG
+              (not @component)))
+    (do
+      (reset! component (routing/get-main-component
+                         (if js/goog.DEBUG
+                           @initial-view-id
+                           @view-id)
+                         two-pane?)))))
+
 (defn main []
   (let [view-id        (re-frame/subscribe [:view-id])
-        main-component (atom nil)]
+        main-component (atom nil)
+        main-component-two-pane (atom nil)
+        two-pane? (reagent/atom (dimensions-fit-two-pane? (dimensions/window)))]
     (reagent/create-class
      {:component-did-mount
       (fn []
@@ -58,27 +80,17 @@
         (utils.universal-links/initialize))
       :component-will-mount
       (fn []
-        (when-not @initial-view-id
-          (reset! initial-view-id @view-id))
-        (when (and @initial-view-id
-                   (or
-                    js/goog.DEBUG
-                    (not @main-component)))
-          (reset! main-component (routing/get-main-component
-                                  (if js/goog.DEBUG
-                                    @initial-view-id
-                                    @view-id)))))
+        (.addEventListener (react/dimensions)
+                           "change"
+                           #(reset! two-pane? (dimensions-fit-two-pane? (:window (js->clj % :keywordize-keys true)))))
+        (reset-component view-id main-component false)
+        (reset-component view-id main-component-two-pane true))
       :component-will-unmount
       utils.universal-links/finalize
       :component-will-update
       (fn []
-        (when-not @initial-view-id
-          (reset! initial-view-id @view-id))
-        (when (and @initial-view-id (not @main-component))
-          (reset! main-component (routing/get-main-component
-                                  (if js/goog.DEBUG
-                                    @initial-view-id
-                                    @view-id))))
+        (reset-component view-id main-component false)
+        (reset-component view-id main-component-two-pane true)
         (when-not platform/desktop?
           (react/dismiss-keyboard!)))
       :component-did-update
@@ -88,7 +100,7 @@
       (fn []
         (when (and @view-id main-component)
           [react/view {:flex 1}
-           [:> @main-component
+           [:> (if @two-pane? @main-component-two-pane @main-component)
             {:ref            (fn [r]
                                (navigation/set-navigator-ref r)
                                (when (and

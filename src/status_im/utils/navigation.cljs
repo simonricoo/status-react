@@ -48,8 +48,7 @@
      @navigator-ref
      (.back navigation-actions))))
 
-
 (defonce TwoPaneNavigator (gobj/get js-dependencies/react-native-navigation-twopane #js ["createTwoPaneNavigator"]))
 
 (defn twopane-navigator [routeConfigs stackNavigatorConfig]
-      (TwoPaneNavigator (clj->js routeConfigs) (clj->js stackNavigatorConfig)))
+  (TwoPaneNavigator (clj->js routeConfigs) (clj->js stackNavigatorConfig)))

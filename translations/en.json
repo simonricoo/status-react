@@ -1073,5 +1073,6 @@
     "signing-phrase" : "Signing phrase",
     "network-fee" : "Network fee",
     "sign-with-password" : "Sign with password",
-    "signing-a-message" : "Signing a message"
+    "signing-a-message" : "Signing a message",
+    "select-chat" : "Select chat to start messaging"
 }

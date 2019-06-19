@@ -1,11 +1,15 @@
 (ns status-im.utils.dimensions
   (:require [re-frame.core :as re-frame]
-            [status-im.ui.components.react :as react]))
+            [status-im.ui.components.react :as react]
+            [taoensso.timbre :as log]))
+
+(declare window)
 
 (defn add-event-listener []
   (.addEventListener (react/dimensions)
                      "change"
-                     #(re-frame/dispatch [:update-window-dimensions %])))
+                     #(do
+                        (re-frame/dispatch [:update-window-dimensions %]))))
 
 (defn window
   ([]

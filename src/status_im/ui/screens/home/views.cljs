@@ -15,7 +15,8 @@
             [status-im.ui.components.bottom-bar.styles :as tabs.styles]
             [status-im.ui.screens.home.views.inner-item :as inner-item]
             [status-im.ui.components.common.common :as components.common]
-            [status-im.ui.components.list-selection :as list-selection])
+            [status-im.ui.components.list-selection :as list-selection]
+            [status-im.constants :as constants])
   (:require-macros [status-im.utils.views :as views]))
 
 (views/defview les-debug-info []
@@ -111,39 +112,44 @@
          [icons/icon :main-icons/add {:color :white}])]]]))
 
 (views/defview home [loading?]
-  (views/letsubs [{:keys [search-filter chats all-home-items]} [:home-items]]
+  (views/letsubs [{:keys [search-filter chats all-home-items]} [:home-items]
+                  window-width [:dimensions/window-width]]
+
     {:component-did-mount (fn [this]
                             (let [[_ loading?] (.. this -props -argv)]
                               (when loading? (utils/set-timeout #(re-frame/dispatch [:init-rest-of-chats]) 100))))}
-    [react/view {:flex 1}
-     [status-bar/status-bar {:type :main}]
-     [react/keyboard-avoiding-view {:style     {:flex 1
-                                                :align-items :center}
-                                    :on-layout (fn [e]
-                                                 (re-frame/dispatch
-                                                  [:set-once :content-layout-height
-                                                   (-> e .-nativeEvent .-layout .-height)]))}
-      [react/view {:style {:flex       1
-                           :align-self :stretch}}
-       [toolbar/toolbar nil nil [toolbar/content-title (i18n/label :t/chat)]]
-       [les-debug-info]
-       (cond loading?
-             [react/view {:style {:flex            1
-                                  :justify-content :center
-                                  :align-items     :center}}
-              [connectivity/connectivity-view]
-              [react/activity-indicator {:flex      1
-                                         :animating true}]]
+    (let [home-width (if (> window-width constants/two-pane-min-width)
+                       (max constants/left-pane-min-width (/ window-width 3))
+                       window-width)]
+      [react/view {:flex 1 :width home-width}
+       [status-bar/status-bar {:type :main}]
+       [react/keyboard-avoiding-view {:style     {:flex 1
+                                                  :align-items :center}
+                                      :on-layout (fn [e]
+                                                   (re-frame/dispatch
+                                                    [:set-once :content-layout-height
+                                                     (-> e .-nativeEvent .-layout .-height)]))}
+        [react/view {:style {:flex       1
+                             :align-self :stretch}}
+         [toolbar/toolbar nil nil [toolbar/content-title (i18n/label :t/chat)]]
+         [les-debug-info]
+         (cond loading?
+               [react/view {:style {:flex            1
+                                    :justify-content :center
+                                    :align-items     :center}}
+                [connectivity/connectivity-view]
+                [react/activity-indicator {:flex      1
+                                           :animating true}]]
 
-             :else
-             [react/view {:style {:flex 1}}
-              [connectivity/connectivity-view]
-              [filter.views/animated-search-input search-filter]
-              (if (and (not search-filter)
-                       (empty? all-home-items))
-                [home-empty-view]
-                [home-items-view search-filter chats all-home-items])])]
-      [home-action-button]]]))
+               :else
+               [react/view {:style {:flex 1}}
+                [connectivity/connectivity-view]
+                [filter.views/animated-search-input search-filter]
+                (if (and (not search-filter)
+                         (empty? all-home-items))
+                  [home-empty-view]
+                  [home-items-view search-filter chats all-home-items])])]
+        [home-action-button]]])))
 
 (views/defview home-wrapper []
   (views/letsubs [loading? [:chats/loading?]]
