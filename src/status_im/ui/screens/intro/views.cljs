@@ -12,12 +12,13 @@
             [status-im.utils.gfycat.core :as gfy]
             [status-im.ui.components.colors :as colors]
             [reagent.core :as r]
-            [status-im.ui.components.toolbar.actions :as actions]
             [status-im.ui.components.common.common :as components.common]
+            [status-im.ui.components.numpad.views :as numpad]
+            [status-im.ui.components.status-bar.view :as status-bar]
+            [status-im.ui.components.toolbar.actions :as actions]
             [status-im.ui.screens.intro.styles :as styles]
             [status-im.ui.components.toolbar.view :as toolbar]
-            [status-im.i18n :as i18n]
-            [status-im.ui.components.status-bar.view :as status-bar]))
+            [status-im.i18n :as i18n]))
 
 (defn dots-selector [{:keys [on-press n selected color]}]
   [react/view {:style (styles/dot-selector n)}
@@ -190,11 +191,31 @@
                        :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (.-key (.-nativeEvent %))])}]]
    [react/text {:style (assoc styles/wizard-text :margin-bottom 16)} (i18n/label :t/password-description)]])
 
-(defn create-code [{:keys [confirm-failure?] :as wizard-state}]
-  [password-container confirm-failure?])
+(defn numpad-container [key-code confirm-failure?]
+  (let [selected (into (hash-set) (range (count key-code)))]
+    [react/view {:style {:flex 1 :justify-content :flex-end}}
+     [react/view {:style {:margin-bottom 32 :align-items :center}}
+      (when confirm-failure?
+        [react/text {:style (assoc styles/wizard-text :color colors/red
+                                   :margin-bottom 16)}
+         (i18n/label :t/passcode-error)])
 
-(defn confirm-code [{:keys [confirm-failure?] :as wizard-state}]
-  [password-container confirm-failure?])
+      [dots-selector {:n 6 :selected selected :color colors/blue}]]
+     [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])
+                         :hide-dot? true}]
+     [react/text {:style (assoc styles/wizard-text
+                                :margin-top    8
+                                :margin-bottom 16)} (i18n/label :t/you-will-need-this-code)]]))
+
+(defn create-code [{:keys [key-code encrypt-with-password? confirm-failure?] :as wizard-state}]
+  (if encrypt-with-password?
+    [password-container confirm-failure?]
+    [numpad-container key-code confirm-failure?]))
+
+(defn confirm-code [{:keys [key-code encrypt-with-password? confirm-failure?] :as wizard-state}]
+  (if encrypt-with-password?
+    [password-container confirm-failure?]
+    [numpad-container key-code confirm-failure?]))
 
 (defn enable-fingerprint []
   [vector-icons/icon :main-icons/fingerprint

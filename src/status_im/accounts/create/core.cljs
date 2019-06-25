@@ -136,7 +136,7 @@
 (fx/defn intro-wizard
   {:events [:accounts.create.ui/intro-wizard]}
   [{:keys [db] :as cofx}]
-  (fx/merge {:db (assoc db :intro-wizard {:step :generate-key :encrypt-with-password? true})}
+  (fx/merge {:db (assoc db :intro-wizard {:step :generate-key :encrypt-with-password? false})}
             (navigation/navigate-to-cofx :intro-wizard nil)))
 
 (fx/defn intro-step-back
@@ -147,6 +147,8 @@
       (fx/merge {:db (cond-> (assoc-in db [:intro-wizard :step] (dec-step step))
                        (#{:create-code :confirm-code} step)
                        (assoc-in [:intro-wizard :key-code] nil)
+                       (= step :create-code)
+                       (assoc-in [:intro-wizard :encrypt-with-password?] false)
                        (= step :confirm-code)
                        (assoc-in [:intro-wizard :confirm-failure?] false))}
                 (navigation/navigate-to-cofx :intro-wizard nil))
@@ -197,6 +199,10 @@
           (= step :create-code)
           (store-key-code cofx)
 
+          (and (= step :confirm-code)
+               (get-in db [:intro-wizard :encrypt-with-password?])
+               (not= (get-in db [:intro-wizard :stored-key-code]) (get-in db [:intro-wizard :key-code])))
+          {:db (assoc-in db [:intro-wizard :confirm-failure?] true)}
           :else (fx/merge {:db (assoc-in db [:intro-wizard :step]
                                          (inc-step step))}
                           (when (and (= step :confirm-code)
@@ -274,7 +280,10 @@
 (fx/defn on-encrypt-with-password-pressed
   {:events [:intro-wizard/on-encrypt-with-password-pressed]}
   [{:keys [db] :as cofx}]
-  {:db (assoc-in db [:intro-wizard :encrypt-with-password?] true)})
+  {:db (update db :intro-wizard
+               assoc :encrypt-with-password? true
+               :step :create-code
+               :key-code nil :stored-key-code nil)})
 
 (fx/defn on-learn-more-pressed
   {:events [:intro-wizard/on-learn-more-pressed]}
@@ -286,7 +295,7 @@
         (subs current-code 0 (dec (count current-code)))
         (and (not encrypt-with-password?) (= (count current-code) 6))
         current-code
-        (= (count sym) 1)
+        (or (number? sym) (= (count sym) 1))
         (str current-code sym)
         :else current-code))
 
@@ -294,10 +303,22 @@
   {:events [:intro-wizard/code-symbol-pressed]}
   [{:keys [db] :as cofx} sym]
   (let [encrypt-with-password? (get-in db [:intro-wizard :encrypt-with-password?])
-        new-key-code (get-new-key-code (get-in db [:intro-wizard :key-code]) sym encrypt-with-password?)]
-    {:db (-> db
-             (assoc-in [:intro-wizard :key-code] new-key-code)
-             (assoc-in [:intro-wizard :confirm-failure?] false))}))
+        new-key-code (get-new-key-code (get-in db [:intro-wizard :key-code]) sym encrypt-with-password?)
+        stored-key-code (get-in db [:intro-wizard :stored-key-code])
+        step  (get-in db [:intro-wizard :step])
+        confirm-failure?  (and (= step :confirm-code)
+                               (not encrypt-with-password?)
+                               (= (count new-key-code) 6)
+                               (not= new-key-code stored-key-code))]
+    (when confirm-failure?
+      (utils/vibrate))
+    (fx/merge {:db (-> db
+                       (assoc-in [:intro-wizard :key-code] new-key-code)
+                       (assoc-in [:intro-wizard :confirm-failure?] confirm-failure?))}
+              (when (and (not encrypt-with-password?)
+                         (= (count new-key-code) 6)
+                         (not confirm-failure?))
+                (intro-step-forward {})))))
 
 ;;;; COFX
 
