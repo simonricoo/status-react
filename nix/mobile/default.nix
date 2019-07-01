@@ -11,7 +11,9 @@ let
   xcodeWrapper = composeXcodeWrapper xcodewrapperArgs;
   androidPlatform = callPackage ./android { inherit config pkgs target-os mkFilter nodejs maven localMavenRepoBuilder nodeProjectName developmentNodePackages projectNodePackage prod-build-fn; status-go = status-go.android; };
   iosPlatform = callPackage ./ios { inherit config pkgs mkFilter xcodeWrapper nodeProjectName developmentNodePackages projectNodePackage; status-go = status-go.ios; };
+  fastlane = callPackage ./fastlane { inherit stdenv target-os; };
   selectedSources = [
+      fastlane
       status-go.android
       status-go.ios
     ] ++
@@ -46,5 +48,5 @@ in
     ios = iosPlatform;
 
     # TARGETS
-    inherit prod-build;
+    inherit prod-build fastlane;
   }
