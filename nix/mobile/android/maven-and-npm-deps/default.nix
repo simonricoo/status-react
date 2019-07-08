@@ -40,7 +40,7 @@ let
                 root = path;
               };
           };
-        nativeBuildInputs = builtins.attrValues developmentNodePackages;
+        nativeBuildInputs = [ developmentNodePackages ];
         buildInputs = [ gradle bash file zlib mavenLocalRepo ];
         propagatedBuildInputs = [ react-native-deps ] ++ status-go.buildInputs;
         unpackPhase = ''
@@ -65,7 +65,10 @@ let
           # Copy fresh node_modules
           rm -rf ${projectDir}/node_modules
           mkdir -p ${projectDir}/node_modules
-          cp -a ${projectNodePackage}/lib/node_modules/${nodeProjectName}/node_modules ${projectDir}
+          cp -aL --copy-contents ${projectNodePackage}/libexec/${nodeProjectName}/node_modules/. ${projectDir}/node_modules/
+          chmod -R u+w ${projectDir}/node_modules
+          cp -aL --copy-contents ${projectNodePackage}/libexec/${nodeProjectName}/deps/${nodeProjectName}/node_modules/. ${projectDir}/node_modules/
+          chmod u+w ${projectDir}/node_modules
 
           # Adjust permissions
           chmod -R u+w ${projectDir}

@@ -13,7 +13,7 @@ let
   go = pkgs.callPackage ./go { inherit baseGo; };
   buildGoPackage = pkgs.buildGoPackage.override { inherit go; };
   desktop = pkgs.callPackage ./desktop { inherit target-os stdenv status-go pkgs nodejs; inherit (pkgs) darwin; go = baseGo; };
-  mobile = pkgs.callPackage ./mobile { inherit target-os config stdenv pkgs nodejs status-go maven localMavenRepoBuilder mkFilter prod-build-fn; inherit (pkgs.xcodeenv) composeXcodeWrapper; };
+  mobile = pkgs.callPackage ./mobile { inherit target-os config stdenv pkgs nodejs yarn status-go maven localMavenRepoBuilder mkFilter prod-build-fn; inherit (pkgs.xcodeenv) composeXcodeWrapper; };
   status-go = pkgs.callPackage ./status-go { inherit target-os go buildGoPackage; inherit (mobile.ios) xcodeWrapper; androidPkgs = mobile.android.androidComposition; };
   mkFilter = import ./tools/mkFilter.nix { inherit (stdenv) lib; };
   localMavenRepoBuilder = pkgs.callPackage ./tools/maven/maven-repo-builder.nix { inherit (pkgs) stdenv; };

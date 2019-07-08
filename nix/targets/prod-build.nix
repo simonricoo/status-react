@@ -43,7 +43,7 @@ in stdenv.mkDerivation {
         --replace ':pre-commit' ';; :pre-commit'
     '';
   buildPhase = ''
-    ln -s ${projectNodePackage}/lib/node_modules/`ls ${projectNodePackage}/lib/node_modules`/node_modules
+    ln -s ${projectNodePackage}/libexec/`ls ${projectNodePackage}/libexec`/node_modules
 
     # On macOS, lein tries to create $HOME/.lein, which fails with java.lang.Exception: Couldn't create directories: /homeless-shelter/.lein, so we just make it use a temp dir
     tmp=$(mktemp -d)

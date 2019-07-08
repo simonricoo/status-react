@@ -18,7 +18,7 @@ let
       # Copy fresh node_modules
       rm -rf ./node_modules
       mkdir -p ./node_modules
-      cp -a ${projectNodePackage}/lib/node_modules/${nodeProjectName}/node_modules .
+      cp -a ${projectNodePackage}/libexec/${nodeProjectName}/node_modules .
 
       # Adjust permissions
       chmod -R u+w .

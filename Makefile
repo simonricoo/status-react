@@ -69,11 +69,6 @@ clean-nix: SHELL := /bin/sh
 clean-nix: ##@nix Remove complete nix setup
 	sudo rm -rf /nix ~/.nix-profile ~/.nix-defexpr ~/.nix-channels ~/.cache/nix ~/.status .nix-gcroots
 
-update-npm-nix: SHELL := /bin/sh
-update-npm-nix: ##@nix Update node2nix expressions based on current package.json
-	nix/mobile/node2nix/generate-nix.sh
-	nix/desktop/realm-node/generate-nix.sh
-
 update-gradle-nix: SHELL := /bin/sh
 update-gradle-nix: ##@nix Update maven nix expressions based on current gradle setup
 	nix/mobile/android/maven-and-npm-deps/maven/generate-nix.sh

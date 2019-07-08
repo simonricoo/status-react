@@ -18,7 +18,10 @@ mkShell {
       rm -rf ./node_modules
     fi
 
-    cp -R ${projectNodePackage}/lib/node_modules/`ls ${projectNodePackage}/lib/node_modules`/node_modules . || exit
+    nodeProjectName=`ls ${projectNodePackage}/libexec`
+    cp -aL --copy-contents ${projectNodePackage}/libexec/$nodeProjectName/node_modules/. ./node_modules/
+    chmod -R u+w ./node_modules
+    cp -aL --copy-contents ${projectNodePackage}/libexec/$nodeProjectName/deps/$nodeProjectName/node_modules/. ./node_modules/
     chmod -R u+w ./node_modules/react-native
   '';
 }

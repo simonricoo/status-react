@@ -1,0 +1,9 @@
+{
+  "name": "mobile_development_env",
+  "version": "0.0.1",
+  "dependencies": {
+    "flow-bin": "^0.80.0",
+    "flow-copy-source": "^2.0.2",
+    "genversion": "^2.1.0"
+  }
+}
