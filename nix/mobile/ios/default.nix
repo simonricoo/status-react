@@ -1,6 +1,6 @@
 { config, stdenv, stdenvNoCC, callPackage,
   pkgs, xcodeWrapper, mkFilter, fetchurl, nodejs, bash, zlib, procps,
-  status-go, nodeProjectName, projectNodePackage, developmentNodePackages }:
+  status-go, nodeProjectName, projectNodePackage }:
 
 with stdenv;
 
@@ -20,7 +20,7 @@ let
         };
     };
 
-  npmDeps = callPackage ./npm-deps.nix { inherit stdenvNoCC bash zlib src nodeProjectName projectNodePackage developmentNodePackages status-go; };
+  npmDeps = callPackage ./npm-deps.nix { inherit stdenvNoCC bash zlib src nodeProjectName projectNodePackage status-go; };
 
   selectedSources = [ npmDeps status-go ];
 

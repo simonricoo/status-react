@@ -1,6 +1,6 @@
 { stdenv, stdenvNoCC, lib, callPackage,
   gradle, bash, file, status-go, zlib,
-  nodeProjectName, projectNodePackage, developmentNodePackages, androidEnvShellHook, localMavenRepoBuilder, mkFilter }:
+  nodeProjectName, projectNodePackage, androidEnvShellHook, localMavenRepoBuilder, mkFilter }:
 
 # This script prepares a finalized version of node_modules
 # (required because for Android we need to run `gradle react-native-android:installArchives`, which builds some additional native libraries
@@ -40,7 +40,7 @@ let
                 root = path;
               };
           };
-        nativeBuildInputs = [ developmentNodePackages ];
+        nativeBuildInputs = [ projectNodePackage ];
         buildInputs = [ gradle bash file zlib mavenLocalRepo ];
         propagatedBuildInputs = [ react-native-deps ] ++ status-go.buildInputs;
         unpackPhase = ''
@@ -79,6 +79,7 @@ let
           # Set up symlinks to mobile enviroment in project root 
           ln -sf ${projectDir}/mobile_files/package.json.orig ${projectDir}/package.json
           ln -sf ${projectDir}/mobile_files/metro.config.js ${projectDir}/metro.config.js
+          ln -sf ${projectDir}/mobile_files/yarn.lock ${projectDir}/yarn.lock
 
           # Create a dummy VERSION, since we don't want this expression to be invalidated just because the version changed
           echo '0.0.1' > ${projectDir}/VERSION
@@ -135,15 +136,6 @@ let
           # Do not add a BuildId to the generated libraries, for reproducibility
           substituteInPlace ${projectDir}/node_modules/react-native/ReactAndroid/src/main/jni/Application.mk \
             --replace '-Wl,--build-id' '-Wl,--build-id=none'
-
-          # HACK: Run what would get executed in the `prepare` script (though index.js.flow will be missing)
-          # Ideally we'd invoke `npm run prepare` instead, but that requires quite a few additional dependencies
-          ( cd ${projectDir}/node_modules/react-native-firebase && \
-            chmod u+w -R . && \
-            mkdir ./dist && \
-            genversion ./src/version.js && \
-            cp -R ./src/* ./dist && \
-            chmod u-w -R . )
 
           # Disable Gradle daemon and caching, since that causes rebuilds (and subsequently errors) anyway due to cache being considered stale
           substituteInPlace android/gradle.properties \

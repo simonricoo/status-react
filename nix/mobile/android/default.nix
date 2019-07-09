@@ -1,6 +1,6 @@
 { config, stdenv, stdenvNoCC, target-os, callPackage,
   pkgs, mkFilter, androidenv, fetchurl, openjdk, nodejs, bash, maven, zlib,
-  status-go, localMavenRepoBuilder, nodeProjectName, projectNodePackage, developmentNodePackages, prod-build-fn }:
+  status-go, localMavenRepoBuilder, nodeProjectName, projectNodePackage, prod-build-fn }:
 
 with stdenv;
 
@@ -9,7 +9,7 @@ let
 
   inherit (callPackage ./android-env.nix { }) androidComposition licensedAndroidEnv;
 
-  mavenAndNpmDeps = callPackage ./maven-and-npm-deps { inherit stdenv stdenvNoCC gradle bash zlib androidEnvShellHook localMavenRepoBuilder mkFilter nodeProjectName projectNodePackage developmentNodePackages status-go; };
+  mavenAndNpmDeps = callPackage ./maven-and-npm-deps { inherit stdenv stdenvNoCC gradle bash zlib androidEnvShellHook localMavenRepoBuilder mkFilter nodeProjectName projectNodePackage status-go; };
   gradle = pkgs.gradleGen.gradleGen rec {
     name = "gradle-5.1.1";
     nativeVersion = "0.14";

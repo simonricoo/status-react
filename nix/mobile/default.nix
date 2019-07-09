@@ -9,8 +9,8 @@ let
     version = "10.2.1";
   };
   xcodeWrapper = composeXcodeWrapper xcodewrapperArgs;
-  androidPlatform = callPackage ./android { inherit config pkgs target-os mkFilter nodejs maven localMavenRepoBuilder nodeProjectName developmentNodePackages projectNodePackage prod-build-fn; status-go = status-go.android; };
-  iosPlatform = callPackage ./ios { inherit config pkgs mkFilter xcodeWrapper nodeProjectName developmentNodePackages projectNodePackage; status-go = status-go.ios; };
+  androidPlatform = callPackage ./android { inherit config pkgs target-os mkFilter nodejs maven localMavenRepoBuilder nodeProjectName projectNodePackage prod-build-fn; status-go = status-go.android; };
+  iosPlatform = callPackage ./ios { inherit config pkgs mkFilter xcodeWrapper nodeProjectName projectNodePackage; status-go = status-go.ios; };
   fastlane = callPackage ./fastlane { inherit stdenv target-os; };
   selectedSources = [
       fastlane
@@ -27,13 +27,6 @@ let
     sha256 = "0h2kzdfiw43rbiiffpqq9lkhvdv8mgzz2w29pzrxgv8d39x67vr9";
     name = "yarn2nix-source";
   }) { inherit pkgs nodejs yarn; };
-  developmentNodePackages = yarn2nix.mkYarnPackage {
-    name = nodeProjectName;
-    src = ./yarn2nix/development/.;
-    packageJSON = ./yarn2nix/development/package.json;
-    yarnLock = ./yarn2nix/development/yarn.lock;
-    publishBinsFor = [ "genversion" ];
-  };
   projectNodePackage = yarn2nix.mkYarnPackage {
     name = nodeProjectName;
     src = ../../mobile_files/.;

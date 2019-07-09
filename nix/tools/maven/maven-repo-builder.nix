@@ -27,20 +27,20 @@ let
     in
       ''
         mkdir -p ${directory}
-      '' +
-      (lib.optionalString (pom-download != "") ''
-        cp "${pom-download}" "${dep.path}.pom"
-      '') +
-      (lib.optionalString (pom.sha1 != "") ''
+
+        ${lib.optionalString (pom-download != "") ''
+        cp -f "${pom-download}" "${dep.path}.pom"
+        ''}
+        ${lib.optionalString (pom.sha1 != "") ''
         echo "${pom.sha1}" > "${dep.path}.pom.sha1"
-      '') +
-      (lib.optionalString (jar-download != "") ''
-        cp "${jar-download}" "${dep.path}.${dep.type}"
-      '') +
-      (lib.optionalString (jar.sha1 != "") ''
+        ''}
+        ${lib.optionalString (jar-download != "") ''
+        cp -f "${jar-download}" "${dep.path}.${dep.type}"
+        ''}
+        ${lib.optionalString (jar.sha1 != "") ''
         echo "${jar.sha1}" > "${dep.path}.${dep.type}.sha1"
-      '') +
-      ''
+        ''}
+        
         ${if dep.postCopy != "" then ''
           depPath="$PWD/${dep.path}"
           ${dep.postCopy}

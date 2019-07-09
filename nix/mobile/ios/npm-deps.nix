@@ -1,12 +1,11 @@
 { stdenvNoCC,
   bash, status-go, zlib,
-  src, nodeProjectName, projectNodePackage, developmentNodePackages }:
+  src, nodeProjectName, projectNodePackage }:
 
 let
   deps = stdenvNoCC.mkDerivation {
     name = "patched-npm-modules";
     inherit src;
-    nativeBuildInputs = builtins.attrValues developmentNodePackages;
     buildInputs = [ bash zlib ] ++ status-go.buildInputs;
     buildPhases = [ "unpackPhase" "patchPhase" "installPhase" ];
     unpackPhase = ''
@@ -33,15 +32,7 @@ let
       # Set up symlinks to mobile enviroment in project root 
       ln -sf ./mobile_files/package.json.orig package.json
       ln -sf ./mobile_files/metro.config.js
-
-      # HACK: Run what would get executed in the `prepare` script (though index.js.flow will be missing)
-      # Ideally we'd invoke `npm run prepare` instead, but that requires quite a few additional dependencies
-      (cd ./node_modules/react-native-firebase && \
-       chmod u+w -R . && \
-       mkdir ./dist && \
-       genversion ./src/version.js && \
-       cp -R ./src/* ./dist && \
-       chmod u-w -R .) || exit
+      ln -sf ./mobile_files/yarn.lock
 
       runHook postPatch
     '';
@@ -66,6 +57,7 @@ in {
   shellHook = ''
     ln -sf $STATUS_REACT_HOME/mobile_files/package.json.orig $STATUS_REACT_HOME/package.json
     ln -sf $STATUS_REACT_HOME/mobile_files/metro.config.js $STATUS_REACT_HOME/metro.config.js
+    ln -sf $STATUS_REACT_HOME/mobile_files/yarn.lock $STATUS_REACT_HOME/yarn.lock
 
     export PATH="$STATUS_REACT_HOME/node_modules/.bin:$PATH"
   '';
