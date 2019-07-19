@@ -128,7 +128,8 @@
                                    :MaxMessageDeliveryAttempts config/max-message-delivery-attempts
                                    :MailServerConfirmations    config/mailserver-confirmations-enabled?
                                    :PFSEnabled              true}
-             :RequireTopics           (get-topics network))
+             :RequireTopics           (get-topics network)
+             :StatusAccountsConfig {:Enabled true})
 
       (and
        config/bootnodes-settings-enabled?
