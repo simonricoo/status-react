@@ -9,19 +9,15 @@
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.fx :as fx]
-            [status-im.utils.multihash :as multihash]
             [status-im.utils.utils :as utils]
-            [status-im.signing.core :as signing]))
+            [status-im.signing.core :as signing]
+            [status-im.utils.contenthash :as contenthash]))
 
 (defn pack-data-callback
   [id open?]
   (fn [[category owner mintable timestamp price contenthash]]
-    (let [proto-code (subs contenthash 2 4)
-          hash       (when contenthash
-                       (multihash/base58 (multihash/create :sha2-256 (subs contenthash 12))))]
-      (when (and (#{constants/swarm-proto-code constants/ipfs-proto-code}
-                  proto-code) hash)
-        (re-frame/dispatch [:stickers/load-pack proto-code hash id price open?])))))
+    (when-let [url (contenthash/url contenthash)]
+      (re-frame/dispatch [:stickers/load-pack url id price open?]))))
 
 (re-frame/reg-fx
  :stickers/set-pending-timout-fx
@@ -134,11 +130,8 @@
           {:stickers/pack-data-fx [contract-address id]})))))
 
 (fx/defn load-pack
-  [cofx proto-code hash id price open?]
-  {:http-get {:url (str (if (= constants/swarm-proto-code proto-code)
-                          "https://swarm-gateways.net/bzz:/"
-                          "https://ipfs.infura.io/ipfs/")
-                        hash)
+  [cofx url id price open?]
+  {:http-get {:url url
               :success-event-creator
               (fn [o]
                 [:stickers/load-sticker-pack-success o id price open?])}})
