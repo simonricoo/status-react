@@ -49,7 +49,7 @@ let
   };
   currentHostConfig = if stdenv.isDarwin then hostConfigs.darwin else hostConfigs.linux;
 
-  goBuildFlags = "-v";
+  goBuildFlags = "-v -x";
   # TODO: Manage to pass "-s -w" to -ldflags. Seems to only accept a single flag
   goBuildLdFlags = "-ldflags=-s";
 
