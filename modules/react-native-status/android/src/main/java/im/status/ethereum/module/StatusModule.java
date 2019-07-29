@@ -689,7 +689,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                String res = Statusgo.MultiAccountStoreDerivedAccounts(json);
+                String res = Statusgo.multiAccountStoreDerivedAccounts(json);
 
                 callback.invoke(res);
             }
