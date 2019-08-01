@@ -117,12 +117,10 @@
 (fx/defn recover-multiaccount
   [{:keys [db random-guid-generator] :as cofx}]
   (let [{:keys [password passphrase]} (:multiaccounts/recover db)]
-    (fx/merge cofx
-              {:db (-> db
-                       (assoc-in [:multiaccounts/recover :processing?] true)
-                       (assoc :multiaccounts/new-installation-id (random-guid-generator)))
-               :multiaccounts.recover/recover-multiaccount
-               [(security/mask-data passphrase) password]})))
+    {:db (-> db
+             (assoc-in [:multiaccounts/recover :processing?] true)
+             (assoc :multiaccounts/new-installation-id (random-guid-generator)))
+     :multiaccounts.recover/recover-multiaccount [(security/mask-data passphrase) password]}))
 
 (fx/defn recover-multiaccount-with-checks [{:keys [db] :as cofx}]
   (let [{:keys [passphrase processing?]} (:multiaccounts/recover db)]
@@ -195,20 +193,18 @@
              :dispatch [:bottom-sheet/hide-sheet]}
             (navigation/navigate-to-cofx :recover-multiaccount-enter-phrase nil)))
 
-(fx/defn prepare-to-recover
-  [{:keys [db random-guid-generator] :as cofx}]
-  (fx/merge cofx
-            {:db (-> db
-                     (assoc :node/on-ready :import-mnemonic)
-                     (assoc :multiaccounts/new-installation-id (random-guid-generator)))}
-            (node/initialize nil)))
-
 (fx/defn import-mnemonic
   [{:keys [db]}]
   (let [{:keys [password passphrase]} (:multiaccounts/recover db)]
     {:multiaccounts.recover/import-mnemonic
      {:passphrase passphrase
       :password   password}}))
+
+(fx/defn prepare-to-recover
+  [{:keys [db random-guid-generator] :as cofx}]
+  (fx/merge cofx
+            {:db (assoc db :multiaccounts/new-installation-id (random-guid-generator))}
+            (import-mnemonic)))
 
 (fx/defn proceed-to-import-mnemonic
   [{:keys [db] :as cofx}]

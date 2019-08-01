@@ -211,7 +211,7 @@
 
 (fx/defn update-prices
   [{{:keys [network-status :wallet/all-tokens]
-     {:keys [address settings]} :multiaccount :as db} :db}]
+     {:keys [address chaos-mode? settings]} :multiaccount :as db} :db}]
   (let [chain       (ethereum/chain-keyword db)
         mainnet?    (= :mainnet chain)
         assets      (get-in settings [:wallet :visible-tokens chain])
@@ -228,7 +228,7 @@
         :mainnet?      mainnet?
         :success-event :wallet.callback/update-prices-success
         :error-event   :wallet.callback/update-prices-fail
-        :chaos-mode?   (:chaos-mode? settings)}
+        :chaos-mode?   chaos-mode?}
 
        :db
        (-> db

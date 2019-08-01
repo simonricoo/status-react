@@ -228,6 +228,7 @@ var TopLevel = {
     "log" : function () {},
     "login" : function () {},
     "loginWithKeycard" : function () {},
+    "logout" : function () {},
     "loop" : function () {},
     "lt" : function () {},
     "mail" : function () {},
@@ -339,6 +340,7 @@ var TopLevel = {
     "onNotification" : function () {},
     "onNotificationOpened" : function () {},
     "onTokenRefresh" : function () {},
+    "openAccounts" : function () {},
     "openNfcSettings" : function () {},
     "openPicker" : function () {},
     "openURL" : function () {},
@@ -405,6 +407,7 @@ var TopLevel = {
     "round" : function () {},
     "routeName" : function () {},
     "routes" : function () {},
+    "saveAccountAndLogin" : function () {},
     "schemaVersion" : function () {},
     "scrollTo" : function () {},
     "scrollToEnd" : function () {},
@@ -570,5 +573,5 @@ var TopLevel = {
     "multiAccountReset" : function () {},
     "multiAccountLoadAccount" : function () {},
     "multiAccountStoreAccount" : function () {},
-    "multiAccountImportMnemonic" : function () {},
+    "multiAccountImportMnemonic" : function () {}
 }
