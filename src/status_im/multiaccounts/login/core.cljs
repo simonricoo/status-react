@@ -9,11 +9,9 @@
             [status-im.ethereum.core :as ethereum]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.ethereum.transactions.core :as transactions]
-            [status-im.extensions.module :as extensions.module]
             [status-im.fleet.core :as fleet]
             [status-im.i18n :as i18n]
             [status-im.mailserver.core :as mailserver]
-            [status-im.models.dev-server :as models.dev-server]
             [status-im.multiaccounts.model :as multiaccounts.model]
             [status-im.native-module.core :as status]
             [status-im.constants :as constants]
@@ -168,6 +166,8 @@
               (when save-password?
                 (save-user-password address password))
               (navigation/navigate-to-cofx :home nil)
+              #_(notifications/process-stored-event address stored-pns)
+              (stickers/init-stickers-packs)
               (chat.loading/initialize-chats {:to -1})
               (contact/initialize-contacts)
               (universal-links/process-stored-event)

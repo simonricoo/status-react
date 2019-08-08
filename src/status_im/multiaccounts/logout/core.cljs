@@ -13,7 +13,6 @@
   (fx/merge cofx
             {::logout nil
              :keychain/clear-user-password (get-in db [:multiaccount :address])
-             :dev-server/stop nil
              ::init/open-multiaccounts #(re-frame/dispatch [::init/initialize-multiaccounts %])}
             (transport/stop-whisper)
             (chaos-mode/stop-checking)
