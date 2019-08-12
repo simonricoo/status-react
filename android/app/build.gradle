@@ -2,6 +2,7 @@ apply plugin: "com.android.application"
 
 if (project.gradle.startParameter.taskNames != ["clean"]) {
   apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+  apply from: project(':react-native-config').projectDir.getPath() + "/react.gradle"
 }
 
 import com.android.build.OutputFile
@@ -89,8 +90,6 @@ project.ext.react = [
 configurations.all {
     exclude group: 'com.facebook.react', module: 'react-native'
 }
-
-apply from: "../../node_modules/react-native/react.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
