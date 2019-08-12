@@ -1,10 +1,5 @@
 apply plugin: "com.android.application"
 
-if (project.gradle.startParameter.taskNames != ["clean"]) {
-  apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
-  apply from: project(':react-native-config').projectDir.getPath() + "/react.gradle"
-}
-
 import com.android.build.OutputFile
 import com.sun.org.apache.xalan.internal.xsltc.compiler.Copy
 
@@ -89,6 +84,11 @@ project.ext.react = [
 
 configurations.all {
     exclude group: 'com.facebook.react', module: 'react-native'
+}
+
+if (project.gradle.startParameter.taskNames != ["clean"]) {
+  apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+  apply from: project(':react-native-config').projectDir.getPath() + "/react.gradle"
 }
 
 /**
