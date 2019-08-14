@@ -24,7 +24,6 @@ def bundle() {
   sh 'mkdir -p status-e2e'
   /* build the actual app */
   withCredentials([
-    string(credentialsId: "slave-pass-${env.NODE_NAME}", variable: 'KEYCHAIN_PASSWORD'),
     string(credentialsId: 'fastlane-match-password', variable: 'MATCH_PASSWORD'),
     usernamePassword(
       credentialsId:  'fastlane-match-apple-id',
@@ -35,8 +34,7 @@ def bundle() {
     nix.shell(
       "bundle exec --gemfile=fastlane/Gemfile fastlane ios ${target}",
       keep: [
-        'FASTLANE_DISABLE_COLORS',
-        'FASTLANE_PASSWORD', 'KEYCHAIN_PASSWORD',
+        'FASTLANE_DISABLE_COLORS', 'FASTLANE_PASSWORD', 
         'MATCH_PASSWORD', 'FASTLANE_APPLE_ID',
       ]
     )

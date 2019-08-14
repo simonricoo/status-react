@@ -11,15 +11,43 @@
 # There are a few env variables defined in the .env file in
 # this directory (fastlane/.env)
 
+# helper for proper teradown of resource
+def with(ctx)
+    yield ctx.setup
+ensure
+    ctx.teardown
+end
 
-# unlocks keychain if KEYCHAIN_PASSWORD variable is present
-# (to be used on CI machines)
-def unlock_keychain_if_needed
-    if ENV["KEYCHAIN_PASSWORD"]
-        unlock_keychain(
-            path:"login.keychain",
-            password:ENV["KEYCHAIN_PASSWORD"],
-            set_default: true)
+# This is a helper for match and signing to avoid having to
+# approve of the keychain access through the UI dialog.
+# Details: https://github.com/status-im/status-react/issues/8745
+class Keychain
+    attr_accessor :name, :pass
+    @@pass = "temppassword"
+
+    def initialize(name)
+        # We use epoch time to void clashes with CI builds
+        @name = "#{name}_#{Time.now.to_f}.keychain-db"
+        @path = "~/Library/Keychains/#{@name}"
+        Fastlane::Actions::CreateKeychainAction.run(
+            name: @name,
+            password: @@pass,
+            timeout: false,
+        )
+    end
+
+    # for use in with()
+    def setup
+        self
+    end
+
+    def teardown
+        if not File.exist? File.expand_path(@path)
+            raise "Keychain file missing: #{@path}"
+        end
+        Fastlane::Actions::DeleteKeychainAction.run(
+            name: @name
+        )
     end
 end
 
@@ -89,26 +117,30 @@ end
 #    if true  - only fetch existing certificates and profiles, don't upgrade from AppStoreConnect
 #    if false - read list of devices from AppStoreConnect, and upgrade the provisioning profiles from it
 def build_ios_adhoc(readonly)
-    match(
-        type: "adhoc",
-        force_for_new_devices: true,
-        readonly: readonly,
-        keychain_name: "login.keychain"
-    )
+    with Keychain.new('adhoc') do |kc|
+        match(
+            type: "adhoc",
+            verbose: true,
+            force_for_new_devices: true,
+            readonly: readonly,
+            keychain_name: kc.name,
+            keychain_password: kc.pass,
+        )
 
-    build_ios_app(
-        scheme: "StatusIm",
-        workspace: "ios/StatusIm.xcworkspace",
-        configuration: "Release",
-        clean: true,
-        export_method: "ad-hoc",
-        # Temporary fix for Xcode 10.1
-        xcargs: "-UseModernBuildSystem=N",
-        output_directory: "status-adhoc",
-        export_options: {
-            "UseModernBuildSystem": "N"
-        }
-    )
+        build_ios_app(
+            scheme: "StatusIm",
+            workspace: "ios/StatusIm.xcworkspace",
+            configuration: "Release",
+            clean: true,
+            export_method: "ad-hoc",
+            # Temporary fix for Xcode 10.1
+            xcargs: "-UseModernBuildSystem=N",
+            output_directory: "status-adhoc",
+            export_options: {
+                "UseModernBuildSystem": "N"
+            }
+        )
+    end
 end
 
 # builds an ios app with e2e configuration and put it
@@ -119,39 +151,42 @@ def build_ios_e2e
     showsdks_output = sh('xcodebuild', '-showsdks')
     simulator_sdk = showsdks_output.scan(/iphonesimulator\d\d?\.\d\d?/).first
 
-    match(
-        type: "adhoc",
-        force_for_new_devices: true,
-        readonly: true,
-        keychain_name: "login.keychain"
-    )
+    with Keychain.new('e2e') do |kc|
+        match(
+            type: 'adhoc',
+            force_for_new_devices: true,
+            readonly: true,
+            verbose: true,
+            keychain_name: kc.name,
+            keychain_password: kc.pass,
+        )
 
-
-    build_ios_app(
-        # Creating a build for the iOS Simulator
-        # 1. https://medium.com/rocket-fuel/fastlane-to-the-simulator-87549b2601b9
-        sdk: simulator_sdk,
-        destination: "generic/platform=iOS Simulator",
-        # 2. fixing compilations issues as stated in https://stackoverflow.com/a/20505258
-        #    it looks like i386 isn't supported by React Native
-        # UseModernBuildSystem: Temporary fix for Xcode 10.1
-        xcargs: "ARCHS=\"x86_64\" ONLY_ACTIVE_ARCH=NO -UseModernBuildSystem=N",
-        # 3. directory where to up StatusIm.app
-        derived_data_path: "status-e2e",
-        output_name: "StatusIm.app",
-        # -------------------------------------
-        # Normal stuff
-        scheme: "StatusIm",
-        workspace: "ios/StatusIm.xcworkspace",
-        configuration: "Release",
-        # Simulator apps can't be archived...
-        skip_archive: true,
-        # ...and we don't need an .ipa file for them, because we use .app directly
-        skip_package_ipa: true,
-        export_options: {
-            "UseModernBuildSystem": "N"
-        }
-    )
+        build_ios_app(
+            # Creating a build for the iOS Simulator
+            # 1. https://medium.com/rocket-fuel/fastlane-to-the-simulator-87549b2601b9
+            sdk: simulator_sdk,
+            destination: "generic/platform=iOS Simulator",
+            # 2. fixing compilations issues as stated in https://stackoverflow.com/a/20505258
+            #    it looks like i386 isn't supported by React Native
+            # UseModernBuildSystem: Temporary fix for Xcode 10.1
+            xcargs: "ARCHS=\"x86_64\" ONLY_ACTIVE_ARCH=NO -UseModernBuildSystem=N",
+            # 3. directory where to up StatusIm.app
+            derived_data_path: "status-e2e",
+            output_name: "StatusIm.app",
+            # -------------------------------------
+            # Normal stuff
+            scheme: "StatusIm",
+            workspace: "ios/StatusIm.xcworkspace",
+            configuration: "Release",
+            # Simulator apps can't be archived...
+            skip_archive: true,
+            # ...and we don't need an .ipa file for them, because we use .app directly
+            skip_package_ipa: true,
+            export_options: {
+                "UseModernBuildSystem": "N"
+            }
+        )
+    end
 
     zip(
         path: "status-e2e/Build/Products/Release-iphonesimulator/StatusIm.app",
@@ -177,7 +212,6 @@ platform :ios do
   desc "It creates an .ipa that can be used by a list of devices, registeded in the App Store Connect."
   desc "This .ipa is ready to be distibuted through diawi.com"
   lane :adhoc do
-    unlock_keychain_if_needed
     build_ios_adhoc(true)
   end
 
@@ -185,49 +219,51 @@ platform :ios do
   desc "This lane is used for SauceLabs end-to-end testing."
   desc "It creates an .app that can be used inside of a iPhone simulator."
   lane :e2e do
-    unlock_keychain_if_needed
     build_ios_e2e
   end
 
   desc "`fastlane ios pr` - makes a new pr build"
   desc "This lane builds a new adhoc build and leaves an .ipa that is ad-hoc signed (can be uploaded to diawi)"
   lane :pr do
-    unlock_keychain_if_needed
     build_ios_adhoc(false)
   end
 
   desc "`fastlane ios nightly` - makes a new nightly"
   desc "This lane builds a new nightly and leaves an .ipa that is ad-hoc signed (can be uploaded to diawi)"
   lane :nightly do
-    unlock_keychain_if_needed
     build_ios_adhoc(false)
   end
 
   desc "`fastlane ios release` builds a release & uploads it to TestFlight"
   lane :release do
-    match(
-        type: "appstore",
-        readonly: true,
-        keychain_name: "login.keychain"
-    )
+    with Keychain.new('release') do |kc|
+        match(
+            type: 'appstore',
+            readonly: true,
+            verbose: true,
+            keychain_name: kc.name,
+            keychain_password: kc.pass,
+        )
 
-    build_ios_app(
-        scheme: "StatusIm",
-        workspace: "ios/StatusIm.xcworkspace",
-        configuration: "Release",
-        clean: true,
-        export_method: "app-store",
-        output_directory: "status_appstore",
-        include_symbols: false,
-        # Temporary fix for Xcode 10.1
-        xcargs: "-UseModernBuildSystem=N",
-        export_options: {
-            "UseModernBuildSystem": "N",
-            "combileBitcode": true,
-            "uploadBitcode": false,
-            "ITSAppUsesNonExemptEncryption": false
-        }
-    )
+        build_ios_app(
+            scheme: "StatusIm",
+            workspace: "ios/StatusIm.xcworkspace",
+            configuration: "Release",
+            clean: true,
+            export_method: "app-store",
+            output_directory: "status_appstore",
+            include_symbols: false,
+            # Temporary fix for Xcode 10.1
+            xcargs: "-UseModernBuildSystem=N",
+            export_options: {
+                "UseModernBuildSystem": "N",
+                "combileBitcode": true,
+                "uploadBitcode": false,
+                "ITSAppUsesNonExemptEncryption": false
+            }
+        )
+    end
+
     upload_to_testflight(
         ipa: "status_appstore/StatusIm.ipa"
     )
