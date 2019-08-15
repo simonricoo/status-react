@@ -184,7 +184,9 @@
                                             :processing   true}
                       :multiaccount new-multiaccount))]
     (fx/merge cofx
-              {:db db
+              {:db (cond-> db
+                     seed-backed-up?
+                     (assoc-in [:multiaccount :seed-backed-up?] true))
                ::save-account-and-login [(types/clj->json account-data)
                                          password
                                          (node/get-new-config db address)]}
