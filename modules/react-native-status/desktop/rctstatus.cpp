@@ -134,10 +134,10 @@ void RCTStatus::stopNode() {
 }
 
 void RCTStatus::initKeystore() {
-  qCInfo(RCTSTATUS) << "::initKeystore call";
-  QString rootDirPath = getDataStoragePath();
-  const char* result = "";//InitKeystore(rootDirPath);
-  logStatusGoResult("::initKeystore InitKeystore", result);
+    qCInfo(RCTSTATUS) << "::initKeystore call";
+    QString rootDir = getDataStoragePath();
+    const char* result = InitKeystore(rootDir.toUtf8().data());
+    logStatusGoResult("::initKeystore InitKeystore", result);
 }
 
 void RCTStatus::createAccount(QString password, double callbackId) {
@@ -276,15 +276,15 @@ void RCTStatus::recoverAccount(QString passphrase, QString password, double call
 }
 
 
-void RCTStatus::saveAccountAndLogin(QString accountData, QString password, QString config, double callbackId) {
+void RCTStatus::saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData, double callbackId) {
 
     Q_D(RCTStatus);
     QString finalConfig = prepareDirAndUpdateConfig(config);
-    QtConcurrent::run([&](QString accountData, QString password, QString finalConfig, double callbackId) {
-        const char* result = SaveAccountAndLogin(accountData.toUtf8().data(), password.toUtf8().data(), finalConfig.toUtf8().data());
+    QtConcurrent::run([&](QString accountData, QString password, QString finalConfig, QString subAccountsData, double callbackId) {
+        const char* result = SaveAccountAndLogin(accountData.toUtf8().data(), password.toUtf8().data(), finalConfig.toUtf8().data(), subAccountsData.toUtf8().data());
         logStatusGoResult("::saveAccountAndLogin", result);
         d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
-        }, accountData, password, finalConfig, callbackId);
+        }, accountData, password, finalConfig, subAccountsData, callbackId);
 
 
 }
@@ -309,6 +309,18 @@ void RCTStatus::logout(double callbackId) {
         }, callbackId);
 
 }
+
+void RCTStatus::openAccounts(double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](double callbackId) {
+        QString rootDir = getDataStoragePath();
+        const char* result = OpenAccounts(rootDir.toUtf8().data());
+        logStatusGoResult("::openAccounts", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, callbackId);
+
+}
+
 
 void RCTStatus::multiAccountStoreAccount(QString json, double callbackId) {
     Q_D(RCTStatus);
