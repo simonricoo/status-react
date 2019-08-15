@@ -78,8 +78,7 @@ void RCTStatus::getDeviceUUID(double callbackId) {
   d->bridge->invokePromiseCallback(callbackId, QVariantList{"com.status.StatusIm"});
 }
 
-
-void RCTStatus::startNode(QString configString) {
+QString RCTStatus::prepareDirAndUpdateConfig(QString configString) {
     Q_D(RCTStatus);
     qCDebug(RCTSTATUS) << "::startNode call - configString:" << configString;
 
@@ -117,7 +116,13 @@ void RCTStatus::startNode(QString configString) {
 
     const QJsonDocument& updatedJsonDoc = QJsonDocument::fromVariant(configJSON);
     qCInfo(RCTSTATUS) << "::startNode updated configString: " << updatedJsonDoc.toVariant().toMap();
-    const char* result = StartNode(QString(updatedJsonDoc.toJson(QJsonDocument::Compact)).toUtf8().data());
+    return QString(updatedJsonDoc.toJson(QJsonDocument::Compact));
+}
+
+void RCTStatus::startNode(QString configString) {
+    Q_D(RCTStatus);
+    QString updatedConfig = prepareDirAndUpdateConfig(configString);
+    const char* result = StartNode(updatedConfig.toUtf8().data());
     logStatusGoResult("::startNode StartNode", result);
 }
 
@@ -129,9 +134,9 @@ void RCTStatus::stopNode() {
 }
 
 void RCTStatus::initKeystore() {
-  aCInfo(RCTSTATUS) << "::initKeystore call";
+  qCInfo(RCTSTATUS) << "::initKeystore call";
   QString rootDirPath = getDataStoragePath();
-  const char* result = initKeystore(rootDirPath);
+  const char* result = "";//InitKeystore(rootDirPath);
   logStatusGoResult("::initKeystore InitKeystore", result);
 }
 
@@ -271,14 +276,47 @@ void RCTStatus::recoverAccount(QString passphrase, QString password, double call
 }
 
 
-void RCTStatus::login(QString address, QString password, double callbackId) {
+void RCTStatus::saveAccountAndLogin(QString accountData, QString password, QString config, double callbackId) {
+
     Q_D(RCTStatus);
-    qCInfo(RCTSTATUS) << "::login call - callbackId:" << callbackId;
-    QtConcurrent::run([&](QString address, QString password, double callbackId) {
-            const char* result = Login(address.toUtf8().data(), password.toUtf8().data());
-            logStatusGoResult("::login Login", result);
-            d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
-        }, address, password, callbackId);
+    QString finalConfig = prepareDirAndUpdateConfig(config);
+    QtConcurrent::run([&](QString accountData, QString password, QString finalConfig, double callbackId) {
+        const char* result = SaveAccountAndLogin(accountData.toUtf8().data(), password.toUtf8().data(), finalConfig.toUtf8().data());
+        logStatusGoResult("::saveAccountAndLogin", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, accountData, password, finalConfig, callbackId);
+
+
+}
+
+void RCTStatus::login(QString accountData, QString password, double callbackId) {
+
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString accountData, QString password, double callbackId) {
+        const char* result = Login(accountData.toUtf8().data(), password.toUtf8().data());
+        logStatusGoResult("::login", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, accountData, password, callbackId);
+
+}
+
+void RCTStatus::logout(double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](double callbackId) {
+        const char* result = Logout();
+        logStatusGoResult("::logout", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, callbackId);
+
+}
+
+void RCTStatus::multiAccountStoreAccount(QString json, double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString json, double callbackId) {
+        const char* result = MultiAccountStoreAccount(json.toUtf8().data());
+        logStatusGoResult("::multiAccountStoreAccount", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, json, callbackId);
 }
 
 void RCTStatus::verify(QString address, QString password, double callbackId) {
