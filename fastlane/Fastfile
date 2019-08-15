@@ -33,6 +33,8 @@ class Keychain
             name: @name,
             password: @@pass,
             timeout: false,
+            # to import WWDR into it
+            default_keychain: true,
         )
     end
 
@@ -137,7 +139,8 @@ def build_ios_adhoc(readonly)
             xcargs: "-UseModernBuildSystem=N",
             output_directory: "status-adhoc",
             export_options: {
-                "UseModernBuildSystem": "N"
+                "UseModernBuildSystem": "N",
+                "signingStyle": "manual",
             }
         )
     end
@@ -183,7 +186,8 @@ def build_ios_e2e
             # ...and we don't need an .ipa file for them, because we use .app directly
             skip_package_ipa: true,
             export_options: {
-                "UseModernBuildSystem": "N"
+                "UseModernBuildSystem": "N",
+                "signingStyle": "manual",
             }
         )
     end
@@ -259,6 +263,7 @@ platform :ios do
                 "UseModernBuildSystem": "N",
                 "combileBitcode": true,
                 "uploadBitcode": false,
+                "signingStyle": "manual",
                 "ITSAppUsesNonExemptEncryption": false
             }
         )
