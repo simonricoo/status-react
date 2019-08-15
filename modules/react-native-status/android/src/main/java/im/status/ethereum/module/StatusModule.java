@@ -269,10 +269,10 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
 
     @ReactMethod
-    public void saveAccountAndLogin(final String accountData, final String password , final String config) {
+    public void saveAccountAndLogin(final String accountData, final String password , final String config, final String subAccountsData) {
         Log.d(TAG, "saveAccountAndLogin");
         String finalConfig = prepareDirAndUpdateConfig(config);
-        String result = Statusgo.saveAccountAndLogin(accountData, password, finalConfig);
+        String result = Statusgo.saveAccountAndLogin(accountData, password, finalConfig, subAccountsData);
         if (result.startsWith("{\"error\":\"\"")) {
             Log.d(TAG, "StartNode result: " + result);
             Log.d(TAG, "Geth node started");

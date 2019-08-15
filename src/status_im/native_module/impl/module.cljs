@@ -22,9 +22,9 @@
   (.openAccounts (status) #(callback (types/json->clj %))))
 
 (defn save-account-and-login
-  [account-data password config]
+  [account-data password config subaccounts-data]
   (clear-web-data)
-  (.saveAccountAndLogin (status) account-data password config))
+  (.saveAccountAndLogin (status) account-data password config subaccounts-data))
 
 (defn login
   [account-data password]
@@ -108,14 +108,6 @@
   (when (status)
     (.multiAccountReset (status)
                         on-result)))
-
-(defn multiaccount-store-account
-  [account-id password on-result]
-  (.multiAccountStoreAccount (status)
-                             (types/clj->json {:accountID account-id
-                                               :password password})
-
-                             on-result))
 
 (defn multiaccount-store-derived
   [account-id paths password on-result]

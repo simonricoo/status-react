@@ -10,8 +10,8 @@
   (native-module/open-accounts callback))
 
 (defn save-account-and-login
-  [account-data password config]
-  (native-module/save-account-and-login account-data password config))
+  [account-data password config subaccounts-data]
+  (native-module/save-account-and-login account-data password config subaccounts-data))
 
 (defn login
   [account-data password]
@@ -25,9 +25,6 @@
 
 (defn create-multiaccount [password callback]
   (native-module/create-account password callback))
-
-(defn multiaccount-store-account [account-id password callback]
-  (native-module/multiaccount-store-account account-id password callback))
 
 (defn multiaccount-load-account [address password callback]
   (native-module/multiaccount-load-account address password callback))
