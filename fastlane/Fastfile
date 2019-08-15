@@ -32,8 +32,10 @@ class Keychain
         Fastlane::Actions::CreateKeychainAction.run(
             name: @name,
             password: @@pass,
+            unlock: true,
             timeout: false,
-            # to import WWDR into it
+            # To make Fastlane import WWDR certificate into it.
+            # WARNING: Can cause race conditions on the same host.
             default_keychain: true,
         )
     end
