@@ -36,8 +36,6 @@ public:
     QVariantMap constantsToExport() override;
 
     Q_INVOKABLE void initKeystore();
-    Q_INVOKABLE void startNode(QString configString);
-    Q_INVOKABLE void stopNode();
     Q_INVOKABLE void createAccount(QString password, double callbackId);
     Q_INVOKABLE void sendDataNotification(QString dataPayloadJSON, QString tokensJSON, double callbackId);
     Q_INVOKABLE void sendLogs(QString dbJSON, QString jsLogs, double callbackId);
@@ -45,7 +43,7 @@ public:
     Q_INVOKABLE void recoverAccount(QString passphrase, QString password, double callbackId);
     Q_INVOKABLE void login(QString accountData, QString password);
     Q_INVOKABLE void saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData);
-    Q_INVOKABLE void logout(double callbackId);
+    Q_INVOKABLE void logout();
     Q_INVOKABLE void openAccounts(double callbackId);
     Q_INVOKABLE void multiAccountStoreAccount(QString json, double callbackId);
     Q_INVOKABLE void multiAccountLoadAccount(QString json, double callbackId);

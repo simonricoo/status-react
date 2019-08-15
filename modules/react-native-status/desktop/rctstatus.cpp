@@ -119,20 +119,6 @@ QString RCTStatus::prepareDirAndUpdateConfig(QString configString) {
     return QString(updatedJsonDoc.toJson(QJsonDocument::Compact));
 }
 
-void RCTStatus::startNode(QString configString) {
-    Q_D(RCTStatus);
-    QString updatedConfig = prepareDirAndUpdateConfig(configString);
-    const char* result = StartNode(updatedConfig.toUtf8().data());
-    logStatusGoResult("::startNode StartNode", result);
-}
-
-
-void RCTStatus::stopNode() {
-    qCInfo(RCTSTATUS) << "::stopNode call";
-    const char* result = StopNode();
-    logStatusGoResult("::stopNode StopNode", result);
-}
-
 void RCTStatus::initKeystore() {
     qCInfo(RCTSTATUS) << "::initKeystore call";
     QString rootDir = getDataStoragePath();
@@ -296,13 +282,12 @@ void RCTStatus::login(QString accountData, QString password) {
 
 }
 
-void RCTStatus::logout(double callbackId) {
+void RCTStatus::logout() {
     Q_D(RCTStatus);
-    QtConcurrent::run([&](double callbackId) {
+    QtConcurrent::run([&]() {
         const char* result = Logout();
         logStatusGoResult("::logout", result);
-        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
-        }, callbackId);
+        });
 
 }
 
