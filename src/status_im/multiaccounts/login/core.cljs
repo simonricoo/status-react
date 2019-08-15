@@ -5,7 +5,6 @@
             [status-im.chat.models :as chat-model]
             [status-im.chat.models.loading :as chat.loading]
             [status-im.contact.core :as contact]
-            [status-im.data-store.core :as data-store]
             [status-im.ethereum.core :as ethereum]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.ethereum.transactions.core :as transactions]
@@ -166,13 +165,15 @@
               (when save-password?
                 (save-user-password address password))
               (navigation/navigate-to-cofx :home nil)
-              #_(notifications/process-stored-event address stored-pns)
               (stickers/init-stickers-packs)
               (chat.loading/initialize-chats {:to -1})
               (contact/initialize-contacts)
               (universal-links/process-stored-event)
               (when platform/desktop?
                 (chat-model/update-dock-badge-label)))))
+
+(defn- recovering-multiaccount? [cofx]
+  (boolean (get-in cofx [:db :multiaccounts/recover])))
 
 (fx/defn create-only-events
   [{:keys [db] :as cofx}]
@@ -200,9 +201,6 @@
               (when-not platform/desktop?
                 (initialize-wallet)))))
 
-(defn- recovering-multiaccount? [cofx]
-  (boolean (get-in cofx [:db :multiaccounts/recover])))
-
 (defn- keycard-setup? [cofx]
   (boolean (get-in cofx [:db :hardwallet :flow])))
 
@@ -210,8 +208,9 @@
   [{:keys [db] :as cofx}]
   (let [{:keys [address password save-password? name photo-path creating?]} (:multiaccounts/login db)
         step (get-in db [:intro-wizard :step])
+        recovering? (recovering-multiaccount? cofx)
         login-only? (not (or creating?
-                             (recovering-multiaccount? cofx)
+                             recovering?
                              (keycard-setup? cofx)))
         nodes nil]
     (fx/merge cofx
@@ -223,6 +222,7 @@
                                :pin
                                :multiaccount))
                ;;TODO remove once web3 has been replaced by json-rpc in protocol
+               ;; after this call realm and the protocol are initialized as a callback
                ::web3/initialize [address password login-only?]
                ::json-rpc/call
                [{:method "web3_clientVersion"
@@ -234,7 +234,9 @@
               (initialize-multiaccount-db address)
               (if login-only?
                 (login-only-events address password save-password?)
-                (create-only-events)))))
+                (create-only-events))
+              (when recovering?
+                (navigation/navigate-to-cofx :home nil)))))
 
 (fx/defn open-keycard-login
   [{:keys [db] :as cofx}]
