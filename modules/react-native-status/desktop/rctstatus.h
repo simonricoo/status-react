@@ -43,8 +43,8 @@ public:
     Q_INVOKABLE void sendLogs(QString dbJSON, QString jsLogs, double callbackId);
     Q_INVOKABLE void addPeer(QString enode, double callbackId);
     Q_INVOKABLE void recoverAccount(QString passphrase, QString password, double callbackId);
-    Q_INVOKABLE void login(QString accountData, QString password, double callbackId);
-    Q_INVOKABLE void saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData, double callbackId);
+    Q_INVOKABLE void login(QString accountData, QString password);
+    Q_INVOKABLE void saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData);
     Q_INVOKABLE void logout(double callbackId);
     Q_INVOKABLE void openAccounts(double callbackId);
     Q_INVOKABLE void multiAccountStoreAccount(QString json, double callbackId);

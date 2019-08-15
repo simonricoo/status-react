@@ -276,27 +276,23 @@ void RCTStatus::recoverAccount(QString passphrase, QString password, double call
 }
 
 
-void RCTStatus::saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData, double callbackId) {
+void RCTStatus::saveAccountAndLogin(QString accountData, QString password, QString config, QString subAccountsData) {
 
     Q_D(RCTStatus);
     QString finalConfig = prepareDirAndUpdateConfig(config);
-    QtConcurrent::run([&](QString accountData, QString password, QString finalConfig, QString subAccountsData, double callbackId) {
+    QtConcurrent::run([&](QString accountData, QString password, QString finalConfig, QString subAccountsData) {
         const char* result = SaveAccountAndLogin(accountData.toUtf8().data(), password.toUtf8().data(), finalConfig.toUtf8().data(), subAccountsData.toUtf8().data());
         logStatusGoResult("::saveAccountAndLogin", result);
-        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
-        }, accountData, password, finalConfig, subAccountsData, callbackId);
-
-
+        }, accountData, password, finalConfig, subAccountsData);
 }
 
-void RCTStatus::login(QString accountData, QString password, double callbackId) {
+void RCTStatus::login(QString accountData, QString password) {
 
     Q_D(RCTStatus);
-    QtConcurrent::run([&](QString accountData, QString password, double callbackId) {
+    QtConcurrent::run([&](QString accountData, QString password) {
         const char* result = Login(accountData.toUtf8().data(), password.toUtf8().data());
         logStatusGoResult("::login", result);
-        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
-        }, accountData, password, callbackId);
+        }, accountData, password);
 
 }
 
