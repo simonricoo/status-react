@@ -48,6 +48,9 @@ public:
     Q_INVOKABLE void logout(double callbackId);
     Q_INVOKABLE void openAccounts(double callbackId);
     Q_INVOKABLE void multiAccountStoreAccount(QString json, double callbackId);
+    Q_INVOKABLE void multiAccountLoadAccount(QString json, double callbackId);
+    Q_INVOKABLE void multiAccountReset(double callbackId);
+    Q_INVOKABLE void multiAccountDeriveAddresses(QString json, double callbackId);
     Q_INVOKABLE void verify(QString address, QString password, double callbackId);
     Q_INVOKABLE void sendTransaction(QString txArgsJSON, QString password, double callbackId);
     Q_INVOKABLE void signMessage(QString rpcParams, double callbackId);

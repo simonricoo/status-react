@@ -321,7 +321,6 @@ void RCTStatus::openAccounts(double callbackId) {
 
 }
 
-
 void RCTStatus::multiAccountStoreAccount(QString json, double callbackId) {
     Q_D(RCTStatus);
     QtConcurrent::run([&](QString json, double callbackId) {
@@ -330,6 +329,34 @@ void RCTStatus::multiAccountStoreAccount(QString json, double callbackId) {
         d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
         }, json, callbackId);
 }
+
+void RCTStatus::multiAccountLoadAccount(QString json, double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString json, double callbackId) {
+        const char* result = MultiAccountLoadAccount(json.toUtf8().data());
+        logStatusGoResult("::multiAccountLoadAccount", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, json, callbackId);
+}
+
+void RCTStatus::multiAccountReset(double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](double callbackId) {
+        const char* result = MultiAccountReset();
+        logStatusGoResult("::multiAccountReset", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, callbackId);
+}
+
+void RCTStatus::multiAccountDeriveAddresses(QString json, double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString json, double callbackId) {
+        const char* result = MultiAccountDeriveAddresses(json.toUtf8().data());
+        logStatusGoResult("::multiAccountDeriveAddresses", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, json, callbackId);
+}
+
 
 void RCTStatus::verify(QString address, QString password, double callbackId) {
     Q_D(RCTStatus);
