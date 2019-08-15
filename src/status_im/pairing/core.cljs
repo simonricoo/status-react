@@ -134,7 +134,7 @@
 
 (fx/defn init [cofx]
   (fx/merge cofx
-            {:pairing/get-our-installations []}))
+            {:pairing/get-our-installations nil}))
 
 (defn handle-bundles-added [{:keys [db] :as cofx} bundle]
   (let [installation-id  (:installationID bundle)]
@@ -143,7 +143,7 @@
              (multiaccounts.model/current-public-key cofx))
           (not= (get-in db [:multiaccount :installation-id]) installation-id))
       (fx/merge cofx
-                (init [])
+                (init)
                 #(when-not (or (:pairing/prompt-user-pop-up db)
                                (= :installations (:view-id db)))
                    (prompt-user-on-new-installation %))))))

@@ -5,6 +5,7 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.events :as events]
+            [status-im.data-store.core :as data-store]
             [status-im.multiaccounts.login.core :as login.core]
             [status-im.signals.core :as signals]
             [status-im.test.sign-in.data :as data]))
@@ -12,132 +13,50 @@
 (deftest on-password-input-submitted
   (testing
    "handling :multiaccounts.login.ui/password-input-submitted event"
-    (let [cofx             {:db {:multiaccounts/multiaccounts {"address" {:settings {:fleet "fleet"}}}
-                                 :multiaccounts/login {:address  "address"
-                                                       :password "password"}}}
-          create-database? false
-          efx              (login.core/user-login cofx create-database?)]
+    (let [cofx {:db {:multiaccounts/login {:address  "address"
+                                           :password "password"
+                                           :name "user"
+                                           :photo-path "photo"}}}
+          efx (login.core/login cofx)]
       (testing "Change multiaccount."
-        (is (= (::data-store/change-multiaccount efx)
-               ["address" "password" false "fleet"])))
-      (testing "set `node/on-ready` handler"
-        (is (= (get-in efx [:db :node/on-ready]) :login)))
+        (is (= (::login.core/login efx)
+               ["{\"name\": user, \"address\": \"address\", \"photo-path\": \"photo\"}" "password"])))
       (testing "start activity indicator"
         (is (= (get-in efx [:db :multiaccounts/login :processing]) true))))))
 
-(deftest on-successful-multiaccount-change
-  (testing
-   "Multiaccount changed successfully: :init.callback/multiaccount-change-success
-   event is handled."
-    (let [db     {:multiaccounts/login    {:address  "address"
-                                           :password "password"}
-                  :node/on-ready     :login
-                  :multiaccounts/multiaccounts data/multiaccounts}
-          cofx   {:db                   db
-                  :web3                 :web3}
-          efx    (events/multiaccount-change-success cofx [nil "address"])
-          new-db (:db efx)]
-      (testing "Get fcm token."
-        (is (contains? efx :notifications/get-fcm-token)))
-      (testing "Request notifications permissions."
-        (is (contains? efx :notifications/request-notifications-permissions)))
-      (testing "Navigate to :home."
-        (is (= [:home nil] (efx :status-im.ui.screens.navigation/navigate-to))))
-      (testing "Multiaccount selected."
-        (is (contains? new-db :multiaccount))))))
-
-(deftest decryption-failure-on-multiaccount-change
-  (testing ":init.callback/multiaccount-change-error event received."
-    (let [cofx   {:db {}}
-          error  {:error :decryption-failed}
-          efx    (login.core/handle-change-multiaccount-error cofx error)
-          new-db (:db efx)]
-      (testing "Init multiaccount's password verification"
-        (is (= :verify-multiaccount (new-db :node/on-ready))))
-      (testing "Init multiaccount's password verification"
-        (is (= :decryption-failed (get-in new-db [:realm-error :error])))))))
-
-(deftest database-does-not-exist-on-multiaccount-change
-  (testing ":init.callback/multiaccount-change-error event received."
-    (let [cofx   {:db {}}
-          error  {:error :database-does-not-exist}
-          efx    (login.core/handle-change-multiaccount-error cofx error)
-          new-db (:db efx)]
-      (testing "Init multiaccount's password verification"
-        (is (= :verify-multiaccount (new-db :node/on-ready))))
-      (testing "Init multiaccount's password verification"
-        (is (= :database-does-not-exist (get-in new-db [:realm-error :error])))))))
-
-(deftest migrations-failed-on-multiaccount-change
-  (testing ":init.callback/multiaccount-change-error event received."
-    (let [cofx  {:db {}}
-          error {:error :migrations-failed}
-          efx   (login.core/handle-change-multiaccount-error cofx error)]
-      (testing "Show migrations dialog."
-        (is (contains? efx :ui/show-confirmation))))))
-
-(deftest unknown-realm-error-on-multiaccount-change
-  (testing ":init.callback/multiaccount-change-error event received."
-    (let [cofx  {:db {}}
-          error {:error :unknown-error}
-          efx   (login.core/handle-change-multiaccount-error cofx error)]
-      (testing "Show unknown error dialog."
-        (is (contains? efx :ui/show-confirmation))))))
-
-(deftest on-node-started
-  (testing "node.ready signal received"
-    (let [cofx {:db {:multiaccounts/login    {:address  "address"
-                                              :password "password"}
-                     :node/on-ready     :login
-                     :multiaccounts/multiaccounts data/multiaccounts
-                     :multiaccount   data/multiaccounts}}
-          efx  (signals/status-node-started cofx)]
-      (testing "Change node's status to started."
-        (is (= :started (get-in efx [:db :node/status])))))))
-
-(deftest on-node-started-for-verification
-  (testing "node.ready signal received"
-    (let [cofx {:db {:multiaccounts/login    {:address  "address"
-                                              :password "password"}
-                     :node/on-ready     :verify-multiaccount
-                     :multiaccounts/multiaccounts data/multiaccounts
-                     :multiaccount   data/multiaccounts
-                     :realm-error       {:error :database-does-not-exist}}}
-          efx  (signals/status-node-started cofx)])))
-
-#_(deftest login-success
-    (testing ":accounts.login.callback/login-success event received."
-      (let [db           {:accounts/login  {:address  "address"
-                                            :password "password"}
-                          :account/account data/account
-                          :semaphores      #{}}
-            cofx         {:db                           db
-                          :data-store/mailservers       []
-                          :data-store/transport         data/transport
-                          :data-store/mailserver-topics data/topics}
-            login-result "{\"error\":\"\"}"
-            efx          (login.core/user-login-callback cofx login-result)
-            new-db       (:db efx)
-            json-rpc     (into #{} (map :method (:json-rpc/call efx)))]
-        (testing ":accounts/login cleared."
-          (is (not (contains? new-db :accounts/login))))
-        (testing "Check messaging related effects."
-          (is (contains? efx :filters/load-filters))
-          (is (contains? efx :mailserver/add-peer))
-          (is (contains? efx :mailserver/update-mailservers))
-          (is (= #{{:ms       10000
-                    :dispatch [:mailserver/check-connection-timeout]}
-                   {:ms       10000
-                    :dispatch [:protocol/state-sync-timed-out]}}
-                 (set (:utils/dispatch-later efx)))))
-        (testing "Check the rest of effects."
-          (is (contains? efx :web3/set-default-account))
-          (is (contains? efx :web3/fetch-node-version))
-          (is (json-rpc "net_version"))
-          (is (json-rpc "eth_syncing"))
-          (is (contains? efx :wallet/get-balance))
-          (is (contains? efx :wallet/get-tokens-balance))
-          (is (contains? efx :wallet/get-prices))))))
+(deftest login-success
+  (testing ":accounts.login.callback/login-success event received."
+    (let [db           {:accounts/login  {:address  "address"
+                                          :password "password"}
+                        :account/account data/multiaccount
+                        :semaphores      #{}}
+          cofx         {:db                           db
+                        :data-store/mailservers       []
+                        :data-store/transport         data/transport
+                        :data-store/mailserver-topics data/topics}
+          login-result "{\"error\":\"\"}"
+          efx          (login.core/multiaccount-login-success cofx)
+          new-db       (:db efx)
+          json-rpc     (into #{} (map :method (:json-rpc/call efx)))]
+      (testing ":accounts/login cleared."
+        (is (not (contains? new-db :accounts/login))))
+      (testing "Check messaging related effects."
+        (is (contains? efx :filters/load-filters))
+        (is (contains? efx :mailserver/add-peer))
+        (is (contains? efx :mailserver/update-mailservers))
+        (is (= #{{:ms       10000
+                  :dispatch [:mailserver/check-connection-timeout]}
+                 {:ms       10000
+                  :dispatch [:protocol/state-sync-timed-out]}}
+               (set (:utils/dispatch-later efx)))))
+      (testing "Check the rest of effects."
+        (is (contains? efx :web3/set-default-account))
+        (is (contains? efx :web3/fetch-node-version))
+        (is (json-rpc "net_version"))
+        (is (json-rpc "eth_syncing"))
+        (is (contains? efx :wallet/get-balance))
+        (is (contains? efx :wallet/get-tokens-balance))
+        (is (contains? efx :wallet/get-prices))))))
 
 (deftest login-failed
   (testing
@@ -151,7 +70,7 @@
                         :data-store/transport         data/transport
                         :data-store/mailserver-topics data/topics}
           login-result "{\"error\":\"Something went wrong!\"}"
-          efx          (login.core/user-login-callback cofx login-result)
+          efx          (login.core/multiaccount-login-success cofx)
           new-db       (:db efx)]
       (testing "Prevent saving of the password."
         (is (= false (get-in new-db [:multiaccounts/login :save-password?]))))

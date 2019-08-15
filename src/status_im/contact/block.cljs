@@ -90,7 +90,7 @@
               {:db (-> db
                        (update :contacts/blocked disj public-key)
                        (assoc-in [:contacts/contacts public-key] contact))}
-              (contacts-store/save-contact-tx contact))))
+              (contacts-store/save-contact-rpc contact))))
 
 (fx/defn block-contact-confirmation
   [cofx public-key]

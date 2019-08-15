@@ -48,22 +48,27 @@
                                 :system-tags :systemTags
                                 :last-updated :lastUpdated})))
 
-(defn save-contact-rpc [{:keys [public-key] :as contact}]
-  (json-rpc/call {:method "shhext_saveContact"
-                  :params [(->rpc contact)]
-                  :on-success #(log/debug "saved contact" public-key "successfuly")
-                  :on-failure #(log/error "failed to save contact" public-key %)}))
+(fx/defn save-contact-rpc
+  [cofx {:keys [public-key] :as contact}]
+  {::json-rpc/call {:method "shhext_saveContact"
+                    :params [(->rpc contact)]
+                    :on-success #(log/debug "saved contact" public-key "successfuly")
+                    :on-failure #(log/error "failed to save contact" public-key %)}})
 
-(defn fetch-contacts-rpc [on-success]
-  (json-rpc/call {:method "shhext_contacts"
-                  :params []
-                  :on-success #(on-success (map <-rpc %))
-                  :on-failure #(log/error "failed to fetch contacts" %)}))
+(fx/defn fetch-contacts-rpc
+  [cofx on-success]
+  {::json-rpc/call {:method "shhext_contacts"
+                    :params []
+                    :on-success #(on-success (map <-rpc %))
+                    :on-failure #(log/error "failed to fetch contacts" %)}})
 
 (defn save-contact-tx
   "Returns tx function for saving contact"
   [{:keys [public-key] :as contact}]
-  (save-contact-rpc contact))
+  (json-rpc/call {:method "shhext_saveContact"
+                  :params [(->rpc contact)]
+                  :on-success #(log/debug "saved contact" public-key "successfuly")
+                  :on-failure #(log/error "failed to save contact" public-key %)}))
 
 (defn- get-messages-by-messages-ids
   [message-ids]
@@ -77,8 +82,7 @@
   [{:keys [public-key] :as contact} messages-ids]
   (fn [realm]
     (data-store.chats/delete-chat-rpc public-key data-store.chats/one-to-one-chat-type)
-    (save-contact-rpc contact)
+    (save-contact-tx contact)
     (when-let [user-messages
                (get-messages-by-messages-ids messages-ids)]
       (core/delete realm user-messages))))
-
