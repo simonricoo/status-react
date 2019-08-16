@@ -8,6 +8,7 @@
             [status-im.utils.build :as build]
             [status-im.utils.config :as config]
             [status-im.utils.fx :as fx]
+            [status-im.utils.handlers]
             [status-im.utils.gfycat.core :as gfycat]
             [status-im.utils.platform :as platform]
             [status-im.utils.utils :as utils]))

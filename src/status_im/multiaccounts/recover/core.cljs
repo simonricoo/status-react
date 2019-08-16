@@ -1,18 +1,16 @@
 (ns status-im.multiaccounts.recover.core
   (:require [clojure.string :as string]
             [re-frame.core :as re-frame]
-            [status-im.multiaccounts.create.core :as multiaccounts.create]
-            [status-im.multiaccounts.db :as db]
+            [status-im.constants :as constants]
             [status-im.ethereum.mnemonic :as mnemonic]
             [status-im.i18n :as i18n]
+            [status-im.multiaccounts.create.core :as multiaccounts.create]
+            [status-im.multiaccounts.db :as db]
             [status-im.native-module.core :as status]
-            [status-im.node.core :as node]
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.fx :as fx]
-            [status-im.utils.identicon :as identicon]
             [status-im.utils.security :as security]
-            [status-im.utils.types :as types]
-            [status-im.constants :as constants]))
+            [status-im.utils.types :as types]))
 
 (defn check-password-errors [password]
   (cond (string/blank? password) :required-field

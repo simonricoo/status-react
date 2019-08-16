@@ -3,7 +3,6 @@
             [status-im.chaos-mode.core :as chaos-mode]
             [status-im.i18n :as i18n]
             [status-im.init.core :as init]
-            [status-im.node.core :as node]
             [status-im.native-module.core :as status]
             [status-im.transport.core :as transport]
             [status-im.utils.fx :as fx]))
