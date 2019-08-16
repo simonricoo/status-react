@@ -148,7 +148,6 @@
                      :on-failure #(log/error "failed to save chat" chat-id %)}]})
 
 (fx/defn fetch-chats-rpc [cofx {:keys [on-success]}]
-  (println :fetch-chats-rpc)
   {::json-rpc/call [{:method "shhext_chats"
                      :params [0 -1]
                      :on-success #(on-success (map <-rpc %))

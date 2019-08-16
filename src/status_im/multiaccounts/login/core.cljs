@@ -103,7 +103,11 @@
                           :network network
                           :networks/networks networks
                           :chain (ethereum/network->chain-name network)
-                          :multiaccount multiaccount)}
+                          :multiaccount multiaccount)
+               ;;NOTE there is a callback that shows a mainnet alert after
+               ;;this effect, and we need multiaccount data to know if it has
+               ;;been shown already
+               :notifications/request-notifications-permissions nil}
               (stickers/init-stickers-packs)
               (mobile-network/on-network-status-change)
               (chaos-mode/check-chaos-mode)
@@ -151,7 +155,6 @@
   (let [stored-pns (:push-notifications/stored db)]
     (fx/merge cofx
               {:db (assoc db :chats/loading? true)
-               :notifications/request-notifications-permissions nil
                ::json-rpc/call
                [{:method "browsers_getBrowsers"
                  :on-success #(re-frame/dispatch [::initialize-browsers %])}
@@ -189,6 +192,7 @@
                           :network constants/default-network
                           :networks/networks constants/default-networks)
                :filters/load-filters []
+               :notifications/request-notifications-permissions nil
                ::json-rpc/call
                [{:method "settings_saveConfig"
                  :params ["multiaccount" (types/serialize multiaccount)]
