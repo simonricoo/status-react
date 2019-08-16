@@ -124,7 +124,7 @@
    in the transfer map if identified by hash"
   [{:keys [db] :as cofx} {:keys [hash id] :as transfer} address]
   (let [transfer-by-hash (get-in db [:wallet :accounts address :transactions hash])
-        transfer-by-id   (get-in db [:wallet :transaction id])]
+        transfer-by-id   (get-in db [:wallet :accounts address :transactions id])]
     (when-let [unique-id (when-not (or transfer-by-id
                                        (= transfer transfer-by-hash))
                            (if (and transfer-by-hash
