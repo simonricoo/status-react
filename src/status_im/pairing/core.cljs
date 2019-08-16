@@ -133,8 +133,7 @@
                                                                :fcmToken fcm-token}]]}))
 
 (fx/defn init [cofx]
-  (fx/merge cofx
-            {:pairing/get-our-installations nil}))
+  {:pairing/get-our-installations nil})
 
 (defn handle-bundles-added [{:keys [db] :as cofx} bundle]
   (let [installation-id  (:installationID bundle)]
