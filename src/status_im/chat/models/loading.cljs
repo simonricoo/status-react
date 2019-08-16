@@ -74,18 +74,12 @@
               (filters/load-filters)
               (commands/load-commands commands/register))))
 
-(defn load-chats-from-rpc
-  [cofx from to]
-  (data-store.chats/fetch-chats-rpc cofx {:from 0
-                                          :to 10
-                                          :on-success
-                                          #(re-frame/dispatch
-                                            [:chats-list/load-success %])}))
 (fx/defn initialize-chats
   "Initialize persisted chats on startup"
-  [cofx
-   {:keys [from to] :or {from 0 to nil}}]
-  (load-chats-from-rpc cofx from -1))
+  [cofx]
+  (data-store.chats/fetch-chats-rpc cofx {:on-success
+                                          #(re-frame/dispatch
+                                            [:chats-list/load-success %])}))
 
 (defn load-more-messages
   "Loads more messages for current chat"

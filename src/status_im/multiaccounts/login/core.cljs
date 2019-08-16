@@ -164,7 +164,7 @@
                 (save-user-password address password))
               (navigation/navigate-to-cofx :home nil)
               (stickers/init-stickers-packs)
-              (chat.loading/initialize-chats {:to -1})
+              (chat.loading/initialize-chats)
               (contact/initialize-contacts)
               (universal-links/process-stored-event)
               (when platform/desktop?

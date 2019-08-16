@@ -50,17 +50,17 @@
 
 (fx/defn save-contact-rpc
   [cofx {:keys [public-key] :as contact}]
-  {::json-rpc/call {:method "shhext_saveContact"
-                    :params [(->rpc contact)]
-                    :on-success #(log/debug "saved contact" public-key "successfuly")
-                    :on-failure #(log/error "failed to save contact" public-key %)}})
+  {::json-rpc/call [{:method "shhext_saveContact"
+                     :params [(->rpc contact)]
+                     :on-success #(log/debug "saved contact" public-key "successfuly")
+                     :on-failure #(log/error "failed to save contact" public-key %)}]})
 
 (fx/defn fetch-contacts-rpc
   [cofx on-success]
-  {::json-rpc/call {:method "shhext_contacts"
-                    :params []
-                    :on-success #(on-success (map <-rpc %))
-                    :on-failure #(log/error "failed to fetch contacts" %)}})
+  {::json-rpc/call [{:method "shhext_contacts"
+                     :params []
+                     :on-success #(on-success (map <-rpc %))
+                     :on-failure #(log/error "failed to fetch contacts" %)}]})
 
 (defn save-contact-tx
   "Returns tx function for saving contact"
