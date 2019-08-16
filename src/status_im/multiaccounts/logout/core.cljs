@@ -5,13 +5,15 @@
             [status-im.init.core :as init]
             [status-im.native-module.core :as status]
             [status-im.transport.core :as transport]
-            [status-im.utils.fx :as fx]))
+            [status-im.utils.fx :as fx]
+            [clojure.string :as string]))
 
 (fx/defn logout
   [{:keys [db] :as cofx}]
   (fx/merge cofx
             {::logout nil
-             :keychain/clear-user-password [(get-in db [:multiaccount :address]) #()]
+             ;;TODO sort out this mess with lower case addresses
+             :keychain/clear-user-password (string/lower-case (get-in db [:multiaccount :address]))
              ::init/open-multiaccounts #(re-frame/dispatch [::init/initialize-multiaccounts %])}
             (transport/stop-whisper)
             (chaos-mode/stop-checking)
