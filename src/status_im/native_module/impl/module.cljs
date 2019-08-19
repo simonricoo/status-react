@@ -21,6 +21,11 @@
 (defn open-accounts [callback]
   (.openAccounts (status) #(callback (types/json->clj %))))
 
+(defn prepare-dir-and-update-config [config callback]
+  (.prepareDirAndUpdateConfig (status)
+                              config
+                              #(callback (types/json->clj %))))
+
 (defn save-account-and-login
   [account-data password config subaccounts-data]
   (clear-web-data)

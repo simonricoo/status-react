@@ -9,6 +9,7 @@
             [clojure.string :as string]))
 
 (fx/defn logout
+  {:events [:logout]}
   [{:keys [db] :as cofx}]
   (fx/merge cofx
             {::logout nil

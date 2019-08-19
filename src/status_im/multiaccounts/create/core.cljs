@@ -203,7 +203,7 @@
                      (assoc-in [:multiaccount :seed-backed-up?] true))
                ::save-account-and-login [(types/clj->json account-data)
                                          password
-                                         (node/get-new-config db address)
+                                         (node/get-new-config db)
                                          (types/clj->json subaccounts-data)]}
               (when (:intro-wizard db)
                 (intro-step-forward {})))))

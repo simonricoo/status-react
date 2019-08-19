@@ -267,6 +267,12 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         }
     }
 
+    @ReactMethod
+    public void prepareDirAndUpdateConfig(final String config, final Callback callback) {
+        Log.d(TAG, "prepareDirAndUpdateConfig");
+        String finalConfig = prepareDirAndUpdateConfig(config);
+        callback.invoke(finalConfig);
+    }
 
     @ReactMethod
     public void saveAccountAndLogin(final String accountData, final String password , final String config, final String subAccountsData) {
@@ -390,7 +396,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
     private void initKeystore() {
         Activity currentActivity = getCurrentActivity();
 
-        final String keydir = currentActivity.getApplicationInfo().dataDir;
+        final String keydir = pathCombine(currentActivity.getApplicationInfo().dataDir, "/keystore");
         Log.d(TAG, "initKeystore");
         if (!checkAvailability()) {
             Log.e(TAG, "[initKeystore] Activity doesn't exist, cannot init keystore");

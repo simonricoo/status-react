@@ -9,6 +9,9 @@
 (defn open-accounts [callback]
   (native-module/open-accounts callback))
 
+(defn prepare-dir-and-update-config [config callback]
+  (native-module/prepare-dir-and-update-config config callback))
+
 (defn save-account-and-login
   [account-data password config subaccounts-data]
   (native-module/save-account-and-login account-data password config subaccounts-data))

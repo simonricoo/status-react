@@ -62,7 +62,7 @@
       normalized-address))
 
 (defn get-default-account [accounts]
-  (some #(when (:default? %) %) accounts))
+  (some #(when (:wallet %) %) accounts))
 
 (defn default-address [db]
   (-> (get-in db [:multiaccount :accounts])

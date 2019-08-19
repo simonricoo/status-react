@@ -14,7 +14,9 @@
             [status-im.utils.handlers :as handlers]
             [status-im.utils.http :as http]
             [status-im.utils.types :as types]
-            status-im.network.subs))
+            status-im.network.subs
+            [status-im.node.core :as node]
+            [taoensso.timbre :as log]))
 
 (def url-regex
   #"https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}(\.[a-z]{2,6})?\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
@@ -124,22 +126,14 @@
 
 (fx/defn connect-success [{:keys [db] :as cofx}
                           {:keys [network-id on-success client-version]}]
-  (let [current-network (get-in db [:multiaccount :networks/networks (:network db)])
-        network-with-upstream-rpc? (ethereum/network-with-upstream-rpc?
-                                    current-network)]
+  (let [current-network (get-in db [:multiaccount :networks/networks (:network db)])]
     (fx/merge
      cofx
      {:ui/show-confirmation
       {:title               (i18n/label :t/close-app-title)
-       :content             (if network-with-upstream-rpc?
-                              (i18n/label :t/logout-app-content)
-                              (i18n/label :t/close-app-content))
+       :content             (i18n/label :t/logout-app-content)
        :confirm-button-text (i18n/label :t/close-app-button)
-       :on-accept           #(re-frame/dispatch
-                              [(if network-with-upstream-rpc?
-                                 :network.ui/save-rpc-network-pressed
-                                 :network.ui/save-non-rpc-network-pressed)
-                               network-id])
+       :on-accept           #(re-frame/dispatch [::save-network-settings-pressed network-id])
        :on-cancel           nil}}
      #(action-handler on-success {:network-id network-id
                                   :client-version client-version} %))))
@@ -216,20 +210,12 @@
                                         :on-cancel           nil}}
                 #(action-handler on-success network %)))))
 
-(fx/defn save-non-rpc-network
-  [{:keys [db now] :as cofx} network]
-  (multiaccounts.update/multiaccount-update cofx
-                                            {:network      network
-                                             :last-updated now}
-                                            {:success-event [:network.callback/non-rpc-network-saved]}))
-
-(fx/defn save-rpc-network
+(fx/defn save-network-settings
+  {:events [::save-network-settings-pressed]}
   [{:keys [now] :as cofx} network]
-  (multiaccounts.update/multiaccount-update
-   cofx
-   {:network      network
-    :last-updated now}
-   {:success-event [:multiaccounts.update.callback/save-settings-success]}))
+  (fx/merge cofx
+            (multiaccounts.update/multiaccount-update {:network network :last-updated now} {})
+            (node/prepare-new-config {:on-success #(re-frame/dispatch [:logout])})))
 
 (fx/defn remove-network
   [{:keys [db now] :as cofx} network success-event]
@@ -262,10 +248,10 @@
   [cofx network]
   (let [db                  (:db cofx)
         rpc-network?        (get-in network [:config :UpstreamConfig :Enabled] false)
-        fleet               (fleet-core/current-fleet db nil)
+        fleet               (fleet-core/current-fleet db)
         fleet-supports-les? (fleet-core/fleet-supports-les? fleet)]
     (if (or rpc-network? fleet-supports-les?)
       (navigate-to-network-details cofx network (not rpc-network?))
-       ;; Otherwise, we show an explanation dialog to a user if the current fleet does not suport LES
+      ;; Otherwise, we show an explanation dialog to a user if the current fleet does not suport LES
       {:utils/show-popup {:title   "LES not supported"
                           :content (not-supported-warning fleet)}})))

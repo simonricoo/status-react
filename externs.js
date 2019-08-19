@@ -370,6 +370,7 @@ var TopLevel = {
     "Category" : function () {},
     "High" : function () {},
     "Importance" : function () {},
+    "prepareDirAndUpdateConfig" : function () {},
     "Promise" : function () {},
     "props" : function () {},
     "prototype" : function () {},
