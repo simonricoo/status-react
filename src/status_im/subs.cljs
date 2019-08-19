@@ -66,7 +66,6 @@
 (reg-root-key-sub :bottom-sheet/options :bottom-sheet/options)
 
 ;;general
-(reg-root-key-sub :network-name :chain)
 (reg-root-key-sub :sync-state :sync-state)
 (reg-root-key-sub :network-status :network-status)
 (reg-root-key-sub :peers-count :peers-count)
@@ -199,6 +198,12 @@
  :<- [:multiaccount]
  (fn [current-multiaccount]
    (get (:networks/networks current-multiaccount) (:network current-multiaccount))))
+
+(re-frame/reg-sub
+ :network-name
+ :<- [:network]
+ (fn [network]
+   (ethereum/network->chain-keyword network)))
 
 (re-frame/reg-sub
  :disconnected?
