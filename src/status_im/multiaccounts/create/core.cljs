@@ -52,20 +52,6 @@
         {:keys [address]} (get-selected-multiaccount cofx)]
     {::store-multiaccount [selected-id address key-code]}))
 
-(defn multiaccount-set-name
-  [{{:multiaccounts/keys [create] :as db} :db now :now :as cofx}]
-  (fx/merge cofx
-            {:db                                              db
-             :notifications/request-notifications-permissions nil
-             :dispatch-n                                      [[:navigate-to :home]
-                                                               (when-not platform/desktop?
-                                                                 [:navigate-to :welcome])]}
-            ;; We set last updated as we are actually changing a field,
-            ;; unlike on recovery where the name is not set
-            (multiaccounts.update/multiaccount-update {:last-updated now
-                                                       :name         (:name create)} {})
-            (mobile-network/on-network-status-change)))
-
 (fx/defn intro-wizard
   {:events [:multiaccounts.create.ui/intro-wizard]}
   [{:keys [db] :as cofx} first-time-setup?]
