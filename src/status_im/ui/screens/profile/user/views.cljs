@@ -129,7 +129,7 @@
                                           :action-fn           #(re-frame/dispatch [:multiaccounts.logout.ui/logout-pressed])}]]]]))
 
 (defview advanced-settings
-  [{:keys [network networks chaos-mode? dev-mode? settings]} on-show supported-biometric-auth]
+  [{:keys [network :networks/networks chaos-mode? dev-mode? settings]} on-show supported-biometric-auth]
   {:component-did-mount on-show}
   [react/view
    (when dev-mode?
