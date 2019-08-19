@@ -80,7 +80,7 @@ void RCTStatus::getDeviceUUID(double callbackId) {
 
 QString RCTStatus::prepareDirAndUpdateConfig(QString configString) {
     Q_D(RCTStatus);
-    qCDebug(RCTSTATUS) << "::startNode call - configString:" << configString;
+    qCDebug(RCTSTATUS) << "::prepareDirAndUpdateConfig call - configString:" << configString;
 
     QJsonParseError jsonError;
     const QJsonDocument& jsonDoc = QJsonDocument::fromJson(configString.toUtf8(), &jsonError);
@@ -117,6 +117,15 @@ QString RCTStatus::prepareDirAndUpdateConfig(QString configString) {
     const QJsonDocument& updatedJsonDoc = QJsonDocument::fromVariant(configJSON);
     qCInfo(RCTSTATUS) << "::startNode updated configString: " << updatedJsonDoc.toVariant().toMap();
     return QString(updatedJsonDoc.toJson(QJsonDocument::Compact));
+}
+
+void RCTStatus::prepareDirAndUpdateConfig(QString configString, double callbackId) {
+    Q_D(RCTStatus);
+    qCInfo(RCTSTATUS) << "::prepareDirAndUpdateConfig call - callbackId:" << callbackId;
+    QtConcurrent::run([&](QString configString, double callbackId) {
+            QString updatedConfig = prepareDirAndUpdateConfig(configString);
+            d->bridge->invokePromiseCallback(callbackId, QVariantList{updatedConfig.toUtf8().data()});
+        }, configString, callbackId);
 }
 
 void RCTStatus::initKeystore() {
