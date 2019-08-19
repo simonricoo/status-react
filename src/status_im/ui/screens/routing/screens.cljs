@@ -120,7 +120,6 @@
    :new                                              add-new/add-new
    :new-chat                                         new-chat/new-chat
    :qr-scanner                                       qr-scanner/qr-scanner
-   :profile-qr-viewer                                [:modal profile.user/qr-viewer]
    :new-group                                        group/new-group
    :add-participants-toggle-list                     group/add-participants-toggle-list
    :contact-toggle-list                              group/contact-toggle-list
