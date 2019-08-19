@@ -155,7 +155,6 @@
   (let [stored-pns (:push-notifications/stored db)]
     (fx/merge cofx
               {:db (assoc db :chats/loading? true)
-               :notifications/request-notifications-permissions nil
                ::json-rpc/call
                [{:method "browsers_getBrowsers"
                  :on-success #(re-frame/dispatch [::initialize-browsers %])}
