@@ -330,14 +330,8 @@ RCT_EXPORT_METHOD(multiAccountDeriveAddresses:(NSString *)json
     callback(@[result]);
 }
 
-//////////////////////////////////////////////////////////////////// saveAccountAndLogin
-RCT_EXPORT_METHOD(saveAccountAndLogin:(NSString *)accountData
-                  password:(NSString *)password
-                  config:(NSString *)config
-                  subAccountsData:(NSString *)subAccountsData) {
-#if DEBUG
-    NSLog(@"SaveAccountAndLogin() method called");
-#endif
+//////////////////////////////////////////////////////////////////// prepareDirAndUpdateConfig
+-(NSString *) prepareDirAndUpdateConfig:(NSString *)config {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSError *error = nil;
     NSURL *rootUrl =[[fileManager
@@ -399,7 +393,34 @@ RCT_EXPORT_METHOD(saveAccountAndLogin:(NSString *)accountData
         [dict setObject:[NSNumber numberWithInt:511] forKey:NSFilePosixPermissions];
         [fileManager createFileAtPath:absLogUrl.path contents:nil attributes:dict];
     }
-    NSString *result = StatusgoSaveAccountAndLogin(accountData, password, resultingConfig, subAccountsData);
+
+    return resultingConfig;
+
+}
+
+
+//////////////////////////////////////////////////////////////////// prepareDirAndUpdateConfig
+RCT_EXPORT_METHOD(prepareDirAndUpdateConfig:(NSString *)config
+                                   callback:(RCTResponseSenderBlock)callback) {
+
+#if DEBUG
+    NSLog(@"PrepareDirAndUpdateConfig() method called");
+#endif
+    NSString *updatedConfig = [self prepareDirAndUpdateConfig:config];
+    callback(@[updatedConfig]);
+
+}
+
+//////////////////////////////////////////////////////////////////// saveAccountAndLogin
+RCT_EXPORT_METHOD(saveAccountAndLogin:(NSString *)accountData
+                  password:(NSString *)password
+                  config:(NSString *)config
+                  subAccountsData:(NSString *)subAccountsData) {
+#if DEBUG
+    NSLog(@"SaveAccountAndLogin() method called");
+#endif
+    NSString *finalConfig = [self prepareDirAndUpdateConfig:config];
+    NSString *result = StatusgoSaveAccountAndLogin(accountData, password, finalConfig, subAccountsData);
     NSLog(@"%@", result);
 }
 
