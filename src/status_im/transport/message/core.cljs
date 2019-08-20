@@ -12,7 +12,8 @@
             [status-im.transport.utils :as transport.utils]
             [status-im.utils.config :as config]
             [status-im.utils.fx :as fx]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [status-im.ethereum.json-rpc :as json-rpc]))
 
 (defn add-raw-payload
   "Add raw payload for id calculation"
@@ -211,20 +212,9 @@
 
 (re-frame/reg-fx
  :transport/confirm-messages-processed
- (fn [messages]
-   (let [{:keys [web3]} (first messages)
-         js-messages (->> messages
-                          (keep :js-obj)
-                          (apply array))]
-     (when (pos? (.-length js-messages))
-       (if (string? (first js-messages))
-         (.confirmMessagesProcessedByID (transport.utils/shh web3)
-                                        js-messages
-                                        (fn [err resp]
-                                          (when err
-                                            (log/warn "Confirming messages processed failed" err))))
-         (.confirmMessagesProcessed (transport.utils/shh web3)
-                                    js-messages
-                                    (fn [err resp]
-                                      (when err
-                                        (log/warn "Confirming messages processed failed" err)))))))))
+ (fn [confirmations]
+   (when (seq confirmations)
+     (json-rpc/call {:method "shhext_confirmMessagesProcessedByID"
+                     :params [confirmations]
+                     :on-success #(log/debug "successfully confirmed messages")
+                     :on-failure #(log/error "failed to confirm messages" %)}))))

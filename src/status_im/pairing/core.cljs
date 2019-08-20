@@ -73,15 +73,13 @@
     (protocol/send (transport.pairing/PairInstallation. installation-id device-type installation-name fcm-token) nil cofx)))
 
 (fx/defn confirm-message-processed
-  [{:keys [db]} raw-message]
-  {:transport/confirm-messages-processed [{:web3 (:web3 db)
-                                           :js-obj raw-message}]})
+  [cofx raw-message]
+  {:transport/confirm-messages-processed [raw-message]})
 
-(defn send-pair-installation [cofx payload]
-  (let [{:keys [web3]} (:db cofx)
-        current-public-key (multiaccounts.model/current-public-key cofx)]
-    {:shh/send-pairing-message {:web3    web3
-                                :src     current-public-key
+(defn send-pair-installation
+  [cofx payload]
+  (let [current-public-key (multiaccounts.model/current-public-key cofx)]
+    {:shh/send-pairing-message {:src     current-public-key
                                 :payload payload}}))
 
 (defn merge-contact [local remote]
@@ -264,12 +262,11 @@
  :pairing/get-our-installations
  get-our-installations)
 
-(fx/defn send-sync-installation [cofx payload]
-  (let [{:keys [web3]} (:db cofx)
-        current-public-key (multiaccounts.model/current-public-key cofx)]
+(fx/defn send-sync-installation
+  [cofx payload]
+  (let [current-public-key (multiaccounts.model/current-public-key cofx)]
     {:shh/send-direct-message
-     [{:web3    web3
-       :src     current-public-key
+     [{:src     current-public-key
        :dst     current-public-key
        :payload payload}]}))
 

@@ -26,6 +26,13 @@
    "eth_syncing" {}
    "net_version" {}
    "web3_clientVersion" {}
+   "shhext_post" {}
+   "shh_generateSymKeyFromPassword" {}
+   "shh_getSymKey" {}
+   "shh_markTrustedPeer" {}
+   "shhext_requestMessages" {}
+   "shhext_sendDirectMessage" {}
+   "shhext_sendPublicMessage" {}
    "shhext_enableInstallation" {}
    "shhext_disableInstallation" {}
    "shhext_getOurInstallations" {}
@@ -38,6 +45,7 @@
    "shhext_contacts" {}
    "shhext_deleteChat" {}
    "shhext_saveContact" {}
+   "shhext_confirmMessagesProcessedByID" {}
    "status_joinPublicChat" {}
    "status_chats" {}
    "status_startOneOnOneChat" {}

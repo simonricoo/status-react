@@ -160,7 +160,7 @@
   [{:keys [db] :as cofx}
    old-id->message
    {:keys [from message-id chat-id js-obj content dedup-id] :as raw-message}]
-  (let [{:keys [web3 current-chat-id view-id]} db
+  (let [{:keys [current-chat-id view-id]} db
         current-public-key             (multiaccounts.model/current-public-key cofx)
         current-chat?                  (and (or (= :chat view-id)
                                                 (= :chat-modal view-id))
@@ -463,9 +463,8 @@
   {:db (update-in db [:chats chat-id :messages message-id :expanded?] not)})
 
 (fx/defn confirm-message-processed
-  [{:keys [db]} raw-message]
-  {:transport/confirm-messages-processed [{:web3 (:web3 db)
-                                           :js-obj raw-message}]})
+  [cofx raw-message]
+  {:transport/confirm-messages-processed [raw-message]})
 
 ;; effects
 
