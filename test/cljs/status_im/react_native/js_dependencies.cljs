@@ -21,9 +21,6 @@
                                 :Text #js {}}
        :DeviceEventEmitter #js {:addListener (fn [])}
        :Dimensions         #js {:get  (fn [])}})
-(def realm                  #js {:schemaVersion (fn [])
-                                 :defaultPath   "/tmp/realm"
-                                 :close         (fn [])})
 (def vector-icons           #js {:default #js {}})
 (def webview-bridge         #js {:default #js {}})
 (def webview                #js {:WebView #js {}})
@@ -56,4 +53,3 @@
 (def react-native-screens  #js {})
 (def react-native-shake  #js {})
 (def net-info  #js {})
-
