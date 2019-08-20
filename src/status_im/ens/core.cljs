@@ -100,7 +100,8 @@
               (assoc-state-for username state))}
      (when (and name (= :valid state))
        (let [{:keys [multiaccount]}        db
-             {:keys [address public-key]}     multiaccount
+             {:keys [public-key]}     multiaccount
+             address (ethereum/default-address db)
              registry (get ens/ens-registries (ethereum/chain-keyword db))]
          {:ens/resolve-address [registry name #(on-resolve registry custom-domain? username address public-key %)]})))))
 
