@@ -52,7 +52,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         profile_view.share_button.click()
         profile_view.share_via_messenger()
         if not profile_view.element_by_text_part(public_key).is_element_present():
-            self.errors.append("Can't share public key")
+            self.driver.errors.append("Can't share public key")
         for _ in range(2):
             profile_view.click_system_back_button()
         profile_view.close_share_chat_key_popup()
@@ -64,7 +64,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         request.share_button.click()
         wallet.share_via_messenger()
         if not wallet.element_by_text_part(address).is_element_present():
-            self.errors.append("Can't share address")
+            self.driver.errors.append("Can't share address")
         self.verify_no_errors()
 
     @marks.testrail_id(5375)
@@ -84,7 +84,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         chat.paste_text()
         input_text = chat.chat_message_input.text
         if input_text not in public_key or len(input_text) < 1:
-            self.errors.append('Public key was not copied')
+            self.driver.errors.append('Public key was not copied')
         chat.chat_message_input.clear()
         chat.get_back_to_home_view()
 
@@ -102,7 +102,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         chat.chat_message_input.click()
         chat.paste_text()
         if chat.chat_message_input.text != address:
-            self.errors.append('Wallet address was not copied')
+            self.driver.errors.append('Wallet address was not copied')
         self.verify_no_errors()
 
     @marks.testrail_id(5502)
@@ -120,21 +120,21 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         dapp_view.element_by_text('Get started').click()
         dapp_view.ens_name.set_value(ens_user['ens'])
         if not dapp_view.element_by_text_part('is owned by you').is_element_displayed():
-            self.errors.append('Owned username is not shown in ENS Dapp.')
+            self.driver.errors.append('Owned username is not shown in ENS Dapp.')
         dapp_view.check_ens_name.click()
         dapp_view.check_ens_name.click()
         if not dapp_view.element_by_text_part('Username added').is_element_displayed():
-            self.errors.append('No message "Username added" after resolving own username')
+            self.driver.errors.append('No message "Username added" after resolving own username')
         dapp_view.element_by_text('Ok, got it').click()
 
         # check that after adding username is shown in "ENS usernames" and profile
         if not dapp_view.element_by_text(ens_user['ens']).is_element_displayed():
-            self.errors.append('No ENS name is shown in own "ENS usernames" after adding')
+            self.driver.errors.append('No ENS name is shown in own "ENS usernames" after adding')
         dapp_view.back_button.click()
         if not dapp_view.element_by_text('@%s' % ens_user['ens']).is_element_displayed():
-            self.errors.append('No ENS name is shown in own profile after adding')
+            self.driver.errors.append('No ENS name is shown in own profile after adding')
         if not dapp_view.element_by_text('%s.stateofus.eth' % ens_user['ens']).is_element_displayed():
-            self.errors.append('No ENS name is shown in own profile after adding')
+            self.driver.errors.append('No ENS name is shown in own profile after adding')
         self.verify_no_errors()
 
     @marks.testrail_id(5475)
@@ -148,7 +148,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
             profile_view.swipe_down()
             if not profile_view.profile_picture.is_element_image_equals_template(
                     file_name.replace('.png', '_profile.png')):
-                pytest.fail('Profile picture was not updated')
+                self.driver.fail('Profile picture was not updated')
 
     @marks.testrail_id(5329)
     @marks.critical
@@ -156,16 +156,16 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         sign_in_view = SignInView(self.driver)
         sign_in_view.create_user()
         if sign_in_view.profile_button.counter.text != '1':
-            self.errors.append('Profile button counter is not shown')
+            self.driver.errors.append('Profile button counter is not shown')
         profile_view = sign_in_view.profile_button.click()
         profile_view.logout()
         sign_in_view.sign_in()
         if sign_in_view.profile_button.counter.text != '1':
-            self.errors.append('Profile button counter is not shown after re-login')
+            self.driver.errors.append('Profile button counter is not shown after re-login')
         sign_in_view.profile_button.click()
         profile_view.backup_recovery_phrase()
         if sign_in_view.profile_button.counter.is_element_displayed(60):
-            self.errors.append('Profile button counter is shown after recovery phrase backup')
+            self.driver.errors.append('Profile button counter is shown after recovery phrase backup')
         self.verify_no_errors()
 
     @marks.testrail_id(5433)
@@ -238,7 +238,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         chat_view.view_profile_button.click()
         for text in basic_user['username'], 'In contacts', 'Send message', 'Contact code':
             if not chat_view.element_by_text(text).scroll_to_element():
-                self.errors.append('%s is not visible' % text)
+                self.driver.errors.append('%s is not visible' % text)
         self.verify_no_errors()
 
     @marks.testrail_id(5468)
@@ -299,7 +299,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         base_web_view = signin_view.privacy_policy_link.click()
         base_web_view.open_in_webview()
         if not base_web_view.policy_summary.is_element_displayed():
-            self.errors.append('{} Sign in view!'.format(no_link_open_error_msg))
+            self.driver.errors.append('{} Sign in view!'.format(no_link_open_error_msg))
 
         base_web_view.click_system_back_button()
         home_view = signin_view.create_user()
@@ -308,7 +308,7 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         about_view.privacy_policy_button.click()
 
         if not base_web_view.policy_summary.is_element_displayed():
-            self.errors.append('{} Profile about view!'.format(no_link_open_error_msg))
+            self.driver.errors.append('{} Profile about view!'.format(no_link_open_error_msg))
 
         self.verify_no_errors()
 
@@ -323,19 +323,19 @@ class TestProfileSingleDevice(SingleDeviceTestCase):
         profile_view.dapp_permissions_button.click()
         profile_view.element_by_text('status-im.github.io').click()
         if not profile_view.element_by_text('Wallet').is_element_displayed():
-            self.errors.append('Wallet permission was not granted')
+            self.driver.errors.append('Wallet permission was not granted')
         if not profile_view.element_by_text('Contact code').is_element_displayed():
-            self.errors.append('Contact code permission was not granted')
+            self.driver.errors.append('Contact code permission was not granted')
         profile_view.revoke_access_button.click()
         profile_view.back_button.click()
         dapp_view = profile_view.dapp_tab_button.click()
         dapp_view.open_url('status-im.github.io/dapp')
         if not dapp_view.element_by_text_part('connect to your wallet').is_element_displayed():
-            self.errors.append('Wallet permission is not asked')
+            self.driver.errors.append('Wallet permission is not asked')
         if dapp_view.allow_button.is_element_displayed():
             dapp_view.allow_button.click(times_to_click=1)
         if not dapp_view.element_by_text_part('to your profile').is_element_displayed():
-            self.errors.append('Profile permission is not asked')
+            self.driver.errors.append('Profile permission is not asked')
         self.verify_no_errors()
 
     @marks.testrail_id(5428)
@@ -472,7 +472,7 @@ class TestProfileMultipleDevice(MultipleDeviceTestCase):
         device_2_profile.contacts_button.scroll_to_element(9, 'up')
         device_2_profile.contacts_button.click()
         if not device_2_profile.element_by_text(basic_user['username']).is_element_displayed():
-            self.errors.append('"%s" is not found in Contacts after initial sync' % basic_user['username'])
+            device_1.driver.errors.append('"%s" is not found in Contacts after initial sync' % basic_user['username'])
 
         # device 1: send message to 1-1 chat with basic user and add another contact
         device_1_chat.get_back_to_home_view()
@@ -483,15 +483,15 @@ class TestProfileMultipleDevice(MultipleDeviceTestCase):
 
         # device 2: check that messages appeared in 1-1 chat and new contacts are synced
         if not device_2_profile.element_by_text(transaction_senders['A']['username']):
-            self.errors.append(
+            device_2.driver.errors.append(
                 '"%s" is not found in Contacts after adding when devices are paired' % transaction_senders['A'][
                     'username'])
         device_2_profile.get_back_to_home_view()
         chat = device_2_home.get_chat_with_user(basic_user['username']).click()
         if chat.chat_element_by_text(message_before_sync).is_element_displayed():
-            self.errors.append('"%s" message sent before pairing is synced' % message_before_sync)
+            device_2.driver.errors.append('"%s" message sent before pairing is synced' % message_before_sync)
         if not chat.chat_element_by_text(message_after_sync).is_element_displayed():
-            self.errors.append('"%s" message in 1-1 is not synced' % message_after_sync)
+            device_2.driver.errors.append('"%s" message in 1-1 is not synced' % message_after_sync)
 
         self.verify_no_errors()
 
@@ -540,12 +540,12 @@ class TestProfileMultipleDevice(MultipleDeviceTestCase):
         # device 2: check that public chat and profile details are updated
         device_2_home = device_2_profile.get_back_to_home_view()
         if not device_2_home.element_by_text('#%s' % public_chat_before_sync_name).is_element_displayed():
-            self.errors.append('Public chat "%s" doesn\'t appear after initial sync'
-                               % public_chat_before_sync_name)
+            device_2.driver.errors.append('Public chat "%s" doesn\'t appear after initial sync'
+                                          % public_chat_before_sync_name)
         device_2_home.home_button.click()
         device_2_home.profile_button.click()
         if not device_2_profile.profile_picture.is_element_image_equals_template('sauce_logo_profile.png'):
-            self.errors.append('Profile picture was not updated after initial sync')
+            device_2.driver.errors.append('Profile picture was not updated after initial sync')
 
         # device 1: send message to group chat, edit profile details and join to new public chat
         device_1_home = device_1_profile.get_back_to_home_view()
@@ -561,18 +561,18 @@ class TestProfileMultipleDevice(MultipleDeviceTestCase):
         # device 2: check that message in group chat is shown, profile details and public chats are synced
         device_2_profile.home_button.click()
         if not device_2_home.element_by_text('#%s' % public_chat_after_sync_name).is_element_displayed():
-            self.errors.append('Public chat "%s" doesn\'t appear on other device when devices are paired'
-                               % public_chat_before_sync_name)
+            device_2.driver.errors.append('Public chat "%s" doesn\'t appear on other device when devices are paired'
+                                          % public_chat_before_sync_name)
 
         device_2_home.element_by_text(group_chat_name).click()
         device_2_group_chat = device_2_home.get_chat_view()
 
         if not device_2_group_chat.chat_element_by_text(message_after_sync).is_element_displayed():
-            self.errors.append('"%s" message in group chat is not synced' % message_after_sync)
+            device_2.driver.errors.append('"%s" message in group chat is not synced' % message_after_sync)
 
         device_2_group_chat.get_back_to_home_view()
         device_2_home.profile_button.click()
         if not device_2_profile.profile_picture.is_element_image_equals_template('sauce_logo_red_profile.png'):
-            self.errors.append('Profile picture was not updated after changing when devices are paired')
+            device_2.driver.errors.append('Profile picture was not updated after changing when devices are paired')
 
         self.verify_no_errors()

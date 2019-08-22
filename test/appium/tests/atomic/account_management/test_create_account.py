@@ -1,10 +1,9 @@
-import pytest
 import random
 
 from tests import marks, common_password, get_current_time, unique_password
 from tests.base_test_case import SingleDeviceTestCase
-from views.sign_in_view import SignInView
 from tests.users import basic_user
+from views.sign_in_view import SignInView
 
 
 @marks.all
@@ -19,7 +18,7 @@ class TestCreateAccount(SingleDeviceTestCase):
         sign_in = SignInView(self.driver, skip_popups=False)
         sign_in.accept_agreements()
         if not sign_in.i_have_multiaccount_button.is_element_displayed():
-            self.errors.append("'I have an account' button is not displayed")
+            self.driver.errors.append("'I have an account' button is not displayed")
         sign_in.create_multiaccount_button.click()
         sign_in.password_input.set_value(common_password)
         sign_in.next_button.click()
@@ -53,7 +52,7 @@ class TestCreateAccount(SingleDeviceTestCase):
         sign_in.next_button.click()
 
         if sign_in.get_public_key() == public_key:
-            pytest.fail('New account was not created')
+            self.driver.fail('New account was not created')
 
     @marks.testrail_id(5379)
     @marks.high
@@ -75,14 +74,14 @@ class TestCreateAccount(SingleDeviceTestCase):
         home_view = sign_in.get_home_view()
         text = 'There are no recent chats here yet. \nUse the (+) button to discover people \nto chat with'
         if not home_view.element_by_text(text).is_element_displayed():
-            self.errors.append("'%s' text is not shown" % text)
+            self.driver.errors.append("'%s' text is not shown" % text)
         profile_view = home_view.profile_button.click()
         shown_username_1 = profile_view.username_set_by_user_text.text
         shown_username_2 = profile_view.default_username_text.text
         if shown_username_1 != username:
-            self.errors.append("Profile username '%s' doesn't match '%s'" % (shown_username_1, username))
+            self.driver.errors.append("Profile username '%s' doesn't match '%s'" % (shown_username_1, username))
         if shown_username_2 != username:
-            self.errors.append("Default username '%s' doesn't match '%s'" % (shown_username_2, username))
+            self.driver.errors.append("Default username '%s' doesn't match '%s'" % (shown_username_2, username))
         self.verify_no_errors()
 
     @marks.testrail_id(5460)
@@ -99,7 +98,7 @@ class TestCreateAccount(SingleDeviceTestCase):
 
         sign_in.next_button.click()
         if sign_in.confirm_your_password_input.is_element_displayed():
-            self.errors.append('Next button is clickable when password is less then 6 symbols')
+            self.driver.errors.append('Next button is clickable when password is less then 6 symbols')
 
         sign_in.create_password_input.set_value('123456')
         sign_in.next_button.click()
@@ -107,7 +106,7 @@ class TestCreateAccount(SingleDeviceTestCase):
         sign_in.next_button.click()
 
         if not sign_in.find_text_part(mismatch_error):
-            self.errors.append("'%s' is not shown")
+            self.driver.errors.append("'%s' is not shown")
         self.verify_no_errors()
 
     @marks.testrail_id(5414)

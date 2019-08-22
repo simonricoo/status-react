@@ -1,9 +1,8 @@
-import pytest
 import time
 
-from tests import marks, camera_access_error_text, get_current_time
-from tests.users import basic_user
+from tests import marks, camera_access_error_text
 from tests.base_test_case import SingleDeviceTestCase, MultipleDeviceTestCase
+from tests.users import basic_user
 from views.sign_in_view import SignInView
 
 
@@ -21,11 +20,11 @@ class TestChatManagement(SingleDeviceTestCase):
             chat_view.send_message_button.click()
         chat_view.clear_history()
         if not chat_view.no_messages_in_chat.is_element_present():
-            pytest.fail('Message history is shown')
+            self.driver.fail('Message history is shown')
         home_view.relogin()
         home_view.get_chat_with_user(basic_user['username']).click()
         if not chat_view.no_messages_in_chat.is_element_present():
-            pytest.fail('Message history is shown after re-login')
+            self.driver.fail('Message history is shown after re-login')
 
     @marks.testrail_id(5319)
     @marks.critical
@@ -42,7 +41,7 @@ class TestChatManagement(SingleDeviceTestCase):
         sign_in.accept_agreements()
         sign_in.sign_in()
         if home.get_chat_with_user(basic_user['username']).is_element_displayed():
-            pytest.fail('Deleted 1-1 chat is present after relaunch app')
+            self.driver.fail('Deleted 1-1 chat is present after relaunch app')
 
     @marks.testrail_id(5343)
     @marks.critical
@@ -60,10 +59,10 @@ class TestChatManagement(SingleDeviceTestCase):
         profile.logout()
         sign_in.sign_in()
         if home.get_chat_with_user('#' + chat_name).is_element_displayed():
-            self.errors.append('Deleted public chat is present after relogin')
+            self.driver.errors.append('Deleted public chat is present after relogin')
         home.join_public_chat(chat_name)
         if chat.chat_element_by_text(message).is_element_displayed():
-            self.errors.append('Chat history is shown')
+            self.driver.errors.append('Chat history is shown')
         self.verify_no_errors()
 
     @marks.testrail_id(5304)
@@ -84,11 +83,11 @@ class TestChatManagement(SingleDeviceTestCase):
         contacts_view = home.start_new_chat_button.click()
         contacts_view.public_key_edit_box.paste_text_from_clipboard()
         if contacts_view.public_key_edit_box.text != public_key:
-            pytest.fail('Public key is not pasted from clipboard')
+            self.driver.fail('Public key is not pasted from clipboard')
         contacts_view.confirm()
         contacts_view.get_back_to_home_view()
         if not home.get_chat_with_user(basic_user['username']).is_element_present():
-            pytest.fail("No chat open in home view")
+            self.driver.fail("No chat open in home view")
 
     @marks.testrail_id(5387)
     @marks.high
@@ -101,10 +100,10 @@ class TestChatManagement(SingleDeviceTestCase):
             chat_view.send_message_button.click()
         chat_view.delete_chat()
         if home.get_chat_with_user(basic_user['username']).is_element_present(10):
-            self.errors.append("One-to-one' chat is shown, but the chat has been deleted")
+            self.driver.errors.append("One-to-one' chat is shown, but the chat has been deleted")
         home.relogin()
         if home.get_chat_with_user(basic_user['username']).is_element_present(10):
-            self.errors.append("One-to-one' chat is shown after re-login, but the chat has been deleted")
+            self.driver.errors.append("One-to-one' chat is shown after re-login, but the chat has been deleted")
         self.verify_no_errors()
 
     @marks.testrail_id(5388)
@@ -118,10 +117,11 @@ class TestChatManagement(SingleDeviceTestCase):
         public_chat.send_message_button.click()
         public_chat.delete_chat()
         if home.element_by_text(chat_name).is_element_present(5):
-            self.errors.append("Public chat '%s' is shown, but the chat has been deleted" % chat_name)
+            self.driver.errors.append("Public chat '%s' is shown, but the chat has been deleted" % chat_name)
         home.relogin()
         if home.element_by_text(chat_name).is_element_present(5):
-            self.errors.append("Public chat '%s' is shown after re-login, but the chat has been deleted" % chat_name)
+            self.driver.errors.append(
+                "Public chat '%s' is shown after re-login, but the chat has been deleted" % chat_name)
         self.verify_no_errors()
 
     @marks.testrail_id(5464)
@@ -135,7 +135,7 @@ class TestChatManagement(SingleDeviceTestCase):
         contacts_view.confirm()
         warning_text = contacts_view.element_by_text('Please enter or scan a valid contact code or username')
         if not warning_text.is_element_displayed():
-            pytest.fail('Error is not shown for invalid public key')
+            self.driver.fail('Error is not shown for invalid public key')
 
     @marks.testrail_id(5466)
     @marks.medium
@@ -172,11 +172,11 @@ class TestChatManagement(SingleDeviceTestCase):
             home.search_chat_input.send_keys(keyword)
             search_results = home.chat_name_text.find_elements()
             if not search_results:
-                self.errors.append('No search results after searching by %s keyword' % keyword)
+                self.driver.errors.append('No search results after searching by %s keyword' % keyword)
             for element in search_results:
                 if keyword not in element.text:
-                    self.errors.append("'%s' is shown on the home screen after searching by '%s' keyword" %
-                                       (element.text, keyword))
+                    self.driver.errors.append("'%s' is shown on the home screen after searching by '%s' keyword" %
+                                              (element.text, keyword))
             home.search_chat_input.clear()
         self.verify_no_errors()
 
@@ -221,16 +221,16 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
                         # chat_1.profile_send_transaction,
                         chat_1.profile_address_text]:
             if not element.scroll_to_element():
-                self.errors.append('%s is not visible' % element.name)
+                device_1.driver.errors.append('%s is not visible' % element.name)
         chat_1.add_to_contacts.click()
         if not chat_1.element_by_text('In contacts').is_element_displayed():
-            self.errors.append("'Add to contacts' is not changed to 'In contacts'")
+            device_1.driver.errors.append("'Add to contacts' is not changed to 'In contacts'")
 
         chat_1.get_back_to_home_view()
         home_1.plus_button.click()
         contacts_1 = home_1.start_new_chat_button.click()
         if not contacts_1.element_by_text(username).is_element_displayed():
-            self.errors.append("List of contacts doesn't contain added user")
+            device_1.driver.errors.append("List of contacts doesn't contain added user")
 
         self.verify_no_errors()
 
@@ -262,7 +262,7 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
 
         # device 1: check that messages from blocked user are hidden in public chat
         if chat_public_1.chat_element_by_text(message_before_block_2).is_element_displayed():
-            self.errors.append(
+            device_1.driver.errors.append(
                 "Messages from blocked user %s are not cleared in public chat '%s'" % (
                     device_2.driver.number, chat_name))
 
@@ -280,7 +280,7 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
         home_1.join_public_chat(chat_name)
         for message in message_before_block_2, message_after_block_2:
             if chat_public_1.chat_element_by_text(message).is_element_displayed():
-                self.errors.append(
+                device_1.driver.errors.append(
                     "'%s' from blocked user %s are shown in public chat" % (message, device_2.driver.number))
 
     @marks.testrail_id(5763)
@@ -333,7 +333,7 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
 
         public_chat_after_block = home_1.join_public_chat(chat_name)
         if public_chat_after_block.chat_element_by_text(message_before_block_2).is_element_displayed():
-            self.errors.append(
+            device_1.driver.errors.append(
                 "Messages from blocked user '%s' are not cleared in public chat '%s'" % (device_2.driver.number,
                                                                                          chat_name))
 
@@ -351,7 +351,7 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
 
         # device 1: check that new messages sent from device 2 are not shown
         if public_chat_after_block.chat_element_by_text(message_after_block_2).is_element_displayed():
-            self.errors.append("Message from blocked user '%s' is received" % device_2.driver.number)
+            device_1.driver.errors.append("Message from blocked user '%s' is received" % device_2.driver.number)
         public_chat_after_block.get_back_to_home_view()
 
         if home_1.get_chat_with_user(basic_user['username']).is_element_displayed():
@@ -375,11 +375,12 @@ class TestChatManagementMultipleDevice(MultipleDeviceTestCase):
         device_1.accept_agreements()
         device_1.sign_in()
         if home_1.get_chat_with_user(basic_user['username']).is_element_displayed():
-            self.errors.append("Chat with blocked user is reappeared after fetching new messages from offline")
+            device_1.driver.errors.append(
+                "Chat with blocked user is reappeared after fetching new messages from offline")
         home_1.join_public_chat(chat_name)
         home_1.get_chat_view()
         if chat_public_1.chat_element_by_text(message_after_block_2).is_element_displayed():
-            self.errors.append(
+            device_1.driver.errors.append(
                 "Message from blocked user '%s' is received after fetching new messages from offline"
                 % device_2.driver.number)
 

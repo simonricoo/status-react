@@ -1,10 +1,9 @@
-import pytest
 from tests import marks, connection_not_secure_text, connection_is_secure_text
 from tests.base_test_case import SingleDeviceTestCase
 from views.sign_in_view import SignInView
 
 
-@pytest.mark.all
+@marks.all
 class TestBrowsing(SingleDeviceTestCase):
 
     @marks.testrail_id(5424)
@@ -28,7 +27,7 @@ class TestBrowsing(SingleDeviceTestCase):
         browsing_view.find_text_part('Unable to load page')
         browsing_view.cross_icon.click()
         if home_view.element_by_text('Browser').is_element_displayed():
-            pytest.fail('Browser entity is shown for an invalid link')
+            self.driver.fail('Browser entity is shown for an invalid link')
 
     @marks.testrail_id(6210)
     @marks.high

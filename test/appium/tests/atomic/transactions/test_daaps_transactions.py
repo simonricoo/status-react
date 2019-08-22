@@ -1,11 +1,10 @@
-import pytest
+from decimal import Decimal
 
 from tests import marks, unique_password, common_password
 from tests.base_test_case import SingleDeviceTestCase
 from tests.users import transaction_senders, transaction_recipients, basic_user
 from views.send_transaction_view import SendTransactionView
 from views.sign_in_view import SignInView
-from decimal import Decimal
 
 
 class TestTransactionDApp(SingleDeviceTestCase):
@@ -59,7 +58,7 @@ class TestTransactionDApp(SingleDeviceTestCase):
         for text in 'Contract deployed at: ', 'Call contract get function', \
                     'Call contract set function', 'Call function 2 times in a row':
             if not status_test_dapp.element_by_text(text).is_element_displayed(120):
-                pytest.fail('Contract was not created')
+                self.driver.fail('Contract was not created')
 
     @marks.testrail_id(5784)
     @marks.critical
@@ -94,7 +93,7 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check that second 'Send transaction' screen appears
         if not send_transaction_view.element_by_text('Sign with password').is_element_displayed(10):
-            pytest.fail('Second send transaction screen did not appear!')
+            self.driver.fail('Second send transaction screen did not appear!')
 
         send_transaction_view.sign_transaction()
 
@@ -114,7 +113,7 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check that second 'Send transaction' screen appears
         if not send_transaction_view.element_by_text('Sign with password').is_element_displayed(20):
-            pytest.fail('Second send transaction screen did not appear!')
+            self.driver.fail('Second send transaction screen did not appear!')
 
         send_transaction_view.sign_transaction()
 
@@ -232,12 +231,12 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether deploying simple contract with an empty ETH balance triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('deploying a contract with an empty ETH balance'))
+            self.driver.errors.append(warning.format('deploying a contract with an empty ETH balance'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_with_password.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('deploying a contract with an empty ETH balance'))
+            self.driver.errors.append(sign_button_warning.format('deploying a contract with an empty ETH balance'))
 
         # Requesting test ETH and waiting till the balance updates
         send_transaction_view.cancel_button.click()
@@ -259,15 +258,15 @@ class TestTransactionDApp(SingleDeviceTestCase):
         # Check whether sending a tx in batch with big gas limit and price triggers the warning and sign button is still
         # disabled (no funds to pay gas)
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending one transaction in batch with big gas '
-                                              'limit and price (no funds to pay gas)'))
+            self.driver.errors.append(warning.format('sending one transaction in batch with big gas '
+                                                     'limit and price (no funds to pay gas)'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_with_password.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.
-                               format('sending one transaction in batch with big gas '
-                                      'limit and price (no funds to pay gas)'))
+            self.driver.errors.append(sign_button_warning.
+                                      format('sending one transaction in batch with big gas '
+                                             'limit and price (no funds to pay gas)'))
 
         send_transaction_view.network_fee_button.click()
         gas_price = '999.9'
@@ -279,12 +278,12 @@ class TestTransactionDApp(SingleDeviceTestCase):
         # Check whether sending a tx in batch with normal gas limit and price does not trigger the warning
         # so the transaction can be signed
         if send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('"Not enough ETH for gas" warning appeared while sending '
-                                              'one transaction in batch with normal gas limit and price'))
+            self.driver.errors.append(warning.format('"Not enough ETH for gas" warning appeared while sending '
+                                                     'one transaction in batch with normal gas limit and price'))
 
         send_transaction_view.sign_transaction()
         if not status_test_dapp.assets_button.is_element_displayed():
-            self.errors.append('Could not sing the transaction!')
+            self.driver.errors.append('Could not sing the transaction!')
 
         self.verify_no_errors()
 
@@ -308,11 +307,11 @@ class TestTransactionDApp(SingleDeviceTestCase):
         # Check whether sending 0 ETH with an empty ETH balance triggers the warning
         send_transaction_view.sign_transaction_button.click()
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending 0 ETH with an empty ETH balance'))
+            self.driver.errors.append(warning.format('sending 0 ETH with an empty ETH balance'))
 
         # Check whether sign transaction button is disabled
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('sending 0 ETH with an empty ETH balance'))
+            self.driver.errors.append(sign_button_warning.format('sending 0 ETH with an empty ETH balance'))
 
         send_transaction_view.cancel_button.click()
         asset_button = send_transaction_view.asset_by_name('STT')
@@ -323,13 +322,13 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending 0 STT with an empty ETH balance triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending 0 STT with an empty ETH balance'))
+            self.driver.errors.append(warning.format('sending 0 STT with an empty ETH balance'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         send_transaction_view.sign_with_password.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('sending 0 STT with an empty ETH balance'))
+            self.driver.errors.append(sign_button_warning.format('sending 0 STT with an empty ETH balance'))
 
         send_transaction_view.cancel_button.click()
         home_view = send_transaction_view.get_back_to_home_view()
@@ -343,13 +342,13 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending all available ETH triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending all available ETH (no funds to pay gas)'))
+            self.driver.errors.append(warning.format('sending all available ETH (no funds to pay gas)'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         send_transaction_view.sign_with_password.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append('sending all available ETH (no funds to pay gas)')
+            self.driver.errors.append('sending all available ETH (no funds to pay gas)')
 
         # Because tx gas price may change we calculate eth value according to current gas fee value
         transaction_fee_total = send_transaction_view.get_transaction_fee_total()
@@ -362,12 +361,12 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending big amount of ETH triggers the warning (no funds to pay gas)
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append('sending big amount of ETH (no funds to pay gas)')
+            self.driver.errors.append('sending big amount of ETH (no funds to pay gas)')
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append('sending big amount of ETH (no funds to pay gas)')
+            self.driver.errors.append('sending big amount of ETH (no funds to pay gas)')
 
         send_transaction_view.cancel_button.click()
         send_transaction_view.amount_edit_box.clear()
@@ -376,12 +375,12 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending normal amount of ETH does not trigger the warning
         if send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append('"Not enough ETH for gas" warning appeared while sending normal amount of ETH')
+            self.driver.errors.append('"Not enough ETH for gas" warning appeared while sending normal amount of ETH')
 
         send_transaction_view.sign_transaction_button.click()
         send_transaction_view.sign_transaction()
         if not wallet.send_transaction_button.is_element_displayed():
-            self.errors.append('Could not sign the transaction!')
+            self.driver.errors.append('Could not sign the transaction!')
 
         self.verify_no_errors()
 
@@ -406,24 +405,24 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending 0 ETH with an empty ETH balance triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending 0 ETH with an empty ETH balance'))
+            self.driver.errors.append(warning.format('sending 0 ETH with an empty ETH balance'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('sending 0 ETH with an empty ETH balance'))
+            self.driver.errors.append(sign_button_warning.format('sending 0 ETH with an empty ETH balance'))
 
         send_transaction_view.cross_icon.click()
         chat.send_transaction_in_1_1_chat(asset='STT', amount='0', wallet_set_up=False, sign_transaction=False)
 
         # Check whether sending 0 STT with an empty ETH balance triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending 0 STT with an empty ETH balance'))
+            self.driver.errors.append(warning.format('sending 0 STT with an empty ETH balance'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('sending 0 STT with an empty ETH balance'))
+            self.driver.errors.append(sign_button_warning.format('sending 0 STT with an empty ETH balance'))
 
         send_transaction_view.cross_icon.click()
         # Requesting test ETH and waiting till the balance updates
@@ -433,32 +432,32 @@ class TestTransactionDApp(SingleDeviceTestCase):
 
         # Check whether sending all available ETH triggers the warning
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append(warning.format('sending all available ETH'))
+            self.driver.errors.append(warning.format('sending all available ETH'))
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append(sign_button_warning.format('sending all available ETH'))
+            self.driver.errors.append(sign_button_warning.format('sending all available ETH'))
 
         chat.send_transaction_in_1_1_chat(asset='ETHro', amount='0.099979000000000001',
                                           wallet_set_up=False, sign_transaction=False)
 
         # Check whether sending big amount of ETH triggers the warning (no funds to pay gas)
         if not send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append('sending big amount of ETH (no funds to pay gas)')
+            self.driver.errors.append('sending big amount of ETH (no funds to pay gas)')
 
         # Check whether sign transaction button is disabled
         send_transaction_view.sign_transaction_button.click()
         if send_transaction_view.enter_password_input.is_element_displayed():
-            self.errors.append('sending big amount of ETH (no funds to pay gas)')
+            self.driver.errors.append('sending big amount of ETH (no funds to pay gas)')
 
         chat.send_transaction_in_1_1_chat(asset='ETHro', amount='0.099979', wallet_set_up=False, sign_transaction=False)
         # Check whether sending normal amount of ETH does not trigger the warning
         if send_transaction_view.validation_warnings.not_enough_eth_for_gas.is_element_displayed():
-            self.errors.append('"Not enough ETH for gas" warning appeared while sending normal amount of ETH')
+            self.driver.errors.append('"Not enough ETH for gas" warning appeared while sending normal amount of ETH')
 
         send_transaction_view.sign_transaction()
         if not wallet.send_transaction_button.is_element_displayed():
-            self.errors.append('Could not sing the transaction!')
+            self.driver.errors.append('Could not sing the transaction!')
 
         self.verify_no_errors()

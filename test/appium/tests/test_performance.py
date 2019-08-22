@@ -1,8 +1,10 @@
+import time
+
+from datetime import datetime
+
 from tests import marks
 from tests.base_test_case import SingleDeviceTestCase
 from views.sign_in_view import SignInView
-from datetime import datetime
-import time
 
 
 class TestPerformance(SingleDeviceTestCase):
@@ -44,9 +46,10 @@ class TestPerformance(SingleDeviceTestCase):
         timestamps_by_event = self.get_timestamps_by_event(app_started, login_shown, password_submitted, login_success)
         for event in app_started, login_shown, password_submitted, login_success:
             self.driver.info("event: '%s' | timestamp: '%s' | time: '%s'" % (event, timestamps_by_event[event],
-                             datetime.utcfromtimestamp(timestamps_by_event[event] / 1000)))
+                                                                             datetime.utcfromtimestamp(
+                                                                                 timestamps_by_event[event] / 1000)))
 
-        time_to_login= (timestamps_by_event[login_success] - timestamps_by_event[password_submitted]) / 1000
+        time_to_login = (timestamps_by_event[login_success] - timestamps_by_event[password_submitted]) / 1000
         self.driver.info("Time to login is '%s'" % time_to_login)
 
         time_to_start_app = (timestamps_by_event[login_shown] - timestamps_by_event[app_started]) / 1000
@@ -56,11 +59,11 @@ class TestPerformance(SingleDeviceTestCase):
         baseline_login = 1.2
 
         if time_to_start_app > baseline_start_app:
-            self.errors.append(
+            self.driver.errors.append(
                 "time between starting the app and login screen is '%s' seconds, while baseline is '%s'!"
                 % (time_to_start_app, baseline_start_app))
         if time_to_login > baseline_login:
-            self.errors.append(
+            self.driver.errors.append(
                 "time between submitting a password and successful login is '%s' seconds, while baseline is '%s'!"
                 % (time_to_login, baseline_login))
         self.verify_no_errors()

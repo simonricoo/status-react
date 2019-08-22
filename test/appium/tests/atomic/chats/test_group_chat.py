@@ -73,7 +73,7 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
 
         for chat in (device_1_chat, device_2_chat):
             if chat.user_name_text.text != chat_name:
-                self.errors.append('Oops! Chat screen does not match the entered chat name %s' % chat_name)
+                chat.driver.errors.append('Oops! Chat screen does not match the entered chat name %s' % chat_name)
 
         self.verify_no_errors()
 
@@ -93,7 +93,8 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
             for chat_driver in (device_1_chat, device_2_chat):
                 if not chat.chat_element_by_text(
                         "Message from device: %s" % chat_driver.driver.number).is_element_displayed():
-                    self.errors.append("Message from device '%s' was not received" % chat_driver.driver.number)
+                    chat_driver.driver.errors.append(
+                        "Message from device '%s' was not received" % chat_driver.driver.number)
 
         self.verify_no_errors()
 
@@ -122,7 +123,7 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
         ]
         for message in system_messages:
             if not device_1_chat.chat_element_by_text(message).is_element_displayed():
-                self.errors.append("Message with test '%s' was not received" % message)
+                device_1_chat.driver.errors.append("Message with test '%s' was not received" % message)
 
         self.verify_no_errors()
 
@@ -146,7 +147,7 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
 
         # device_1: check if chat is was deleted
         if device_1_home.element_by_text(chat_name).is_element_displayed():
-            self.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
+            device_1_home.driver.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
 
         self.verify_no_errors()
 
@@ -186,37 +187,38 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
         device_1_chat.send_message(message_for_device_2)
 
         if not device_2_chat.chat_element_by_text(message_for_device_2).is_element_displayed(30):
-            self.errors.append('Message that was sent after device 2 has joined is not visible')
+            device_2_chat.driver.errors.append('Message that was sent after device 2 has joined is not visible')
         self.verify_no_errors()
 
     @marks.testrail_id(5756)
     @marks.high
     def test_decline_invitation_to_group_chat(self):
-            self.create_drivers(2)
-            message_for_device_2 = 'This message should not be visible for device 2'
+        self.create_drivers(2)
+        message_for_device_2 = 'This message should not be visible for device 2'
 
-            device_1_home, device_2_home = create_users(self.drivers[0], self.drivers[1])
-            chat_name = device_1_home.get_public_chat_name()
-            device_1_chat, device_2_chat = create_new_group_chat(device_1_home, device_2_home, chat_name)
-            device_2_chat.decline_invitation_button.click()
+        device_1_home, device_2_home = create_users(self.drivers[0], self.drivers[1])
+        chat_name = device_1_home.get_public_chat_name()
+        device_1_chat, device_2_chat = create_new_group_chat(device_1_home, device_2_home, chat_name)
+        device_2_chat.decline_invitation_button.click()
 
-            # device 2: check that chat is deleted
-            if device_2_home.element_by_text(chat_name).is_element_displayed():
-                self.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
+        # device 2: check that chat is deleted
+        if device_2_home.element_by_text(chat_name).is_element_displayed():
+            device_2_home.driver.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
 
-            # device 1: check system message about leaving a group chat
-            device_2_default_username = get_username(device_2_home)
-            user2_left_chat_system_message = return_left_chat_system_message(device_2_default_username)
-            if not device_1_chat.chat_element_by_text(user2_left_chat_system_message).is_element_displayed():
-                self.errors.append("Message with text '%s' was not received" % user2_left_chat_system_message)
+        # device 1: check system message about leaving a group chat
+        device_2_default_username = get_username(device_2_home)
+        user2_left_chat_system_message = return_left_chat_system_message(device_2_default_username)
+        if not device_1_chat.chat_element_by_text(user2_left_chat_system_message).is_element_displayed():
+            device_1_chat.driver.errors.append(
+                "Message with text '%s' was not received" % user2_left_chat_system_message)
 
-            # device 1: send some message to group chat
-            device_1_chat.send_message(message_for_device_2)
+        # device 1: send some message to group chat
+        device_1_chat.send_message(message_for_device_2)
 
-            # device 2: check that chat doesn't reappear
-            if device_2_home.element_by_text(chat_name).is_element_displayed():
-                self.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
-            self.verify_no_errors()
+        # device 2: check that chat doesn't reappear
+        if device_2_home.element_by_text(chat_name).is_element_displayed():
+            device_2_home.driver.errors.append("Group chat '%s' is shown, but the chat has been deleted" % chat_name)
+        self.verify_no_errors()
 
     @marks.testrail_id(4001)
     @marks.high
@@ -246,14 +248,14 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
 
         # device 2: check there is no message input so user can't send new message in group chat
         if device_2_chat.chat_message_input.is_element_displayed():
-            self.errors.append("Message input is still available for removed user")
+            device_2_chat.driver.errors.append("Message input is still available for removed user")
 
         # device 1: send some message to group chat
         device_1_chat.send_message(message_for_device_2)
 
         # device 2: check that message is not received
         if device_2_chat.chat_element_by_text(message_for_device_2).is_element_displayed():
-            self.errors.append("Message with text '%s' was received" % message_for_device_2)
+            device_2_chat.driver.errors.append("Message with text '%s' was received" % message_for_device_2)
 
         self.verify_no_errors()
 
@@ -323,5 +325,3 @@ class TestGroupChatMultipleDevice(MultipleDeviceTestCase):
             if device_1_chat.element_starts_with_text(message).is_element_present():
                 device_1_chat.driver.fail(
                     "Message '%s' is shown after re-login, but group chat history has been cleared" % message)
-
-        self.verify_no_errors()

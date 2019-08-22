@@ -1,20 +1,19 @@
+import sys
+
 import asyncio
 import logging
+import pytest
 import re
 import subprocess
-import sys
 from abc import ABCMeta, abstractmethod
-from os import environ
-
-import pytest
 from appium import webdriver
 from appium.webdriver.common.mobileby import MobileBy
+from os import environ
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import WebDriverException
 
 from support.api.network_api import NetworkApi
 from support.github_report import GithubHtmlReport
-from support.message_reliability_report import create_one_to_one_chat_report, create_public_chat_report
 from tests import test_suite_data, start_threads, appium_container
 
 
@@ -116,14 +115,8 @@ class AbstractTestCase:
     def implicitly_wait(self):
         return 5
 
-    errors = []
-
     network_api = NetworkApi()
     github_report = GithubHtmlReport()
-
-    def verify_no_errors(self):
-        if self.errors:
-            pytest.fail('\n '.join([self.errors.pop(0) for _ in range(len(self.errors))]))
 
     def is_alert_present(self, driver):
         try:
@@ -141,6 +134,8 @@ class AbstractTestCase:
 
 
 class Driver(webdriver.Remote):
+
+    errors = []
 
     @property
     def number(self):
@@ -186,6 +181,10 @@ class SingleDeviceTestCase(AbstractTestCase):
             pass
         finally:
             self.github_report.save_test(test_suite_data.current_test)
+
+    def verify_no_errors(self):
+        if self.driver.errors:
+            pytest.fail('\n '.join(self.driver.errors))
 
 
 class LocalMultipleDeviceTestCase(AbstractTestCase):
@@ -251,7 +250,10 @@ environment = LocalMultipleDeviceTestCase if pytest.config.getoption('env') == '
 
 
 class MultipleDeviceTestCase(environment):
-    pass
+
+    def verify_no_errors(self):
+        if self.drivers[0].errors:
+            pytest.fail('\n '.join(self.drivers[0].errors))
 
 
 class NoDeviceTestCase(AbstractTestCase):

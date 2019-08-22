@@ -1,11 +1,10 @@
-import pytest
 from _pytest.outcomes import Failed
 from decimal import Decimal as d
 from selenium.common.exceptions import TimeoutException
 
 from tests import marks, unique_password
-from tests.users import transaction_senders, basic_user, transaction_recipients
 from tests.base_test_case import MultipleDeviceTestCase, SingleDeviceTestCase
+from tests.users import transaction_senders, basic_user, transaction_recipients
 from views.sign_in_view import SignInView
 
 
@@ -39,7 +38,8 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
         device_1_chat.chat_element_by_text(amount_1).progress_bar.wait_for_invisibility_of_element()
         status_text_1 = device_1_chat.chat_element_by_text(amount_1).status.text
         if status_text_1 != 'Sent':
-            self.errors.append("Message about sent funds has status '%s' instead of 'Sent'" % status_text_1)
+            device_1_chat.driver.errors.append(
+                "Message about sent funds has status '%s' instead of 'Sent'" % status_text_1)
 
         device_2_chat = device_2_home.get_chat_with_user(sender['username']).click()
         chat_element_1 = device_2_chat.chat_element_by_text(amount_1)
@@ -47,18 +47,20 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
             chat_element_1.wait_for_visibility_of_element(120)
             chat_element_1.progress_bar.wait_for_invisibility_of_element()
             if chat_element_1.status.text != 'Network mismatch':
-                self.errors.append("'Network mismatch' warning is not shown for send transaction message")
+                device_2_chat.driver.errors.append(
+                    "'Network mismatch' warning is not shown for send transaction message")
             if not chat_element_1.contains_text('testnet'):
-                self.errors.append("Sent transaction message doesn't contain text 'testnet'")
+                device_2_chat.driver.errors.append("Sent transaction message doesn't contain text 'testnet'")
         except TimeoutException:
-            self.errors.append('Sent transaction message was not received')
+            device_2_chat.driver.errors.append('Sent transaction message was not received')
         device_2_chat.get_back_to_home_view()
 
         amount_2 = device_1_chat.get_unique_amount()
         device_1_chat.request_transaction_in_1_1_chat('ETHro', amount_2)
         status_text_2 = device_1_chat.chat_element_by_text(amount_2).status.text
         if status_text_2 != 'Sent':
-            self.errors.append("Request funds message has status '%s' instead of 'Sent'" % status_text_2)
+            device_1_chat.driver.errors.append(
+                "Request funds message has status '%s' instead of 'Sent'" % status_text_2)
 
         device_2_home.get_chat_with_user(sender['username']).click()
         chat_element_2 = device_2_chat.chat_element_by_text(amount_2)
@@ -66,13 +68,13 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
             chat_element_2.wait_for_visibility_of_element(120)
             chat_element_2.progress_bar.wait_for_invisibility_of_element()
             if chat_element_2.status.text != 'Network mismatch':
-                self.errors.append("'Network mismatch' warning is not shown for request funds message")
+                device_2_chat.driver.errors.append("'Network mismatch' warning is not shown for request funds message")
             if not chat_element_2.contains_text('On testnet'):
-                self.errors.append("Request funds message doesn't contain text 'testnet'")
+                device_2_chat.driver.errors.append("Request funds message doesn't contain text 'testnet'")
             if not chat_element_2.contains_text('Transaction Request'):
-                self.errors.append("Request funds message doesn't contain text 'Transaction Request'")
+                device_2_chat.driver.errors.append("Request funds message doesn't contain text 'Transaction Request'")
         except TimeoutException:
-            self.errors.append('Request funds message was not received')
+            device_2_chat.driver.errors.append('Request funds message was not received')
         self.verify_no_errors()
 
     @marks.testrail_id(5306)
@@ -110,15 +112,15 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
         send_transaction_view.gas_price_input.clear()
         send_transaction_view.gas_price_input.set_value(gas_price)
         if send_transaction_view.total_fee_input.text != '%s ETHro' % (d(gas_limit) * d(gas_price) / d(1000000000)):
-            self.errors.append('Gas limit and/or gas price fields were not edited')
+            device_1.driver.errors.append('Gas limit and/or gas price fields were not edited')
         send_transaction_view.update_fee_button.click()
         send_transaction_view.sign_transaction()
 
         if not chat_1.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Message with the sent amount is not shown for the sender')
+            device_1.driver.errors.append('Message with the sent amount is not shown for the sender')
         chat_2 = home_2.get_chat_with_user(sender['username']).click()
         if not chat_2.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Message with the sent amount is not shown for the recipient')
+            device_2.driver.errors.append('Message with the sent amount is not shown for the recipient')
 
         chat_2.get_back_to_home_view()
         home_2.wallet_button.click()
@@ -126,7 +128,7 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
             wallet_2.wait_balance_changed_on_wallet_screen(expected_balance=init_balance + float(amount))
             self.network_api.find_transaction_by_unique_amount(recipient['address'], amount)
         except Failed as e:
-            self.errors.append(e.msg)
+            device_2.driver.errors.append(e.msg)
         self.verify_no_errors()
 
     @marks.testrail_id(5318)
@@ -155,17 +157,17 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
         chat_1.send_funds_to_request(amount=amount)
 
         if not chat_1.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Message with the sent amount is not shown for the sender')
+            device_1.driver.errors.append('Message with the sent amount is not shown for the sender')
         if not chat_2.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Message with the sent amount is not shown for the recipient')
+            device_2.driver.errors.append('Message with the sent amount is not shown for the recipient')
 
         chat_2.get_back_to_home_view()
         home_2.wallet_button.click()
         try:
             wallet_2.wait_balance_changed_on_wallet_screen(expected_balance=init_balance + float(amount))
-            self.network_api.find_transaction_by_unique_amount(recipient['address'], amount)
+            device_2.driver.network_api.find_transaction_by_unique_amount(recipient['address'], amount)
         except Failed as e:
-            self.errors.append(e.msg)
+            device_2.driver.errors.append(e.msg)
         self.verify_no_errors()
 
     @marks.testrail_id(5324)
@@ -207,11 +209,11 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
         try:
             chat_element.wait_for_visibility_of_element(120)
             if not chat_element.contains_text('Transaction Request'):
-                self.errors.append("Request funds message doesn't contain text 'Transaction Request'")
+                device_2.driver.errors.append("Request funds message doesn't contain text 'Transaction Request'")
             if not chat_element.send_request_button.is_element_displayed():
-                self.errors.append("Request funds message doesn't contain 'Send' button")
+                device_2.driver.errors.append("Request funds message doesn't contain 'Send' button")
         except TimeoutException:
-            self.errors.append('Request funds message was not received')
+            device_2.driver.errors.append('Request funds message was not received')
         self.verify_no_errors()
 
     @marks.testrail_id(5383)
@@ -266,16 +268,16 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
 
         message_1 = chat_1.chat_element_by_text(amount)
         if not message_1.is_element_displayed() or not message_1.contains_text('STT'):
-            self.errors.append('Message with the sent amount is not shown for the sender')
+            device_1.driver.errors.append('Message with the sent amount is not shown for the sender')
         chat_2 = home_2.get_chat_with_user(sender['username']).click()
         message_2 = chat_2.chat_element_by_text(amount)
         if not message_2.is_element_displayed() or not message_2.contains_text('STT'):
-            self.errors.append('Message with the sent amount is not shown for the recipient')
+            device_2.driver.errors.append('Message with the sent amount is not shown for the recipient')
 
         try:
             self.network_api.find_transaction_by_unique_amount(recipient['address'], amount, token=True)
         except Failed as e:
-            self.errors.append(e.msg)
+            device_2.driver.errors.append(e.msg)
         self.verify_no_errors()
 
     @marks.testrail_id(5352)
@@ -304,15 +306,15 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
 
         message_1 = chat_1.chat_element_by_text(amount)
         if not message_1.is_element_displayed() or not message_1.contains_text('STT'):
-            self.errors.append('Message with the sent amount is not shown for the sender')
+            device_1.driver.errors.append('Message with the sent amount is not shown for the sender')
         message_2 = chat_2.chat_element_by_text(amount)
         if not message_2.is_element_displayed() or not message_2.contains_text('STT'):
-            self.errors.append('Message with the sent amount is not shown for the recipient')
+            device_2.driver.errors.append('Message with the sent amount is not shown for the recipient')
 
         try:
             self.network_api.find_transaction_by_unique_amount(recipient['address'], amount, token=True)
         except Failed as e:
-            self.errors.append(e.msg)
+            device_2.driver.errors.append(e.msg)
         self.verify_no_errors()
 
     @marks.testrail_id(5376)
@@ -355,12 +357,12 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         chat.commands_button.click()
         chat.send_command.click()
         if chat.asset_by_name('MDS').is_element_displayed():
-            self.errors.append('Token which is not enabled in wallet can be sent in 1-1 chat')
+            self.driver.errors.append('Token which is not enabled in wallet can be sent in 1-1 chat')
         chat.chat_message_input.clear()
         chat.commands_button.click()
         chat.request_command.click()
         if chat.asset_by_name('MDS').is_element_displayed():
-            self.errors.append('Token which is not enabled in wallet can be requested in 1-1 chat')
+            self.driver.errors.append('Token which is not enabled in wallet can be requested in 1-1 chat')
         self.verify_no_errors()
 
     @marks.logcat
@@ -405,9 +407,9 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         # if not send_transaction_view.element_by_text(recipient['username']).is_element_displayed():
         #     self.errors.append('Recipient name is not shown')
         if not send_transaction_view.element_by_text_part('ETHro').is_element_displayed():
-            self.errors.append("Asset field doesn't contain 'ETHro' text")
+            self.driver.errors.append("Asset field doesn't contain 'ETHro' text")
         if not send_transaction_view.element_by_text_part(amount).is_element_displayed():
-            self.errors.append('Amount is not visible')
+            self.driver.errors.append('Amount is not visible')
         self.verify_no_errors()
 
     @marks.testrail_id(5377)
@@ -426,7 +428,7 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         chat.send_transaction_in_1_1_chat('ETHro', amount)
         self.network_api.wait_for_confirmation_of_transaction(sender['address'], amount)
         if not chat.chat_element_by_text(amount).contains_text('Confirmed', wait_time=90):
-            pytest.fail('Status "Confirmed" is not shown under transaction for the sender')
+            self.driver.fail('Status "Confirmed" is not shown under transaction for the sender')
 
     @marks.testrail_id(5410)
     @marks.high
@@ -447,7 +449,8 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         send_transaction = chat_view.get_send_transaction_view()
         error_text = send_transaction.element_by_text('Insufficient funds')
         if not error_text.is_element_displayed():
-            self.errors.append("'Insufficient funds' error is now shown when sending 1 ETH from chat with balance 0")
+            self.driver.errors.append(
+                "'Insufficient funds' error is now shown when sending 1 ETH from chat with balance 0")
         send_transaction.cancel_button.click()
         chat_view.commands_button.click()
 
@@ -461,7 +464,8 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         chat_view.send_as_keyevent('1')
         chat_view.send_message_button.click()
         if not error_text.is_element_displayed():
-            self.errors.append("'Insufficient funds' error is now shown when sending 1 STT from chat with balance 0")
+            self.driver.errors.append(
+                "'Insufficient funds' error is now shown when sending 1 STT from chat with balance 0")
         self.verify_no_errors()
 
     @marks.testrail_id(5473)
@@ -478,7 +482,7 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         eth_value = wallet_view.get_eth_value()
         stt_value = wallet_view.get_stt_value()
         if eth_value == 0 or stt_value == 0:
-            pytest.fail('No funds!')
+            self.driver.fail('No funds!')
         home_view = wallet_view.home_button.click()
         chat_view = home_view.add_contact(basic_user['public_key'])
         chat_view.commands_button.click()
@@ -489,7 +493,7 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         send_transaction = chat_view.get_send_transaction_view()
         error_text = send_transaction.element_by_text('Insufficient funds')
         if not error_text.is_element_displayed():
-            self.errors.append(
+            self.driver.errors.append(
                 "'Insufficient funds' error is now shown when sending %s ETHro from chat with balance %s" % (
                     round(eth_value + 1), eth_value))
         send_transaction.cancel_button.click_until_presence_of_element(chat_view.commands_button)
@@ -500,7 +504,7 @@ class TestCommandsSingleDevices(SingleDeviceTestCase):
         chat_view.send_as_keyevent(str(round(stt_value + 1)))
         chat_view.send_message_button.click()
         if not error_text.is_element_displayed():
-            self.errors.append(
+            self.driver.errors.append(
                 "'Insufficient funds' error is now shown when sending %s STT from chat with balance %s" % (
                     round(stt_value + 1), stt_value))
         self.verify_no_errors()

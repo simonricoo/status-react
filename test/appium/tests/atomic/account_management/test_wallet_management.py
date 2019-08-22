@@ -22,10 +22,10 @@ class TestWalletManagement(SingleDeviceTestCase):
                  'If you see a different combo, cancel the transaction and logout.']
         for text in texts:
             if not wallet.element_by_text_part(text).is_element_displayed():
-                self.errors.append("'%s' text is not displayed" % text)
+                self.driver.errors.append("'%s' text is not displayed" % text)
         phrase = wallet.sign_in_phrase.list
         if len(phrase) != 3:
-            self.errors.append('Transaction phrase length is %s' % len(phrase))
+            self.driver.errors.append('Transaction phrase length is %s' % len(phrase))
         wallet.remind_me_later_button.click()
         wallet.accounts_status_account.click()
         send_transaction = wallet.send_transaction_button.click()
@@ -38,17 +38,17 @@ class TestWalletManagement(SingleDeviceTestCase):
         send_transaction.sign_transaction_button.click()
         for text in texts:
             if not wallet.element_by_text_part(text).is_element_displayed():
-                self.errors.append("'%s' text is not displayed" % text)
+                self.driver.errors.append("'%s' text is not displayed" % text)
         phrase_1 = wallet.sign_in_phrase.list
         if phrase_1 != phrase:
-            self.errors.append("Transaction phrase '%s' doesn't match expected '%s'" % (phrase_1, phrase))
+            self.driver.errors.append("Transaction phrase '%s' doesn't match expected '%s'" % (phrase_1, phrase))
         wallet.ok_got_it_button.click()
         wallet.back_button.click(times_to_click=2)
         wallet.home_button.click()
         wallet.wallet_button.click()
         for text in texts:
             if wallet.element_by_text_part(text).is_element_displayed():
-                self.errors.append('Signing phrase pop up appears after wallet set up')
+                self.driver.errors.append('Signing phrase pop up appears after wallet set up')
                 break
         self.verify_no_errors()
 
@@ -89,7 +89,7 @@ class TestWalletManagement(SingleDeviceTestCase):
         public_chat = home_view.join_public_chat('testchat')
         public_chat.chat_message_input.paste_text_from_clipboard()
         if public_chat.chat_message_input.text != transaction_hash:
-            pytest.fail('Transaction hash was not copied')
+            self.driver.fail('Transaction hash was not copied')
 
     @marks.testrail_id(5341)
     @marks.critical
@@ -102,10 +102,10 @@ class TestWalletManagement(SingleDeviceTestCase):
         wallet.select_asset(asset)
         wallet.asset_by_name(asset).scroll_to_element()
         if not wallet.asset_by_name(asset).is_element_displayed():
-            self.errors.append('%s asset is not shown in wallet' % asset)
+            self.driver.errors.append('%s asset is not shown in wallet' % asset)
         wallet.select_asset(asset)
         if wallet.asset_by_name(asset).is_element_displayed():
-            self.errors.append('%s asset is shown in wallet but was deselected' % asset)
+            self.driver.errors.append('%s asset is shown in wallet but was deselected' % asset)
         self.verify_no_errors()
 
     @marks.testrail_id(5358)
@@ -144,7 +144,7 @@ class TestWalletManagement(SingleDeviceTestCase):
         send_transaction = wallet.send_transaction_button.click()
         send_transaction.select_asset_button.click()
         if send_transaction.asset_by_name(asset_name).is_element_displayed():
-            pytest.fail('Collectibles can be sent from wallet')
+            self.driver.fail('Collectibles can be sent from wallet')
 
     @marks.testrail_id(5467)
     @marks.medium
@@ -183,7 +183,7 @@ class TestWalletManagement(SingleDeviceTestCase):
             details = transaction_history.transactions_table.transaction_by_index(i).click()
             if details.get_recipient_address() != '0x' + user['address'] \
                     or details.element_by_text('Failed').is_element_displayed():
-                pytest.fail('Incoming transactions are not filtered')
+                self.driver.fail('Incoming transactions are not filtered')
             details.back_button.click()
 
         transaction_history.filters_button.click()
@@ -194,7 +194,7 @@ class TestWalletManagement(SingleDeviceTestCase):
             details = transaction_history.transactions_table.transaction_by_index(i).click()
             if details.get_sender_address() != '0x' + user['address'] \
                     or details.element_by_text('Failed').is_element_displayed():
-                pytest.fail('Outgoing transactions are not filtered')
+                self.driver.fail('Outgoing transactions are not filtered')
             details.back_button.click()
 
         transaction_history.filters_button.click()
@@ -204,7 +204,7 @@ class TestWalletManagement(SingleDeviceTestCase):
         for i in range(transaction_history.transactions_table.get_transactions_number()):
             details = transaction_history.transactions_table.transaction_by_index(i).click()
             if not details.element_by_text('Failed').is_element_displayed():
-                pytest.fail('Failed transactions are not filtered')
+                self.driver.fail('Failed transactions are not filtered')
             details.back_button.click()
         self.verify_no_errors()
 
@@ -242,21 +242,21 @@ class TestWalletManagement(SingleDeviceTestCase):
         token_view.contract_address_input.send_keys(contract_address)
         token_view.progress_bar.wait_for_invisibility_of_element(30)
         if token_view.name_input.text != name:
-            self.errors.append('Name for custom token was not set')
+            self.driver.errors.append('Name for custom token was not set')
         if token_view.symbol_input.text != symbol:
-            self.errors.append('Symbol for custom token was not set')
+            self.driver.errors.append('Symbol for custom token was not set')
         if token_view.decimals_input.text != decimals:
-            self.errors.append('Decimals for custom token was not set')
+            self.driver.errors.append('Decimals for custom token was not set')
         token_view.add_button.click()
         token_view.back_button.click()
         if not wallet_view.asset_by_name(symbol).is_element_displayed():
-            self.errors.append('Custom token is not shown on Wallet view')
+            self.driver.errors.append('Custom token is not shown on Wallet view')
         wallet_view.accounts_status_account.click()
         send_transaction = wallet_view.send_transaction_button.click()
         token_element = send_transaction.asset_by_name(symbol)
         send_transaction.select_asset_button.click_until_presence_of_element(token_element)
         if not token_element.is_element_displayed():
-            self.errors.append('Custom token is not shown on Send Transaction view')
+            self.driver.errors.append('Custom token is not shown on Send Transaction view')
         self.verify_no_errors()
 
     @marks.testrail_id(6224)

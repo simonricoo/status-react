@@ -242,7 +242,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
         send_transaction.amount_edit_box.set_value(amount)
         error_text = 'Amount is too precise. Max number of decimals is 7.'
         if not send_transaction.element_by_text(error_text).is_element_displayed():
-            self.errors.append('Warning about too precise amount is not shown when sending a transaction')
+            self.driver.errors.append('Warning about too precise amount is not shown when sending a transaction')
         send_transaction.back_button.click()
         wallet_view.receive_transaction_button.click()
         # temporary skipped due to 8601
@@ -252,7 +252,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
         # send_transaction.amount_edit_box.set_value(amount)
         # error_text = 'Amount is too precise. Max number of decimals is 7.'
         # if not send_transaction.element_by_text(error_text).is_element_displayed():
-        #     self.errors.append('Warning about too precise amount is not shown when requesting a transaction')
+        #     self.driver.errors.append('Warning about too precise amount is not shown when requesting a transaction')
         self.verify_no_errors()
 
     @marks.testrail_id(5423)
@@ -296,12 +296,14 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
         send_transaction.amount_edit_box.set_value(1)
         error_text = send_transaction.element_by_text('Insufficient funds')
         if not error_text.is_element_displayed():
-            self.errors.append("'Insufficient funds' error is now shown when sending 1 ETH from wallet with balance 0")
+            self.driver.errors.append(
+                "'Insufficient funds' error is now shown when sending 1 ETH from wallet with balance 0")
         send_transaction.select_asset_button.click()
         send_transaction.asset_by_name('STT').click()
         send_transaction.amount_edit_box.set_value(1)
         if not error_text.is_element_displayed():
-            self.errors.append("'Insufficient funds' error is now shown when sending 1 STT from wallet with balance 0")
+            self.driver.errors.append(
+                "'Insufficient funds' error is now shown when sending 1 STT from wallet with balance 0")
         self.verify_no_errors()
 
     @marks.testrail_id(5412)
@@ -321,7 +323,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
         send_transaction.amount_edit_box.set_value(round(eth_value + 1))
         error_text = send_transaction.element_by_text('Insufficient funds')
         if not error_text.is_element_displayed():
-            self.errors.append(
+            self.driver.errors.append(
                 "'Insufficient funds' error is now shown when sending %s ETH from wallet with balance %s" % (
                     round(eth_value + 1), eth_value))
         send_transaction.select_asset_button.click()
@@ -329,7 +331,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
         send_transaction.asset_by_name('STT').click()
         send_transaction.amount_edit_box.set_value(round(stt_value + 1))
         if not error_text.is_element_displayed():
-            self.errors.append(
+            self.driver.errors.append(
                 "'Insufficient funds' error is now shown when sending %s STT from wallet with balance %s" % (
                     round(stt_value + 1), stt_value))
         self.verify_no_errors()
@@ -403,9 +405,9 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
             tx_from = transactions_details.get_sender_address()
             tx_to = transactions_details.get_recipient_address()
             if tx_from != expected_txs_list[tx_hash]['from']:
-                self.errors.append('Transactions senders do not match!')
+                self.driver.errors.append('Transactions senders do not match!')
             if tx_to != expected_txs_list[tx_hash]['to']:
-                self.errors.append('Transactions recipients do not match!')
+                self.driver.errors.append('Transactions recipients do not match!')
             transactions_details.back_button.click()
 
         self.verify_no_errors()
@@ -513,8 +515,8 @@ class TestTransactionWalletMultipleDevice(MultipleDeviceTestCase):
         wallet_1.home_button.click()
         home_1.get_chat_with_user(recipient['username']).click()
         if not chat_1.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Transaction message is not shown in 1-1 chat for the sender')
+            device_1.driver.errors.append('Transaction message is not shown in 1-1 chat for the sender')
         chat_2 = home_2.get_chat_with_user(sender['username']).click()
         if not chat_2.chat_element_by_text(amount).is_element_displayed():
-            self.errors.append('Transaction message is not shown in 1-1 chat for the recipient')
+            device_2.driver.errors.append('Transaction message is not shown in 1-1 chat for the recipient')
         self.verify_no_errors()

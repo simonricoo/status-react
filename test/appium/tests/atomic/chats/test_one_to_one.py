@@ -1,7 +1,6 @@
 import time
 
 import emoji
-import pytest
 import random
 import string
 from datetime import datetime
@@ -137,15 +136,15 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         chat_element.wait_for_visibility_of_element()
         device_2_chat = chat_element.click()
         if not device_2_chat.chat_element_by_text(message).is_element_displayed():
-            self.errors.append("Message with test '%s' was not received" % message)
+            device_2.driver.errors.append("Message with test '%s' was not received" % message)
         if not device_2_chat.add_to_contacts.is_element_displayed():
-            self.errors.append('Add to contacts button is not shown')
+            device_2.driver.errors.append('Add to contacts button is not shown')
         if device_2_chat.user_name_text.text != default_username_1:
-            self.errors.append("Default username '%s' is not shown in one-to-one chat" % default_username_1)
+            device_2.driver.errors.append("Default username '%s' is not shown in one-to-one chat" % default_username_1)
         device_2_chat.chat_options.click()
         device_2_chat.view_profile_button.click()
         if not device_2_chat.contact_profile_picture.is_element_image_equals_template():
-            self.errors.append("Updated profile picture is not shown in one-to-one chat")
+            device_2.driver.errors.append("Updated profile picture is not shown in one-to-one chat")
         self.verify_no_errors()
 
     @marks.testrail_id(5316)
@@ -175,7 +174,7 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         chat_element.wait_for_visibility_of_element()
         device_2_chat = chat_element.click()
         if not device_2_chat.chat_element_by_text(message).is_element_displayed():
-            self.errors.append("Message with text '%s' was not received" % message)
+            device_2.driver.errors.append("Message with text '%s' was not received" % message)
         device_2_chat.connection_status.wait_for_invisibility_of_element(60)
         device_2_chat.add_to_contacts.click()
 
@@ -183,14 +182,14 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_2_home.plus_button.click()
         device_2_contacts = device_2_home.start_new_chat_button.click()
         if not device_2_contacts.element_by_text(default_username_1).is_element_displayed():
-            self.errors.append('%s is not added to contacts' % default_username_1)
+            device_2.driver.errors.append('%s is not added to contacts' % default_username_1)
 
         if device_1_chat.user_name_text.text != default_username_2:
-            self.errors.append("Default username '%s' is not shown in one-to-one chat" % default_username_2)
+            device_1.driver.errors.append("Default username '%s' is not shown in one-to-one chat" % default_username_2)
         device_1_chat.chat_options.click()
         device_1_chat.view_profile_button.click()
         if not device_1_chat.contact_profile_picture.is_element_image_equals_template(file_name):
-            self.errors.append("Updated profile picture is not shown in one-to-one chat")
+            device_1.driver.errors.append("Updated profile picture is not shown in one-to-one chat")
         self.verify_no_errors()
 
     @marks.testrail_id(5373)
@@ -217,7 +216,7 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         try:
             web_view.find_full_text('Private, Secure Communication')
         except TimeoutException:
-            self.errors.append('Device 2: URL was not opened from 1-1 chat')
+            device_2.driver.errors.append('Device 2: URL was not opened from 1-1 chat')
         web_view.back_to_home_button.click()
         chat_2.home_button.click()
         chat_2.back_button.click()
@@ -232,7 +231,7 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         try:
             web_view.find_full_text('Private, Secure Communication')
         except TimeoutException:
-            self.errors.append('Device 1: URL was not opened from 1-1 chat')
+            device_1.driver.errors.append('Device 1: URL was not opened from 1-1 chat')
         self.verify_no_errors()
 
     @marks.testrail_id(5326)
@@ -246,15 +245,15 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
 
         chat = home_view.add_contact(transaction_senders['C']['public_key'])
         if chat.connection_status.text != 'Offline':
-            self.errors.append('Offline status is not shown in 1-1 chat')
+            chat.driver.errors.append('Offline status is not shown in 1-1 chat')
         chat.get_back_to_home_view()
 
         if home_view.connection_status.text != 'Offline':
-            self.errors.append('Offline status is not shown in home screen')
+            home_view.driver.errors.append('Offline status is not shown in home screen')
 
         public_chat = home_view.join_public_chat(home_view.get_public_chat_name())
         if public_chat.connection_status.text != 'Offline':
-            self.errors.append('Offline status is not shown in a public chat')
+            public_chat.driver.errors.append('Offline status is not shown in a public chat')
         self.verify_no_errors()
 
     @marks.testrail_id(5374)
@@ -268,7 +267,7 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         chat_view.chat_message_input.send_keys(message)
         chat_view.send_message_button.click()
         if chat_view.chat_element_by_text(message).status.text != 'Sent':
-            self.errors.append("'Sent' status is not shown under the sent text message")
+            chat_view.driver.errors.append("'Sent' status is not shown under the sent text message")
         self.verify_no_errors()
 
     @marks.testrail_id(5362)
@@ -290,20 +289,20 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_2_chat.send_message_button.click()
 
         if device_1_home.home_button.counter.text != '1':
-            self.errors.append('New messages counter is not shown on Home button')
+            device_1_home.driver.errors.append('New messages counter is not shown on Home button')
 
         chat_element = device_1_home.get_chat_with_user(default_username_2)
         if chat_element.new_messages_counter.text != '1':
-            self.errors.append('New messages counter is not shown on chat element')
+            device_1_home.driver.errors.append('New messages counter is not shown on chat element')
 
         chat_element.click()
         device_1_home.get_back_to_home_view()
 
         if device_1_home.home_button.counter.is_element_displayed():
-            self.errors.append('New messages counter is shown on Home button for already seen message')
+            device_1_home.driver.errors.append('New messages counter is shown on Home button for already seen message')
 
         if chat_element.new_messages_counter.is_element_displayed():
-            self.errors.append('New messages counter is shown on chat element for already seen message')
+            device_1_home.driver.errors.append('New messages counter is shown on chat element for already seen message')
         self.verify_no_errors()
 
     @marks.testrail_id(5425)
@@ -325,21 +324,21 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_2_chat.chat_message_input.send_keys('*%s*' % bold_text)
         device_2_chat.send_message_button.click()
         if not device_2_chat.chat_element_by_text(bold_text_expected).is_element_displayed():
-            self.errors.append('Bold text is not displayed in 1-1 chat for the sender \n')
+            device_2_chat.driver.errors.append('Bold text is not displayed in 1-1 chat for the sender \n')
 
         device_1_chat = device_1_home.get_chat_with_user(default_username_2).click()
         if not device_1_chat.chat_element_by_text(bold_text_expected).is_element_displayed():
-            self.errors.append('Bold text is not displayed in 1-1 chat for the recipient \n')
+            device_1_chat.driver.errors.append('Bold text is not displayed in 1-1 chat for the recipient \n')
 
         italic_text = 'italic text'
         italic_text_expected = u'\u200b' + italic_text + u'\u200b'
         device_2_chat.chat_message_input.send_keys('_%s_' % italic_text)
         device_2_chat.send_message_button.click()
         if not device_2_chat.chat_element_by_text(italic_text_expected).is_element_displayed():
-            self.errors.append('Italic text is not displayed in 1-1 chat for the sender \n')
+            device_2_chat.driver.errors.append('Italic text is not displayed in 1-1 chat for the sender \n')
 
         if not device_1_chat.chat_element_by_text(italic_text_expected).is_element_displayed():
-            self.errors.append('Italic text is not displayed in 1-1 chat for the recipient \n')
+            device_1_chat.driver.errors.append('Italic text is not displayed in 1-1 chat for the recipient \n')
 
         device_1_chat.get_back_to_home_view()
         device_2_chat.get_back_to_home_view()
@@ -350,18 +349,18 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_2_chat.chat_message_input.send_keys('*%s*' % bold_text)
         device_2_chat.send_message_button.click()
         if not device_2_chat.chat_element_by_text(bold_text_expected).is_element_displayed():
-            self.errors.append('Bold text is not displayed in public chat for the sender')
+            device_2_chat.driver.errors.append('Bold text is not displayed in public chat for the sender')
 
         if not device_1_chat.chat_element_by_text(bold_text_expected).is_element_displayed():
-            self.errors.append('Bold text is not displayed in public chat for the recipient')
+            device_1_chat.driver.errors.append('Bold text is not displayed in public chat for the recipient')
 
         device_2_chat.chat_message_input.send_keys('_%s_' % italic_text)
         device_2_chat.send_message_button.click()
         if not device_2_chat.chat_element_by_text(italic_text_expected).is_element_displayed():
-            self.errors.append('Italic text is not displayed in public chat for the sender')
+            device_2_chat.driver.errors.append('Italic text is not displayed in public chat for the sender')
 
         if not device_1_chat.chat_element_by_text(italic_text_expected).is_element_displayed():
-            self.errors.append('Italic text is not displayed in 1-1 chat for the recipient')
+            device_1_chat.driver.errors.append('Italic text is not displayed in 1-1 chat for the recipient')
 
         self.verify_no_errors()
 
@@ -383,15 +382,15 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_1_chat.send_message_button.click()
         sent_time = datetime.strptime(device_1_chat.driver.device_time, '%a %b %d %H:%M:%S GMT %Y').strftime("%I:%M %p")
         if not device_1_chat.chat_element_by_text(message).contains_text(sent_time):
-            self.errors.append('Timestamp is not displayed in 1-1 chat for the sender')
+            device_1_chat.driver.errors.append('Timestamp is not displayed in 1-1 chat for the sender')
         if device_1_chat.chat_element_by_text(message).member_photo.is_element_displayed():
-            self.errors.append('Member photo is displayed in 1-1 chat for the sender')
+            device_1_chat.driver.errors.append('Member photo is displayed in 1-1 chat for the sender')
 
         device_2_chat = device_2_home.get_chat_with_user(username_1).click()
         if not device_2_chat.chat_element_by_text(message).contains_text(sent_time):
-            self.errors.append('Timestamp is not displayed in 1-1 chat for the recipient')
+            device_2_chat.driver.errors.append('Timestamp is not displayed in 1-1 chat for the recipient')
         if not device_2_chat.chat_element_by_text(message).member_photo.is_element_displayed():
-            self.errors.append('Member photo is not displayed in 1-1 chat for the recipient')
+            device_2_chat.driver.errors.append('Member photo is not displayed in 1-1 chat for the recipient')
 
         device_1_chat.get_back_to_home_view()
         device_2_chat.get_back_to_home_view()
@@ -403,14 +402,14 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
         device_2_chat.send_message_button.click()
         sent_time = datetime.strptime(device_2_chat.driver.device_time, '%a %b %d %H:%M:%S GMT %Y').strftime("%I:%M %p")
         if not device_2_chat.chat_element_by_text(message).contains_text(sent_time):
-            self.errors.append('Timestamp is not displayed in public chat for the sender')
+            device_2_chat.driver.errors.append('Timestamp is not displayed in public chat for the sender')
         if device_2_chat.chat_element_by_text(message).member_photo.is_element_displayed():
-            self.errors.append('Member photo is displayed in public chat for the sender')
+            device_2_chat.driver.errors.append('Member photo is displayed in public chat for the sender')
 
         if not device_1_chat.chat_element_by_text(message).contains_text(sent_time):
-            self.errors.append('Timestamp is not displayed in public chat for the recipient')
+            device_1_chat.driver.errors.append('Timestamp is not displayed in public chat for the recipient')
         if not device_1_chat.chat_element_by_text(message).member_photo.is_element_displayed():
-            self.errors.append('Member photo is not displayed in 1-1 chat for the recipient')
+            device_1_chat.driver.errors.append('Member photo is not displayed in 1-1 chat for the recipient')
 
         self.verify_no_errors()
 
@@ -453,12 +452,12 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
 
         sent_message = device1_chat.chat_element_by_text(send_amount)
         if not sent_message.is_element_displayed() and not sent_message.contains_text(device1['currency']):
-            self.errors.append('Wrong currency fiat value while sending ETH in 1*1 chat.')
+            device1_chat.driver.errors.append('Wrong currency fiat value while sending ETH in 1*1 chat.')
 
         device2_chat = device2['home_view'].get_chat_with_user(sender['username']).click()
         received_message = device2_chat.chat_element_by_text(send_amount)
         if not received_message.is_element_displayed() and not received_message.contains_text(device2['currency']):
-            self.errors.append('Wrong currency fiat value while receiving ETH in 1*1 chat.')
+            device2_chat.driver.errors.append('Wrong currency fiat value while receiving ETH in 1*1 chat.')
 
         # Currently disabled because sending / requesting funds from wallet is not shown in chat
         # device1_chat.get_back_to_home_view()
@@ -505,7 +504,7 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
 
         message_input.paste_text_from_clipboard()
         if message_input.text != message_text:
-            self.errors.append('Message text was not copied in a public chat')
+            self.driver.errors.append('Message text was not copied in a public chat')
 
         chat.get_back_to_home_view()
         home.add_contact(transaction_senders['M']['public_key'])
@@ -517,7 +516,7 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
 
         message_input.paste_text_from_clipboard()
         if message_input.text != message_text:
-            self.errors.append('Message text was not copied in 1-1 chat')
+            self.driver.errors.append('Message text was not copied in 1-1 chat')
         self.verify_no_errors()
 
     @marks.testrail_id(5322)
@@ -534,7 +533,7 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
         message_input.delete_last_symbols(2)
         current_text = message_input.text
         if current_text != message_text[:-2]:
-            pytest.fail("Message input text '%s' doesn't match expected '%s'" % (current_text, message_text[:-2]))
+            self.driver.fail("Message input text '%s' doesn't match expected '%s'" % (current_text, message_text[:-2]))
 
         message_input.cut_text()
 
@@ -558,7 +557,7 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
         chat.send_message_button.click()
 
         if not chat.chat_element_by_text(emoji_unicode).is_element_displayed():
-            self.errors.append('Message with emoji was not sent in public chat')
+            self.driver.errors.append('Message with emoji was not sent in public chat')
 
         chat.get_back_to_home_view()
         home.add_contact(transaction_senders['O']['public_key'])
@@ -566,7 +565,7 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
         chat.send_message_button.click()
 
         if not chat.chat_element_by_text(emoji_unicode).is_element_displayed():
-            self.errors.append('Message with emoji was not sent in 1-1 chat')
+            self.driver.errors.append('Message with emoji was not sent in 1-1 chat')
         self.verify_no_errors()
 
     @marks.testrail_id(5393)
@@ -595,11 +594,11 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
 
         send_message = chat.chat_element_by_text(send_amount)
         if not send_message.is_element_displayed() and not send_message.contains_text(default_currency):
-            self.errors.append('Wrong fiat value while sending assets in 1-1 chat with default currency.')
+            self.driver.errors.append('Wrong fiat value while sending assets in 1-1 chat with default currency.')
 
         request_message = chat.chat_element_by_text(request_amount)
         if not request_message.is_element_displayed() and not request_message.contains_text(default_currency):
-            self.errors.append('Wrong fiat value while requesting assets in 1-1 chat with default currency.')
+            self.driver.errors.append('Wrong fiat value while requesting assets in 1-1 chat with default currency.')
 
         chat.get_back_to_home_view()
 
@@ -613,11 +612,11 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
         # Check whether the fiat currency value of the messages sent is not changed to user-selected
         send_message = chat.chat_element_by_text(send_amount)
         if not send_message.is_element_displayed() and not send_message.contains_text(default_currency):
-            self.errors.append('Wrong fiat value while sending assets in 1-1 chat with default currency.')
+            self.driver.errors.append('Wrong fiat value while sending assets in 1-1 chat with default currency.')
 
         request_message = chat.chat_element_by_text(request_amount)
         if not request_message.is_element_displayed() and not request_message.contains_text(default_currency):
-            self.errors.append('Wrong fiat value while requesting assets in 1-1 chat with default currency.')
+            self.driver.errors.append('Wrong fiat value while requesting assets in 1-1 chat with default currency.')
 
         # Send and request some tokens in 1x1 chat and check whether the fiat currency value of
         # the new messages is equal to user-selected
@@ -627,11 +626,12 @@ class TestMessagesOneToOneChatSingle(SingleDeviceTestCase):
 
         send_message = chat.chat_element_by_text(send_amount)
         if not send_message.is_element_displayed() and not send_message.contains_text(user_currency):
-            self.errors.append('Wrong fiat value while sending assets in 1-1 chat with user selected currency.')
+            self.driver.errors.append('Wrong fiat value while sending assets in 1-1 chat with user selected currency.')
 
         request_message = chat.chat_element_by_text(request_amount)
         if not request_message.is_element_displayed() and not request_message.contains_text(user_currency):
-            self.errors.append('Wrong fiat value while requesting assets in 1-1 chat with user selected currency.')
+            self.driver.errors.append(
+                'Wrong fiat value while requesting assets in 1-1 chat with user selected currency.')
 
         # disabled since after merge https://github.com/status-im/status-react/pull/8425 no messages are shown
         # in 1-1 chat after sending from wallet

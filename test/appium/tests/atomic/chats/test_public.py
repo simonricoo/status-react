@@ -2,13 +2,14 @@ import time
 
 import emoji
 import random
+from datetime import timedelta
 from dateutil import parser
 from selenium.common.exceptions import TimeoutException
+
 from support.utilities import generate_timestamp
 from tests import marks
 from tests.base_test_case import MultipleDeviceTestCase, SingleDeviceTestCase
 from views.sign_in_view import SignInView
-from datetime import datetime, timedelta
 
 
 @marks.chat
@@ -40,7 +41,8 @@ class TestPublicChatMultipleDevice(MultipleDeviceTestCase):
         # TODO: should be replaced with ens name after https://github.com/status-im/status-react/pull/8487
         # full_username = '%s • %s' % (username_1, default_username_1)
         if chat_2.chat_element_by_text(message).username.text != default_username_1:
-            self.errors.append("Default username '%s' is not shown next to the received message" % default_username_1)
+            chat_2.driver.errors.append(
+                "Default username '%s' is not shown next to the received message" % default_username_1)
 
         # if chat_1.element_by_text_part(username_1).is_element_displayed():
         #     self.errors.append("Username '%s' is shown for the sender" % username_1)
@@ -98,20 +100,20 @@ class TestPublicChatMultipleDevice(MultipleDeviceTestCase):
         chat_2.send_message_button.click()
 
         if home_1.home_button.counter.text != '1':
-            self.errors.append('New messages counter is not shown on Home button')
+            home_1.driver.errors.append('New messages counter is not shown on Home button')
 
         chat_element = home_1.get_chat_with_user('#' + chat_name)
         if chat_element.new_messages_counter.text != '1':
-            self.errors.append('New messages counter is not shown on chat element')
+            home_1.driver.errors.append('New messages counter is not shown on chat element')
 
         chat_element.click()
         home_1.get_back_to_home_view()
 
         if home_1.home_button.counter.is_element_displayed():
-            self.errors.append('New messages counter is shown on Home button for already seen message')
+            home_1.driver.errors.append('New messages counter is shown on Home button for already seen message')
 
         if chat_element.new_messages_counter.is_element_displayed():
-            self.errors.append('New messages counter is shown on chat element for already seen message')
+            home_1.driver.errors.append('New messages counter is shown on chat element for already seen message')
         self.verify_no_errors()
 
     @marks.testrail_id(6202)
@@ -132,11 +134,11 @@ class TestPublicChatMultipleDevice(MultipleDeviceTestCase):
         chat_1.element_by_text('Copy').click()
         chat_1.chat_message_input.paste_text_from_clipboard()
         if chat_1.chat_message_input.text != emoji_unicode:
-            self.errors.append('Emoji message was not copied')
+            chat_1.driver.errors.append('Emoji message was not copied')
 
         chat_element_2 = chat_2.chat_element_by_text(emoji_unicode)
         if not chat_element_2.is_element_displayed(sec=10):
-            self.errors.append('Message with emoji was not received in public chat by the recipient')
+            chat_2.driver.errors.append('Message with emoji was not received in public chat by the recipient')
 
         chat_element_2.long_press_element()
         chat_2.element_by_text('Reply').click()
@@ -146,7 +148,7 @@ class TestPublicChatMultipleDevice(MultipleDeviceTestCase):
 
         chat_element_1 = chat_1.chat_element_by_text(message_text)
         if not chat_element_1.is_element_displayed(sec=10) or chat_element_1.replied_message_text != emoji_unicode:
-            self.errors.append('Reply message was not received by the sender')
+            chat_1.driver.errors.append('Reply message was not received by the sender')
         self.verify_no_errors()
 
 
@@ -164,10 +166,10 @@ class TestPublicChatSingleDevice(SingleDeviceTestCase):
         message = '파란하늘'
         public_chat.chat_message_input.send_keys(message)
         if public_chat.chat_message_input.text != message:
-            self.errors.append('Korean characters are not displayed properly in the chat message input')
+            self.driver.errors.append('Korean characters are not displayed properly in the chat message input')
         public_chat.send_message_button.click()
         if not public_chat.chat_element_by_text(message).is_element_displayed():
-            self.errors.append('Message with korean characters is not shown')
+            self.driver.errors.append('Message with korean characters is not shown')
         self.verify_no_errors()
 
     @marks.skip
@@ -188,19 +190,19 @@ class TestPublicChatSingleDevice(SingleDeviceTestCase):
         chat.send_message(text)
 
         if not chat.chat_element_by_text(text).is_element_displayed():
-            self.errors.append('User sent message but it did not appear in chat!')
+            self.driver.errors.append('User sent message but it did not appear in chat!')
 
         chat.move_to_messages_by_time_marker('Today')
         if not chat.element_by_text('Today').is_element_displayed():
-            self.errors.append("'Today' chat marker is not shown")
+            self.driver.errors.append("'Today' chat marker is not shown")
         if len(chat.chat_item.find_elements()) <= 1:
-            self.errors.append('No messages fetched for today!')
+            self.driver.errors.append('No messages fetched for today!')
 
         chat.move_to_messages_by_time_marker('Yesterday')
         if not chat.element_by_text('Yesterday').is_element_displayed():
-            self.errors.append("'Yesterday' chat marker is not shown")
+            self.driver.errors.append("'Yesterday' chat marker is not shown")
         if len(chat.chat_item.find_elements()) <= 1:
-            self.errors.append('No messages fetched for yesterday!')
+            self.driver.errors.append('No messages fetched for yesterday!')
 
         self.verify_no_errors()
 
@@ -238,4 +240,3 @@ class TestPublicChatSingleDevice(SingleDeviceTestCase):
         for message in (before_yesterday, quiet_time_before_yesterday):
             if not chat.element_by_text_part(message).is_element_displayed():
                 self.driver.fail('"%s" is not shown' % message)
-        self.verify_no_errors()

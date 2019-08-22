@@ -1,5 +1,3 @@
-import pytest
-
 from support.utilities import fill_string_with_char
 from tests import marks, unique_password
 from tests.base_test_case import SingleDeviceTestCase
@@ -34,10 +32,10 @@ class TestRecoverAccountSingleDevice(SingleDeviceTestCase):
         wallet.set_up_wallet()
         address2 = wallet.get_wallet_address()
         if address2 != address:
-            self.errors.append('Wallet address is %s after recovery, but %s is expected' % (address2, address))
+            self.driver.errors.append('Wallet address is %s after recovery, but %s is expected' % (address2, address))
         public_key2 = wallet.get_public_key()
         if public_key2 != public_key:
-            self.errors.append('Public key is %s after recovery, but %s is expected' % (public_key2, public_key))
+            self.driver.errors.append('Public key is %s after recovery, but %s is expected' % (public_key2, public_key))
         self.verify_no_errors()
 
     @marks.skip
@@ -55,7 +53,7 @@ class TestRecoverAccountSingleDevice(SingleDeviceTestCase):
         sign_in.accept_agreements()
         sign_in.recover_access(passphrase=' '.join(list(recovery_phrase.values())[::-1]))
         if sign_in.get_public_key() == public_key:
-            pytest.fail('The same account is recovered with reversed passphrase')
+            self.driver.fail('The same account is recovered with reversed passphrase')
 
     @marks.logcat
     @marks.testrail_id(5366)
@@ -115,7 +113,7 @@ class TestRecoverAccessFromSignInScreen(SingleDeviceTestCase):
             recover_access_view.next_button.click()
 
             if not elm.is_element_displayed():
-                self.errors.append('"{}" message is not shown'.format(msg))
+                self.driver.errors.append('"{}" message is not shown'.format(msg))
             recover_access_view.click_system_back_button()
 
         signin_view.access_key_button.click()
@@ -128,7 +126,7 @@ class TestRecoverAccessFromSignInScreen(SingleDeviceTestCase):
         recover_access_view.cancel_button.click()
 
         if recover_access_view.cancel_button.is_element_displayed():
-            self.errors.append('Something went wrong. Probably, the confirmation pop up did not disappear')
+            self.driver.errors.append('Something went wrong. Probably, the confirmation pop up did not disappear')
 
         recover_access_view.click_system_back_button()
 
@@ -142,7 +140,7 @@ class TestRecoverAccessFromSignInScreen(SingleDeviceTestCase):
         home_view = recover_access_view.confirm_phrase_button.click()
 
         if not home_view.profile_button.is_element_displayed():
-            self.errors.append('Something went wrong. Probably, could not reach the home screen out.')
+            self.driver.errors.append('Something went wrong. Probably, could not reach the home screen out.')
 
         self.verify_no_errors()
 
@@ -187,7 +185,8 @@ class TestRecoverAccessFromSignInScreen(SingleDeviceTestCase):
             wallet_view.set_up_wallet()
             address = wallet_view.get_wallet_address()
             if address != account:
-                self.errors.append('Restored wallet address "%s" does not match expected "%s"' % (address, account))
+                self.driver.errors.append(
+                    'Restored wallet address "%s" does not match expected "%s"' % (address, account))
             profile_view = home_view.profile_button.click()
             profile_view.logout()
         self.verify_no_errors()
