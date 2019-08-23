@@ -37,6 +37,7 @@ in stdenv.mkDerivation {
           dirRootsToInclude = [
             "mobile_files"
             "modules/react-native-status"
+            "packager"
             "resources"
           ];
           dirsToExclude = [ ".git" ".svn" "CVS" ".hg" ".gradle" "build" "intermediates" "libs" "obj" ];
