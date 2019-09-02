@@ -104,25 +104,27 @@
                                   [:tribute-to-talk.ui/menu-item-pressed])}
           opts)])
 
-(defn- flat-list-content [preferred-name registrar tribute-to-talk
-                          active-contacts-count show-backup-seed?]
+(defn- flat-list-content
+  [preferred-name registrar tribute-to-talk active-contacts-count show-backup-seed?]
   [(cond-> {:title                (or preferred-name :t/ens-usernames)
-            :subtitle             (if (boolean registrar)
+            :subtitle             (if registrar
                                     (if preferred-name
                                       :t/ens-your-your-name
                                       :t/ens-usernames-details)
                                     :t/ens-network-restriction)
-            :subtitle-max-lines   (if (boolean registrar)
+            :subtitle-max-lines   (if registrar
                                     (if preferred-name 1 2)
                                     1)
             :accessibility-label  :ens-button
             :container-margin-top 8
-            :disabled?            (if (boolean registrar)
+            :disabled?            (if registrar
                                     false
-                                    ((complement boolean) preferred-name))
+                                    (if preferred-name
+                                      false
+                                      true))
             :accessories          [:chevron]
             :icon                 :main-icons/username}
-     (or (boolean registrar) preferred-name)
+     (or registrar preferred-name)
      (assoc :on-press #(re-frame/dispatch [:navigate-to :ens-main registrar])))
    ;; TODO replace this with list-item config map
    ;; left it as it is because not sure how to enable it for testing
@@ -195,9 +197,6 @@
                   registrar                    [:ens.stateofus/registrar]]
     (let [show-backup-seed? (and (not seed-backed-up?)
                                  (not (string/blank? mnemonic)))
-          content           (flat-list-content
-                             preferred-name registrar tribute-to-talk
-                             active-contacts-count show-backup-seed?)]
       [react/safe-area-view
        {:style
         (merge {:flex 1}
@@ -209,4 +208,8 @@
         nil
         (toolbar-action-items public-key)]
        [large-toolbar/flat-list-with-large-header
-        (header multiaccount) content list-ref]])))
+        (header multiaccount)
+        (flat-list-content
+         preferred-name registrar tribute-to-talk
+         active-contacts-count show-backup-seed?)
+        list-ref]])))

@@ -18,29 +18,29 @@
                                                       |
                                                       |
                                                       v
-+------------------------------------------+
-|   +--------------+  +----------------+   |
-|   | Unregistrable|  |  Registrable   |   |        +-----------------------------------+              +-------------+
-|   +--------------+  +----------------+   |        |  Connected/details                |              |  Not owned  |
-|                                          |        |  (none, address, public+key, all) |              +-------------+
-|                                          |        +----------+------------------------+
-|           Name available                 |                   |
-+-------------------+----------------------+                   |
-                    |                                          |
-                    |                                          |
-                    |                                          |
-                    | Registering                              | Connecting
-                    | (on-chain, 1 tx)                         | (on-chain, 1tx per info to connect)
-                    |                                          |
-                    +-----------------------+------------------+
-                                            |
-                                            |
-                                            |  Saving
-                                            |
-                                            |
-                                    +-------+-----+
-                                    |    Saved    |
-                                    +-------------+
+  +------------------------------------------+
+  |   +--------------+  +----------------+   |
+  |   | Unregistrable|  |  Registrable   |   |        +-----------------------------------+              +-------------+
+  |   +--------------+  +----------------+   |        |  Connected/details                |              |  Not owned  |
+  |                                          |        |  (none, address, public+key, all) |              +-------------+
+  |                                          |        +----------+------------------------+
+  |           Name available                 |                   |
+  +-------------------+----------------------+                   |
+                      |                                          |
+                      |                                          |
+                      |                                          |
+                      | Registering                              | Connecting
+                      | (on-chain, 1 tx)                         | (on-chain, 1tx per info to connect)
+                      |                                          |
+                      +-----------------------+------------------+
+                                              |
+                                              |
+                                              |  Saving
+                                              |
+                                              |
+                                      +-------+-----+
+                                      |    Saved    |
+                                      +-------------+
 
   "
   (:require [re-frame.core :as re-frame]
@@ -62,6 +62,7 @@
             [status-im.ui.components.toolbar.actions :as actions]
             [status-im.ui.components.toolbar.view :as toolbar]
             [status-im.ui.screens.chat.message.message :as message]
+            [status-im.ens.core :as ens]
             [status-im.ui.screens.profile.components.views :as profile.components])
 
   (:require-macros [status-im.utils.views :as views]))
@@ -206,8 +207,8 @@
 (defn- input-action [{:keys [state custom-domain? username]}]
   (if (= state :connected)
     ;; Already registered, just need to save the contact
-    [:ens/save-username custom-domain? username]
-    [:ens/set-state username :registering]))
+    [::ens/save-username custom-domain? username]
+    [::ens/input-submitted]))
 
 (defn- disabled-input-action []
   [icon-wrapper colors/gray
@@ -264,8 +265,6 @@
       (i18n/label :t/ens-username-unregistrable))
     :registrable
     (i18n/label :t/ens-username-registrable)
-    :owned
-    (i18n/label :t/ens-username-owned)
     :connected
     (i18n/label :t/ens-username-connected)
     ""))
@@ -397,7 +396,8 @@
      [button {:on-press #(re-frame/dispatch [:ens/clear-cache-and-navigate-back])}
       (i18n/label :t/ens-got-it)])])
 
-(views/defview registration-pending [{:keys [state custom-domain?] :as props} usernames]
+(views/defview registration-pending
+  [{:keys [registering? state custom-domain?] :as props} usernames]
   (views/letsubs [usernames [:multiaccount/usernames]]
     [react/view {:style {:flex 1}}
      [react/scroll-view {:style {:flex 1}}
@@ -413,15 +413,21 @@
          [react/view {:flex 1 :min-width 24}]
          (when-not (= state :registering)
            ;; Domain type is not shown during registration
-           [react/touchable-highlight {:on-press #(re-frame/dispatch [:ens/switch-domain-type])}
+           [react/touchable-highlight {:on-press #(re-frame/dispatch [::ens/switch-domain-type])}
             [react/text {:style {:color colors/blue :font-size 12 :typography :main-medium} :number-of-lines 2}
              (domain-switch-label custom-domain?)]])]]
-       (if (= state :registering)
-         [registration props]
+       #_(if registering?
+           [registration props])
+       (case state
+         :owned
+         [react/nested-text {:style {:flex 1 :margin-top 16 :margin-horizontal 16 :font-size 14 :text-align :center}}
+          (i18n/label :t/ens-username-owned)
+          [{:style {:font-weight "700"}}
+           (i18n/label :t/ens-username-owned-continue)]]
          [react/text {:style {:flex 1 :margin-top 16 :margin-horizontal 16 :font-size 14 :text-align :center}}
           (help-message state custom-domain?)])]]
-     (when (= state :registering)
-       [registration-bottom-bar props])]))
+     #_(when registering?
+         [registration-bottom-bar props])]))
 
 (defn- toolbar []
   [toolbar/toolbar nil
@@ -512,7 +518,7 @@
     [react/scroll-view {:style {:flex 1}}
      [react/view {:style {:flex 1}}
       (for [name names]
-        (let [action #(do (re-frame/dispatch [:ens/save-preferred-name name])
+        (let [action #(do (re-frame/dispatch [::ens/save-preferred-name name])
                           (re-frame/dispatch [:bottom-sheet/hide-sheet]))]
           ^{:key name}
           [react/touchable-highlight {:on-press action}

@@ -1771,7 +1771,7 @@
  :<- [:ens.stateofus/registrar]
  :<- [:multiaccount]
  :<- [:chain-id]
- (fn [[{:keys [custom-domain? username-candidate registering?] :as ens}
+ (fn [[{:keys [custom-domain? username registering? state] :as ens}
        registrar {:keys [accounts public-key]} chain-id]]
    (let [amount (case chain-id
                   3 50
@@ -1781,15 +1781,15 @@
                                     3 " STT"
                                     1 " SNT"
                                     ""))]
-     {:state          (get-in ens [:states username-candidate])
+     {:state          state
       :registering?   registering?
-      :username       username-candidate
-      :custom-domain? (or custom-domain? false)
+      :username       username
+      :custom-domain? custom-domain?
       :contract       registrar
       :address        (:address (ethereum/get-default-account accounts))
       :public-key     public-key
-      :amount amount
-      :amount-label amount-label})))
+      :amount         amount
+      :amount-label   amount-label})))
 
 (re-frame/reg-sub
  :ens.name/screen

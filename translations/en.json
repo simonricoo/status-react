@@ -1174,7 +1174,7 @@
     "ens-username-registrable": "✓ Username available!",
     "ens-username-unregistrable": "Username already taken:(",
     "ens-username-owned": "✓ Username is owned by you. ",
-    "ens-username-owned-continue": "Continuing will connect this username with your key.",
+    "ens-username-owned-continue": "Continuing will require a transaction to connect the username with your current chat key.",
     "ens-username-connected": "This user name is owned by you and connected with your Chat key.",
     "ens-custom-username-unregistrable": "Username doesn’t belong to you :(",
     "ens-custom-username-hints": "Type the entire username including the custom domain like username.domain.eth",

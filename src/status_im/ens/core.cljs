@@ -12,7 +12,8 @@
             [status-im.utils.fx :as fx]
             [status-im.utils.money :as money]
             [status-im.signing.core :as signing]
-            [status-im.ethereum.eip55 :as eip55])
+            [status-im.ethereum.eip55 :as eip55]
+            [taoensso.timbre :as log])
   (:refer-clojure :exclude [name]))
 
 (defn fullname [custom-domain? username]
@@ -30,37 +31,67 @@
  (fn [[registry name cb]]
    (resolver/pubkey registry name cb)))
 
-(defn- final-state? [state]
-  (#{:saved :registered :registration-failed} state))
-
-(defn assoc-state-for [db username state]
-  (cond-> (assoc-in db [:ens/registration :states username] state)
-    (final-state? state) (update :ens/registration dissoc :registering?)))
-
 (defn assoc-details-for [db username k v]
   (assoc-in db [:ens/names :details username k] v))
 
-(defn assoc-username-candidate [db username]
-  (assoc-in db [:ens/registration :username-candidate] username))
-
-(defn empty-username-candidate [db] (assoc-username-candidate db ""))
-
 (fx/defn set-state
-  {:events [:ens/set-state]}
+  {:events [::name-resolved]}
   [{:keys [db]} username state]
-  {:db (assoc-state-for db username state)})
+  (when (= username
+           (get-in db [:ens/registration :username]))
+    {:db (assoc-in db [:ens/registration :state] state)}))
+
+(fx/defn on-resolver-found
+  {:events [::resolver-found]}
+  [{:keys [db] :as cofx} resolver-contract]
+  (let [{:keys [state username custom-domain?]} (:ens/registration db)
+        {:keys [public-key]} (:multiaccount db)
+        {:keys [x y]} (ethereum/coordinates public-key)
+        namehash (ens/namehash (str username (when-not custom-domain?
+                                               ".stateofus.eth")))]
+    (signing/eth-transaction-call
+     cofx
+     {:contract   resolver-contract
+      :method     "setPubkey(bytes32,bytes32,bytes32)"
+      :params     [namehash x y]
+      :on-result  [::save-username custom-domain? username]
+      :on-error   [:ens/on-registration-failure]})))
+
+(fx/defn on-input-submitted
+  {:events [::input-submitted]}
+  [{:keys [db] :as cofx}]
+  (let [{:keys [state username custom-domain?]} (:ens/registration db)
+        registry-contract (get ens/ens-registries (ethereum/chain-keyword db))
+        ens-name (str username (when-not custom-domain?
+                                 ".stateofus.eth"))]
+    (case state
+      ;; :registrable
+      :owned
+      (ens/resolver registry-contract ens-name
+                    #(re-frame/dispatch [::resolver-found %]))
+      (log/error ::invalid-username-state))))
+
+(fx/defn username-saved
+  {:events [::username-saved]}
+  [{:keys [db]}]
+  {:db (-> db
+           (assoc-in [:ens/registration :state] :saved)
+           (update :ens/registration dissoc :registering?))})
 
 (defn- on-resolve [registry custom-domain? username address public-key s]
   (cond
+    ;; if we get an address back, we try to get the public key associated
+    ;; with the username as well
     (= (eip55/address->checksum address) (eip55/address->checksum s))
     (resolver/pubkey registry (fullname custom-domain? username)
-                     #(re-frame/dispatch [:ens/set-state username (if (= % public-key) :connected :owned)]))
+                     #(re-frame/dispatch [::name-resolved username (if (= % public-key) :connected :owned)]))
 
-    (and (nil? s) (not custom-domain?)) ;; No address for a stateofus subdomain: it can be registered
-    (re-frame/dispatch [:ens/set-state username :registrable])
+    ;; No address for a stateofus subdomain: it can be registered
+    (and (nil? s) (not custom-domain?))
+    (re-frame/dispatch [::name-resolved username :registrable])
 
     :else
-    (re-frame/dispatch [:ens/set-state username :unregistrable])))
+    (re-frame/dispatch [::name-resolved username :unregistrable])))
 
 (fx/defn register-name
   {:events [:ens/register]}
@@ -74,7 +105,7 @@
                    (money/unit->token amount 18)
                    (abi-spec/encode "register(bytes32,address,bytes32,bytes32)"
                                     [(ethereum/sha3 username) address x y])]
-      :on-result  [:ens/save-username custom-domain? username]
+      :on-result  [::save-username custom-domain? username]
       :on-error   [:ens/on-registration-failure]})))
 
 (defn- valid-custom-domain? [username]
@@ -97,15 +128,15 @@
   {:events [:ens/set-username-candidate]}
   [{:keys [db]} custom-domain? username]
   (let [state  (state custom-domain? username)
-        valid? (valid-username? custom-domain? username)
+        valid? (= state :valid)
         name (fullname custom-domain? username)]
     (merge
      {:db (-> db
-              (assoc-username-candidate username)
-              (assoc-state-for username state))}
-     (when (and name (= :valid state))
-       (let [{:keys [multiaccount]}        db
-             {:keys [public-key]}     multiaccount
+              (assoc-in [:ens/registration :username] username)
+              (assoc-in [:ens/registration :state] state))}
+     (when (and name valid?)
+       (let [{:keys [multiaccount]} db
+             {:keys [public-key]} multiaccount
              address (ethereum/default-address db)
              registry (get ens/ens-registries (ethereum/chain-keyword db))]
          {:ens/resolve-address [registry name #(on-resolve registry custom-domain? username address public-key %)]})))))
@@ -118,20 +149,21 @@
             (navigation/navigate-back)))
 
 (fx/defn switch-domain-type
-  {:events [:ens/switch-domain-type]}
+  {:events [::switch-domain-type]}
   [{:keys [db]} _]
-  {:db (-> (update-in db [:ens/registration :custom-domain?] not)
-           (empty-username-candidate))})
+  (let [custom-domain? (not (get-in db [:ens/registration :custom-domain?]))]
+    {:db (assoc db :ens/registration {:registering? true
+                                      :custom-domain? custom-domain?})}))
 
 (fx/defn save-preferred-name
-  {:events [:ens/save-preferred-name]}
+  {:events [::save-preferred-name]}
   [{:keys [db] :as cofx} name]
   (multiaccounts.update/multiaccount-update cofx
                                             {:preferred-name name}
                                             {}))
 
 (fx/defn save-username
-  {:events [:ens/save-username]}
+  {:events [::save-username]}
   [{:keys [db] :as cofx} custom-domain? username]
   (let [name   (fullname custom-domain? username)
         names  (get-in db [:multiaccount :usernames] [])
@@ -139,7 +171,7 @@
     (multiaccounts.update/multiaccount-update cofx
                                               (cond-> {:usernames new-names}
                                                 (empty? names) (assoc :preferred-name name))
-                                              {:on-success #(re-frame/dispatch [:ens/set-state username :saved])})))
+                                              {:on-success #(re-frame/dispatch [::username-saved])})))
 
 (fx/defn switch-show-username
   {:events [:ens/switch-show-username]}
