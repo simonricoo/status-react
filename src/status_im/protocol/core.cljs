@@ -3,7 +3,6 @@
             [status-im.mailserver.core :as mailserver]
             [status-im.node.core :as node]
             [status-im.transport.core :as transport]
-            [status-im.tribute-to-talk.core :as tribute-to-talk]
             [status-im.utils.fx :as fx]))
 
 ;;TODO move this logic to status-go
@@ -53,7 +52,14 @@
                      mailserver-ranges
                      (assoc :mailserver/ranges mailserver-ranges)
                      mailserver-topics
-                     (assoc :mailserver/topics mailserver-topics)
+                     (assoc :mailserver/topics
+                            (reduce (fn [acc {:keys [topic chat-ids]
+                                              :as mailserver-topic}]
+                                      (assoc acc topic
+                                             (update mailserver-topic :chat-ids
+                                                     #(into #{} %))))
+                                    {}
+                                    mailserver-topics))
                      initialization-complete?
                      (assoc :rpc-url constants/ethereum-rpc-url)
                      initialization-complete?
