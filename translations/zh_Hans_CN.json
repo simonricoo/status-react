@@ -744,8 +744,6 @@
     "mobile-syncing-sheet-title": "使用移动数据同步",
     "more": "更多",
     "move-to-internal-failure-message": "我们需要将一些重要的文件从外部存储移动到内部存储。为此，我们需要你的许可。在之后的版本中，我们将不会使用外部存储。",
-    "multiaccount-and-db-password-mismatch-content": "帐户和域数据库密码不匹配。",
-    "multiaccount-and-db-password-mismatch-title": "出现问题！",
     "multiaccount-not-listed": "帐户不在列表中",
     "multiaccount-not-listed-text": "此卡上的帐户未在手机列表中。您想使用这个新帐户登录吗？",
     "multiaccounts-recover-enter-phrase-text": "输入12,15,18,21或24个单词。 \n用单个空格分隔单词。",
