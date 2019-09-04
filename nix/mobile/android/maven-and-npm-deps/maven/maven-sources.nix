@@ -6908,21 +6908,6 @@ in {
       sha256 = "1gfp423s00i5iaflhsyw51jllm4h56r5pgkrkrpvykyis9vrcwdq";
     };
   };
-  "https://jcenter.bintray.com/com/yalantis/ucrop/2.2.0-native/ucrop-2.2.0-native" =
-  {
-    host = repositories.jcenter;
-    path =
-      "com/yalantis/ucrop/2.2.0-native/ucrop-2.2.0-native";
-    type = "aar";
-    pom = {
-      sha1 = "4c24c0d54629dd8498f0bc79258cbfa3cf4c8435";
-      sha256 = "00ylh8a4k42kzbw9wc7vkg3jgjfxq3lma74nfjn1kwrx6a28wyzy";
-    };
-    jar = {
-      sha1 = "628903fc32be9a203736addb20db24be4dad9bba";
-      sha256 = "0kyys3rzry0qvb2m2sll815r8rhzjh62qwdnzghvb5m2kgyjbvjg";
-    };
-  };
   "https://jcenter.bintray.com/de/undercouch/gradle-download-task/3.1.2/gradle-download-task-3.1.2" =
   {
     host = repositories.jcenter;
@@ -6936,21 +6921,6 @@ in {
     jar = {
       sha1 = "dbb5911739f1a18228847ad955c700a368db1ba4";
       sha256 = "1fqnkr5g3573ncb73sqnvf1l57ygpwb0np84wvass94a162522kx";
-    };
-  };
-  "https://jcenter.bintray.com/id/zelory/compressor/2.1.0/compressor-2.1.0" =
-  {
-    host = repositories.jcenter;
-    path =
-      "id/zelory/compressor/2.1.0/compressor-2.1.0";
-    type = "aar";
-    pom = {
-      sha1 = "c3a3a65dd8b887797ceaca9a9e45df47f7162cb9";
-      sha256 = "127ap0ddm7kjmcckzs4c7ckbkg4c5avmy4pxzc27rgaxb3r9fhzc";
-    };
-    jar = {
-      sha1 = "e222c8cbfe83495a5df64de8212195b82d0cd034";
-      sha256 = "0jv14r6gvpr5wzg4sl1vlnqmv12j7yhb2y1w1glvp856czl85jqz";
     };
   };
   "https://jcenter.bintray.com/io/grpc/grpc-android/1.21.0/grpc-android-1.21.0" =
@@ -7086,21 +7056,6 @@ in {
     jar = {
       sha1 = "f07d3a325f1fe69ee40d6b409086964edfef4e69";
       sha256 = "1y0fzzs3wm9002alqrcj8hc5z0phs9a717dqr911ac422107kz19";
-    };
-  };
-  "https://jcenter.bintray.com/io/reactivex/rxjava2/rxjava/2.1.0/rxjava-2.1.0" =
-  {
-    host = repositories.jcenter;
-    path =
-      "io/reactivex/rxjava2/rxjava/2.1.0/rxjava-2.1.0";
-    type = "jar";
-    pom = {
-      sha1 = "6d148b6542b7aceeec59951ab690bd3cfa61bbfd";
-      sha256 = "08qiap9vhblc97gzfd4ay8340lsa8fzmbk6h3bigz3dfbbz0cl3w";
-    };
-    jar = {
-      sha1 = "2fdf84dedcaaeabb9d70cde9dbb8aad4eccb80a1";
-      sha256 = "0dhpwpzdi8fvgl6b9affy19qw0nqb7pywm9zwcdgz97qhxl2yqfw";
     };
   };
   "https://jcenter.bintray.com/it/unimi/dsi/fastutil/7.2.0/fastutil-7.2.0" =
@@ -8888,21 +8843,6 @@ in {
       sha256 = "1xm5pi4v9m041csb1956lni7mcd3163qy675c991fw7qn2yzwsim";
     };
   };
-  "https://jcenter.bintray.com/org/reactivestreams/reactive-streams/1.0.0/reactive-streams-1.0.0" =
-  {
-    host = repositories.jcenter;
-    path =
-      "org/reactivestreams/reactive-streams/1.0.0/reactive-streams-1.0.0";
-    type = "jar";
-    pom = {
-      sha1 = "e0ba32aa4418d975070cab7b8861264feea64037";
-      sha256 = "065r7nlj7fwckzh0f1g0nnwkw50xbfhixdjzr4ij9wzbc31symd0";
-    };
-    jar = {
-      sha1 = "14b8c877d98005ba3941c9257cfe09f6ed0e0d74";
-      sha256 = "1sx0kjvzfhqnibvmdq0spjmzrg8lbs7mmdjgqsv6xf8llq17g1pg";
-    };
-  };
   "https://jcenter.bintray.com/org/slf4j/slf4j-api/1.7.2/slf4j-api-1.7.2" =
   {
     host = repositories.jcenter;
@@ -8961,6 +8901,21 @@ in {
     jar = {
       sha1 = "e6753d0eccdf7dfebb0d3c8a1898dcc453ac735e";
       sha256 = "1vkafx07lqlrz5ckc0yqcixc0y1lls8nlm9l7awimz2zprbpf758";
+    };
+  };
+  "https://jitpack.io/com/github/yalantis/ucrop/2.2.2-native/ucrop-2.2.2-native" =
+  {
+    host = repositories.jitpack;
+    path =
+      "com/github/yalantis/ucrop/2.2.2-native/ucrop-2.2.2-native";
+    type = "aar";
+    pom = {
+      sha1 = "02df11f4174862c446a3dc2ef14cec1cd5755c4a";
+      sha256 = "1g5qsc6zfbjg7a5vdyx7g02qnv8vswxik29rnwnw8n075vns0h21";
+    };
+    jar = {
+      sha1 = "6f5312e3163bf668b0f66c3068926b700e410a8d";
+      sha256 = "0c50s95achsswsf7125k4ibr60l4m53yn5m501an2wk1658q7kx8";
     };
   };
   "https://maven.java.net/content/repositories/releases/org/glassfish/build/gfnexus-maven-plugin/0.18/gfnexus-maven-plugin-0.18" =

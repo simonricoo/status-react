@@ -449,7 +449,6 @@ https://jcenter.bintray.com/com/sun/xml/fastinfoset/FastInfoset/1.2.13/FastInfos
 https://jcenter.bintray.com/com/tunnelvisionlabs/antlr4-annotations/4.5/antlr4-annotations-4.5
 https://jcenter.bintray.com/com/tunnelvisionlabs/antlr4-runtime/4.5/antlr4-runtime-4.5
 https://jcenter.bintray.com/com/tunnelvisionlabs/antlr4/4.5/antlr4-4.5
-https://jcenter.bintray.com/com/yalantis/ucrop/2.2.0-native/ucrop-2.2.0-native
 https://jcenter.bintray.com/commons-codec/commons-codec/1.10/commons-codec-1.10
 https://jcenter.bintray.com/commons-codec/commons-codec/1.4/commons-codec-1.4
 https://jcenter.bintray.com/commons-codec/commons-codec/1.6/commons-codec-1.6
@@ -458,7 +457,6 @@ https://jcenter.bintray.com/commons-io/commons-io/2.4/commons-io-2.4
 https://jcenter.bintray.com/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1
 https://jcenter.bintray.com/commons-logging/commons-logging/1.2/commons-logging-1.2
 https://jcenter.bintray.com/de/undercouch/gradle-download-task/3.1.2/gradle-download-task-3.1.2
-https://jcenter.bintray.com/id/zelory/compressor/2.1.0/compressor-2.1.0
 https://jcenter.bintray.com/io/grpc/grpc-android/1.21.0/grpc-android-1.21.0
 https://jcenter.bintray.com/io/grpc/grpc-api/1.21.0/grpc-api-1.21.0
 https://jcenter.bintray.com/io/grpc/grpc-context/1.21.0/grpc-context-1.21.0
@@ -468,7 +466,6 @@ https://jcenter.bintray.com/io/grpc/grpc-protobuf-lite/1.21.0/grpc-protobuf-lite
 https://jcenter.bintray.com/io/grpc/grpc-stub/1.21.0/grpc-stub-1.21.0
 https://jcenter.bintray.com/io/opencensus/opencensus-api/0.21.0/opencensus-api-0.21.0
 https://jcenter.bintray.com/io/opencensus/opencensus-contrib-grpc-metrics/0.21.0/opencensus-contrib-grpc-metrics-0.21.0
-https://jcenter.bintray.com/io/reactivex/rxjava2/rxjava/2.1.0/rxjava-2.1.0
 https://jcenter.bintray.com/it/unimi/dsi/fastutil/7.2.0/fastutil-7.2.0
 https://jcenter.bintray.com/javax/inject/javax.inject/1/javax.inject-1
 https://jcenter.bintray.com/javax/xml/bind/jaxb-api/2.2.12-b140109.1041/jaxb-api-2.2.12-b140109.1041
@@ -588,11 +585,11 @@ https://jcenter.bintray.com/org/ow2/asm/asm/5.0.3/asm-5.0.3
 https://jcenter.bintray.com/org/ow2/asm/asm/5.0.4/asm-5.0.4
 https://jcenter.bintray.com/org/ow2/asm/asm/5.1/asm-5.1
 https://jcenter.bintray.com/org/ow2/asm/asm/6.0/asm-6.0
-https://jcenter.bintray.com/org/reactivestreams/reactive-streams/1.0.0/reactive-streams-1.0.0
 https://jcenter.bintray.com/org/slf4j/slf4j-api/1.7.2/slf4j-api-1.7.2
 https://jitpack.io/com/github/status-im/function/0.0.1/function-0.0.1
 https://jitpack.io/com/github/status-im/status-keycard-java/android/2.2.1/android-2.2.1
 https://jitpack.io/com/github/status-im/status-keycard-java/lib/2.2.1/lib-2.2.1
+https://jitpack.io/com/github/yalantis/ucrop/2.2.2-native/ucrop-2.2.2-native
 https://maven.java.net/content/repositories/releases/org/glassfish/build/gfnexus-maven-plugin/0.18/gfnexus-maven-plugin-0.18
 https://maven.java.net/content/repositories/releases/org/glassfish/hk2/hk2-parent/2.1.14/hk2-parent-2.1.14
 https://maven.java.net/content/repositories/releases/org/glassfish/hk2/hk2-public/2.1.14/hk2-public-2.1.14
