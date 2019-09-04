@@ -8,6 +8,7 @@
             [status-im.contact.core :as contact]
             [status-im.data-store.core :as data-store]
             [status-im.ethereum.json-rpc :as json-rpc]
+            [status-im.protocol.core :as protocol]
             [status-im.ethereum.transactions.core :as transactions]
             [status-im.fleet.core :as fleet]
             [status-im.i18n :as i18n]
@@ -26,7 +27,8 @@
             [status-im.utils.universal-links.core :as universal-links]
             [status-im.utils.utils :as utils]
             [status-im.wallet.core :as wallet]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [status-im.mailserver.core :as mailserver]))
 
 (def rpc-endpoint "https://goerli.infura.io/v3/f315575765b14720b32382a61a89341a")
 (def contract-address "0xfbf4c8e2B41fAfF8c616a0E49Fb4365a5355Ffaf")
@@ -137,6 +139,11 @@
                           :networks/current-network current-network
                           :networks/networks networks
                           :multiaccount multiaccount)
+               ::json-rpc/call
+               [;; NOTE: initializing mailserver depends on user mailserver
+                ;; preference which is why we wait for config callback
+                {:method "mailservers_getMailservers"
+                 :on-success #(re-frame/dispatch [::protocol/initialize-protocol {:mailservers %}])}]
                :notifications/request-notifications-permissions nil}
               (universal-links/process-stored-event)
               (check-network-version network-id)
@@ -201,6 +208,9 @@
                  :params ["current-network" current-network]
                  :on-success #()}]}
               (finish-keycard-setup)
+              (protocol/initialize-protocol {:mailservers []
+                                             :mailserver-ranges {}
+                                             :mailserver-topics {}})
               (mobile-network/on-network-status-change)
               (chaos-mode/check-chaos-mode)
               (when-not platform/desktop?
