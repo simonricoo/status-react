@@ -17,8 +17,6 @@
             [status-im.test.data-store.chats]
             [status-im.test.data-store.messages]
             [status-im.test.data-store.contacts]
-            [status-im.test.data-store.core]
-            [status-im.test.data-store.realm.core]
             [status-im.test.ethereum.abi-spec]
             [status-im.test.ethereum.core]
             [status-im.test.ethereum.eip55]
@@ -100,8 +98,6 @@
  'status-im.test.data-store.chats
  'status-im.test.data-store.messages
  'status-im.test.data-store.contacts
- 'status-im.test.data-store.core
- 'status-im.test.data-store.realm.core
  'status-im.test.ethereum.abi-spec
  'status-im.test.ethereum.core
  'status-im.test.ethereum.eip55
