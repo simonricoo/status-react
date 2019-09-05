@@ -28,7 +28,6 @@
 		25DC9C9DC25846BD8D084888 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B9A886A2CB448B1ABA0EB62 /* libc++.tbd */; };
 		3870E1E692E24133A80B07DE /* Inter-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 693A62DB37BC4CD5A30E5C96 /* Inter-SemiBold.otf */; };
 		393D26E3080B443A998F4A2F /* Inter-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = B07176ACDAA1422E8F0A3D6B /* Inter-Italic.otf */; };
-		3E15DFEC1F6F4D7CAE088F49 /* libTcpSockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2A4E93F6B154AEFA3485B45 /* libTcpSockets.a */; };
 		42B30EAD0EED4C72BB96D1AB /* Inter-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6B145D55D500476BB45C2232 /* Inter-ExtraBold.otf */; };
 		475D202F20B7450D00879A77 /* libRNFirebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 475D1FC020B7413500879A77 /* libRNFirebase.a */; };
 		4C16DE0C1F89508700AA10DB /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C16DE0B1F89508700AA10DB /* JavaScriptCore.framework */; };
@@ -139,13 +138,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 83CBBA2E1A601D0E00E9B192;
 			remoteInfo = React;
-		};
-		2010676C1D477F5E00FA83B6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 38E1A2C8D0734EE99E2B16CE /* TcpSockets.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 134814201AA4EA6300B7C361;
-			remoteInfo = TcpSockets;
 		};
 		201067C31D4789F700FA83B6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -625,7 +617,6 @@
 		B2F2D1BB1D9D531B00B7B453 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = StatusIm/Images.xcassets; sourceTree = "<group>"; };
 		B321D25F4493470980039457 /* Inter-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BoldItalic.otf"; path = "../resources/fonts/Inter-BoldItalic.otf"; sourceTree = "<group>"; };
 		B461988B2210C98F00603CF2 /* RNCWebView.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNCWebView.xcodeproj; path = "../node_modules/react-native-webview/ios/RNCWebView.xcodeproj"; sourceTree = "<group>"; };
-		C2A4E93F6B154AEFA3485B45 /* libTcpSockets.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libTcpSockets.a; sourceTree = "<group>"; };
 		C6B1215047604CD59A4C74D6 /* Inter-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-MediumItalic.otf"; path = "../resources/fonts/Inter-MediumItalic.otf"; sourceTree = "<group>"; };
 		CD4A2C27D6D5473184DC1F7E /* Inter-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.otf"; path = "../resources/fonts/Inter-Bold.otf"; sourceTree = "<group>"; };
 		CE4E31B21D8695250033ED64 /* Statusgo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Statusgo.framework; path = "../modules/react-native-status/ios/RCTStatus/Statusgo.framework"; sourceTree = "<group>"; };
@@ -683,7 +674,6 @@
 				FD4F213C3873473CB703B1D2 /* libRNFS.a in Frameworks */,
 				25DC9C9DC25846BD8D084888 /* libc++.tbd in Frameworks */,
 				BA68A2377A20496EA737000D /* libz.tbd in Frameworks */,
-				3E15DFEC1F6F4D7CAE088F49 /* libTcpSockets.a in Frameworks */,
 				E0AD9E8F495A4907B65104BF /* libRCTImageResizer.a in Frameworks */,
 				8E55E6877F950B81C8D711C5 /* libPods-StatusIm.a in Frameworks */,
 				9EF0836B1F3B53AB00876A8F /* libReactNativeConfig.a in Frameworks */,
@@ -840,14 +830,6 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		201067551D477F5E00FA83B6 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2010676D1D477F5E00FA83B6 /* libTcpSockets.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		201067BA1D4789F700FA83B6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -979,7 +961,6 @@
 				00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */,
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				305F194186D848FDB07AF34C /* RNFS.xcodeproj */,
-				38E1A2C8D0734EE99E2B16CE /* TcpSockets.xcodeproj */,
 				439B6B4B407A4E2AACAFE5BE /* RCTStatus.xcodeproj */,
 				5E5A7625B76441D984EA8C0D /* RCTImageResizer.xcodeproj */,
 				1E74DC52A1E449A2BA858B14 /* RNSVG.xcodeproj */,
@@ -1143,7 +1124,6 @@
 				DF1CD4C3D1254774ACCAE4E8 /* libBVLinearGradient.a */,
 				5535217F57E44D77AA9CF083 /* libRCTOrientation.a */,
 				11632AA0A5F84F029DD91797 /* libRNVectorIcons.a */,
-				C2A4E93F6B154AEFA3485B45 /* libTcpSockets.a */,
 				2BEE3436791D42248F853999 /* libRCTImageResizer.a */,
 				AF2BF381BC7B4EB0887F0091 /* libRNSVG.a */,
 				7F752F17B1E04216B1337A72 /* libRNFIRMessaging.a */,
@@ -1380,10 +1360,6 @@
 					ProductGroup = B24FC7BB1DE718EA00D694FF /* Products */;
 					ProjectRef = 3A7EB0491DD9CABC00A4FCC8 /* SplashScreen.xcodeproj */;
 				},
-				{
-					ProductGroup = 201067551D477F5E00FA83B6 /* Products */;
-					ProjectRef = 38E1A2C8D0734EE99E2B16CE /* TcpSockets.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -1448,13 +1424,6 @@
 			fileType = archive.ar;
 			path = libReact.a;
 			remoteRef = 146834031AC3E56700842450 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2010676D1D477F5E00FA83B6 /* libTcpSockets.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libTcpSockets.a;
-			remoteRef = 2010676C1D477F5E00FA83B6 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		201067C41D4789F700FA83B6 /* libRCTStatus.a */ = {
