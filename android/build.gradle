@@ -9,7 +9,7 @@ ext {
     compileSdkVersion   = Integer.valueOf(project.compileSdkVersion)
     targetSdkVersion    = Integer.valueOf(project.targetSdkVersion)
     supportLibVersion   = project.supportLibVersion
-    gradleBuildTools    = project.gradleBuildTools
+    gradlePluginVersion = project.gradlePluginVersion
     googlePlayServicesVersion = project.googlePlayServicesVersion
     googlePlayServicesVisionVersion = project.googlePlayServicesVisionVersion
 }
@@ -21,7 +21,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath project.ext.gradleBuildTools
+        classpath "com.android.tools.build:gradle:${project.ext.gradlePluginVersion}"
         classpath 'com.google.gms:google-services:4.2.0'
         classpath 'de.undercouch:gradle-download-task:3.1.2'
 
