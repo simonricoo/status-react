@@ -5344,7 +5344,7 @@ react-native-touch-id@^4.4.1:
 
 "react-native-webview-bridge@git+https://github.com/status-im/react-native-webview-bridge.git#fix/community-webview":
   version "0.33.17"
-  resolved "git+https://github.com/status-im/react-native-webview-bridge.git#183e571b92ffc84922f95ddf9a4945fb314a48ea"
+  resolved "git+https://github.com/status-im/react-native-webview-bridge.git#b464582bb416b4d626b74d49bcbc4f020fc603d6"
   dependencies:
     invariant "2.2.0"
     keymirror "0.1.1"
