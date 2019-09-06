@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import im.status.ethereum.function.Function;
-import statusgo.Statusgo;
-
 public class StatusPackage implements ReactPackage {
 
     private boolean rootedDevice;
@@ -33,14 +30,5 @@ public class StatusPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Collections.emptyList();
-    }
-
-    public Function<String, String> getCallRPC() {
-        return new Function<String, String>() {
-            @Override
-            public String apply(String payload) {
-                return Statusgo.callRPC(payload);
-            }
-        };
     }
 }

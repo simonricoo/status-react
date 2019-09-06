@@ -15,7 +15,6 @@ import com.github.alinz.reactnativewebviewbridge.WebViewBridgePackage;
 
 import java.util.List;
 
-import im.status.ethereum.function.Function;
 import im.status.ethereum.keycard.RNStatusKeycardPackage;
 import im.status.ethereum.module.StatusPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
@@ -32,14 +31,13 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
         @Override
         protected List<ReactPackage> getPackages() {
             StatusPackage statusPackage = new StatusPackage(RootUtil.isDeviceRooted());
-            Function<String, String> callRPC = statusPackage.getCallRPC();
             List<ReactPackage> packages = new PackageList(this).getPackages();
             packages.add(statusPackage);
             packages.add(new RNFirebaseMessagingPackage());
             packages.add(new RNFirebaseNotificationsPackage());
             packages.add(new ReactNativeDialogsPackage());
             packages.add(new RNStatusKeycardPackage());
-            packages.add(new WebViewBridgePackage(BuildConfig.DEBUG_WEBVIEW == "1", callRPC));
+            packages.add(new WebViewBridgePackage(BuildConfig.DEBUG_WEBVIEW == "1"));
             return packages;
         }
 
