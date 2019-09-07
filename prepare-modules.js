@@ -1,3 +1,6 @@
+// All resources loaded by slurp are moved to status-modules/resources dir
+// in release builds and are loaded only by demand instead of being bundled into
+// index.js
 var fs = require("fs");
 var path = require('path');
 var dirs = ["status-modules/cljs", "status-modules/resources"];
@@ -11,7 +14,7 @@ dirs.forEach(dir => {
                     fs.readFile(filePath, "utf8", function (err, data) {
                         if (err) throw err;
                         fs.writeFile(filePath.replace("-raw.js", ".js"),
-                            ("module.exports=`" + data.replace(/[\\$'"]/g, "\\$&") + "`;"),
+                                     ("module.exports=`" + data.replace(/[\\$'"]/g, "\\$&") + "`;"),
                             function (err) {
                                 if (err) {
                                     return console.log(err);

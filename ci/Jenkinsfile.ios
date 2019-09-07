@@ -61,14 +61,14 @@ pipeline {
                   buildResult: 'FAILURE',
                   stageResult: 'FAILURE'
                 ) {
-                  nix.shell('lein cljfmt check', attr: 'shells.lein')
+                  nix.shell('make lint', attr: 'shells.lein')
                 }
               }
             }
           }
           stage('Tests') {
             steps {
-              script { nix.shell('lein test-cljs', attr: 'shells.lein') }
+              script { nix.shell('make test', attr: 'shells.lein') }
             }
           }
         } }

@@ -1,6 +1,6 @@
 (ns status-im.utils.core
   (:require [clojure.string :as str]
-            [taoensso.timbre :as log]))
+            #?(:cljs [taoensso.timbre :as log])))
 
 (defn truncate-str
   "Given string and max threshold, trims the string to threshold length with `...`
@@ -68,6 +68,6 @@
 #?(:cljs
    (defn safe-read-message-content [content]
      (try
-        (js->clj (.parse js/JSON content) :keywordize-keys true)
+       (js->clj (.parse js/JSON content) :keywordize-keys true)
        (catch :default e
          (log/warn "failed to transform message with " e)))))

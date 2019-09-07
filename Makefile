@@ -127,14 +127,6 @@ watchman-clean: export TARGET := watchman
 watchman-clean: ##@prepare Delete repo directory from watchman
 	watchman watch-del $${STATUS_REACT_HOME}
 
-disable-githooks: SHELL := /bin/sh
-disable-githooks: ##@prepare Disables lein githooks
-	@rm -f ${env.WORKSPACE}/.git/hooks/pre-commit && \
-	sed -i'~' -e 's|\[rasom/lein-githooks|;; [rasom/lein-githooks|' \
-		-e 's|:githooks|;; :githooks|' \
-		-e 's|:pre-commit|;; :pre-commit|' project.clj; \
-	rm project.clj~
-
 pod-install: export TARGET := ios
 pod-install: ##@prepare Run 'pod install' to install podfiles and update Podfile.lock
 	cd ios && pod install; cd --
@@ -194,9 +186,10 @@ jsbundle-android: export TARGET ?= android
 jsbundle-android: export BUILD_ENV ?= prod
 jsbundle-android: ##@jsbundle Compile JavaScript and Clojure into index.android.js
 	# Call nix-build to build the 'targets.mobile.android.jsbundle' attribute and copy the index.android.js file to the project root
-	@git clean -dxf ./index.$(TARGET).js
-	nix/scripts/build.sh targets.mobile.android.jsbundle && \
-	mv result/index.$(TARGET).js ./
+	yarn shadow-cljs release android && \
+	node prepare-modules.js
+	# nix/scripts/build.sh targets.mobile.android.jsbundle && \
+	# mv result/index.$(TARGET).js ./
 
 prod-build-ios: jsbundle-ios ##@legacy temporary legacy alias for jsbundle-ios
 	@echo "${YELLOW}This a deprecated target name, use jsbundle-ios.$(RESET)"
@@ -204,18 +197,7 @@ prod-build-ios: jsbundle-ios ##@legacy temporary legacy alias for jsbundle-ios
 jsbundle-ios: export TARGET ?= ios
 jsbundle-ios: export BUILD_ENV ?= prod
 jsbundle-ios: ##@jsbundle Compile JavaScript and Clojure into index.ios.js
-	@git clean -dxf -f ./index.$(TARGET).js && \
-	lein jsbundle-ios && \
-	node prepare-modules.js
-
-prod-build-desktop: jsbundle-desktop ##@legacy temporary legacy alias for jsbundle-desktop
-	@echo "${YELLOW}This a deprecated target name, use jsbundle-desktop.$(RESET)"
-
-jsbundle-desktop: export TARGET ?= $(HOST_OS)
-jsbundle-desktop: export BUILD_ENV ?= prod
-jsbundle-desktop: ##@jsbundle Compile JavaScript and Clojure into index.desktop.js
-	git clean -qdxf -f ./index.desktop.js desktop/ && \
-	lein jsbundle-desktop && \
+	yarn shadow-cljs release ios && \
 	node prepare-modules.js
 
 #--------------
@@ -225,7 +207,7 @@ jsbundle-desktop: ##@jsbundle Compile JavaScript and Clojure into index.desktop.
 _watch-%: ##@watch Start development for device
 	$(eval SYSTEM := $(word 2, $(subst -, , $@)))
 	$(eval DEVICE := $(word 3, $(subst -, , $@)))
-	clj -R:dev build.clj watch --platform $(SYSTEM) --$(SYSTEM)-device $(DEVICE)
+	yarn shadow-cljs watch $(SYSTEM)
 
 watch-ios-real: export TARGET := ios
 watch-ios-real: _watch-ios-real
@@ -276,19 +258,22 @@ endif
 
 lint: export TARGET := lein
 lint: ##@test Run code style checks
-	lein cljfmt check
+	# yarn clj-kondo --confg .clj-kondo/config.edn --lint src
+	clojure -Sdeps '{:deps {cljfmt {:mvn/version "0.6.7"}}}' \
+	-m cljfmt.main check src \
+	--indents indentation.edn
 
 lint-fix: export TARGET := lein
 lint-fix: ##@test Run code style checks and fix issues
-	lein cljfmt fix
+	clojure -Sdeps '{:deps {cljfmt {:mvn/version "0.6.7"}}}' \
+	-m cljfmt.main fix src \
+	--indents indentation.edn
 
 test: export TARGET := lein
 test: ##@test Run tests once in NodeJS
-	lein with-profile test doo node test once
-
-test-auto: export TARGET := lein
-test-auto: ##@test Run tests in interactive (auto) mode in NodeJS
-	lein with-profile test doo node test
+	yarn shadow-cljs compile mocks && \
+  yarn shadow-cljs compile test && \
+  node --require ./test-resources/override.js target/test/test.js
 
 coverage: ##@test Run tests once in NodeJS generating coverage
 	@scripts/run-coverage.sh

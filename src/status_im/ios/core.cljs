@@ -5,8 +5,9 @@
             status-im.ui.screens.db
             status-im.ui.screens.events
             status-im.subs
-            [status-im.react-native.js-dependencies :as rn-dependencies]
-            [oops.core :refer [ocall]]
+            ["react-native-languages" :default react-native-languages]
+            ["react-native-shake" :as react-native-shake]
+            ["react-native-screens" :refer (enableScreens)]
             [status-im.ui.screens.views :as views]
             [status-im.ui.components.react :as react]
             [status-im.core :as core]
@@ -16,7 +17,7 @@
 (defn app-state-change-handler [state]
   (dispatch [:app-state-change state]))
 
-(defn on-languages-change [event]
+(defn on-languages-change [^js event]
   (i18n/set-language (.-language event)))
 
 (defn on-shake []
@@ -24,32 +25,33 @@
 
 (defn app-root [props]
   (reagent/create-class
-   {:component-did-mount
-    (fn [this]
-      (.addListener react/keyboard
-                    "keyboardWillShow"
-                    (fn [e]
-                      (let [h (.. e -endCoordinates -height)]
-                        (dispatch-sync [:set :keyboard-height h])
-                        (dispatch-sync [:set :keyboard-max-height h]))))
-      (.addListener react/keyboard
-                    "keyboardWillHide"
-                    #(dispatch-sync [:set :keyboard-height 0]))
-      (.hide react/splash-screen)
-      (.addEventListener react/app-state "change" app-state-change-handler)
-      (.addEventListener rn-dependencies/react-native-languages "change" on-languages-change)
-      (.addEventListener rn-dependencies/react-native-shake
-                         "ShakeEvent"
-                         on-shake)
-      (dispatch [:set-initial-props (reagent/props this)]))
-    :component-will-unmount
-    (fn []
-      (.removeEventListener react/app-state "change" app-state-change-handler)
-      (.removeEventListener rn-dependencies/react-native-languages "change" on-languages-change))
-    :display-name "root"
-    :reagent-render views/main}))
+     {:component-did-mount
+      (fn [this]
+        (.addListener ^js react/keyboard
+                      "keyboardWillShow"
+                      (fn [^js e]
+                        (let [h (.. e -endCoordinates -height)]
+                           (dispatch-sync [:set :keyboard-height h])
+                           (dispatch-sync [:set :keyboard-max-height h]))))
+        (.addListener ^js react/keyboard
+                      "keyboardWillHide"
+                      (fn [_]
+                        (dispatch-sync [:set :keyboard-height 0])))
+        (.hide ^js react/splash-screen)
+        (.addEventListener ^js react/app-state "change" app-state-change-handler)
+        (.addEventListener react-native-languages "change" on-languages-change)
+        (.addEventListener react-native-shake
+                           "ShakeEvent"
+                           on-shake)
+        (dispatch [:set-initial-props (reagent/props this)]))
+      :component-will-unmount
+      (fn []
+        (.removeEventListener ^js react/app-state "change" app-state-change-handler)
+        (.removeEventListener react-native-languages "change" on-languages-change))
+      :display-name "root"
+      :reagent-render views/main}))
 
 (defn init []
-  (ocall rn-dependencies/react-native-screens "enableScreens")
-  (core/init app-root)
+  (enableScreens)
+  (core/init)
   (snoopy/subscribe!))

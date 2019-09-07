@@ -1,7 +1,6 @@
 (ns status-im.utils.slurp
   (:refer-clojure :exclude [slurp])
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str])
+  (:require [clojure.java.io :as io])
   (:import (java.io File)))
 
 (def prod? (= "prod" (System/getenv "BUILD_ENV")))
@@ -17,15 +16,18 @@
       (.mkdir resources))))
 
 (defmacro slurp [file]
-  (if prod?
-    (let [name      (str/replace file #"[\/\.]" "_")
-          file-name (str resources-dir name)]
-      (check-resources-dir)
-      (copy-file file (str file-name "-raw.js"))
-      (let [res (gensym "res")]
-        `(let [~res (atom nil)]
-           (fn []
-             (or @~res
-                 (reset! ~res (js/require ~(str file-name ".js"))))))))
-    `(fn []
-       ~(clojure.core/slurp file))))
+  (clojure.core/slurp file))
+
+#_(defmacro slurp [file]
+    (if prod?
+      (let [name      (str/replace file #"[\/\.]" "_")
+            file-name (str resources-dir name)]
+        (check-resources-dir)
+        (copy-file file (str file-name "-raw.js"))
+        (let [res (gensym "res")]
+          `(let [~res (atom nil)]
+             (fn []
+               (or @~res
+                   (reset! ~res (js/require ~(str file-name ".js"))))))))
+      `(fn []
+         ~(clojure.core/slurp file))))
