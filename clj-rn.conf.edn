@@ -73,6 +73,7 @@
                    "react-native-desktop-config"
                    "react-native-desktop-shortcuts"
                    "react-native-desktop-notification"
+                   "react-native-desktop-gesture-handler"
                    "web3-utils"
                    "react-navigation"
                    "react-native-navigation-twopane"
