@@ -81,7 +81,8 @@
 
  ;; Resoures
  :resource-dirs ["resources/images"
-                 "resources/icons"]
+                 "resources/icons"
+                 "desktop/resources"]
 
  :figwheel-options {:nrepl-port 7888
                     :nrepl-middleware ["cider.nrepl/cider-middleware"
