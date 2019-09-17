@@ -81,7 +81,6 @@
 
  ;; Resoures
  :resource-dirs ["resources/images"
-                 "resources/icons"
                  "desktop/resources"]
 
  :figwheel-options {:nrepl-port 7888
