@@ -35,6 +35,7 @@ export KEYCHAIN_PASS
 script -q /dev/null gpg < /dev/null > /dev/null
 
 set -e
+set -x
 
 echo -e "\n### Storing original keychain search list..."
 ORIG_KEYCHAIN_LIST="$(security list-keychains \
@@ -105,6 +106,9 @@ if [ -d "$OBJECT" ]; then
 else
   codesign --sign "$DEV_ID" --keychain "$KEYCHAIN" --force --verbose=4 "$OBJECT"
 fi
+
+ls -l
+ls -l "$OBJECT" || exit 0
 
 echo -e "\n### Verifying signature..."
 codesign --verify --strict=all --deep --verbose=4 "$OBJECT"
