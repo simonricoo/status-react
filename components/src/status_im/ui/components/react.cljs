@@ -28,7 +28,7 @@
 
 (def dismiss-keyboard! (if platform/desktop?
                          #()
-                         (js-dependencies/dismiss-keyboard)))
+                         js-dependencies/dismiss-keyboard))
 
 (def splash-screen (.-SplashScreen native-modules))
 
