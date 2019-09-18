@@ -21,6 +21,9 @@ let
     unpackPhase = ''
       mkdir -p $out/src
       unzip $src -d $out/src
+
+      # remove unused compiled Realm directory. TODO: Create new zip file without it
+      rm -rf $out/src/node_modules/
     '';
 
     meta = with stdenv.lib; {
