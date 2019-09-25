@@ -26,7 +26,9 @@
 (def native-modules (.-NativeModules js-dependencies/react-native))
 (def device-event-emitter (.-DeviceEventEmitter js-dependencies/react-native))
 
-(def dismiss-keyboard! js-dependencies/dismiss-keyboard)
+(def dismiss-keyboard! (if platform/desktop?
+                         #()
+                         js-dependencies/dismiss-keyboard))
 
 (def splash-screen (.-SplashScreen native-modules))
 
@@ -224,8 +226,9 @@
          (.catch show-access-error)))))
 
 ;; Net info
-
-(def net-info (.-default js-dependencies/net-info))
+(def net-info (if platform/desktop?
+                (get-react-property "NetInfo")
+                (.-default js-dependencies/net-info)))
 
 ;; Clipboard
 

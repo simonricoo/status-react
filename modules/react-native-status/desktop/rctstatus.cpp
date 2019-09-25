@@ -324,6 +324,24 @@ void RCTStatus::multiAccountDeriveAddresses(QString json, double callbackId) {
         }, json, callbackId);
 }
 
+void RCTStatus::multiAccountStoreDerived(QString json, double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString json, double callbackId) {
+        const char* result = MultiAccountStoreDerivedAccounts(json.toUtf8().data());
+        logStatusGoResult("::multiAccountStoreDerived", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, json, callbackId);
+}
+
+
+void RCTStatus::multiAccountImportMnemonic(QString json, double callbackId) {
+    Q_D(RCTStatus);
+    QtConcurrent::run([&](QString json, double callbackId) {
+        const char* result = MultiAccountImportMnemonic(json.toUtf8().data());
+        logStatusGoResult("::multiAccountImportMnemonic", result);
+        d->bridge->invokePromiseCallback(callbackId, QVariantList{result});
+        }, json, callbackId);
+}
 
 void RCTStatus::verify(QString address, QString password, double callbackId) {
     Q_D(RCTStatus);
