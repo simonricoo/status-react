@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
+set -x
 set -e
+
+export CONAN_TRACE_FILE=/home/jenkins/conan_trace.log
 
 VERBOSE_LEVEL=${VERBOSE_LEVEL:-1}
 
