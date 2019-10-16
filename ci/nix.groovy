@@ -19,14 +19,16 @@ def shell(Map opts = [:], String cmd) {
     opts.pure = false
   }
   /* single quotes have to be escaped */
-  cmd = cmd.replaceAll("'", "\\'")
-  sh("""
+  def clean_cmd = cmd.replaceAll("'", "\\'")
+  def full = """
       set +x
       . ~/.nix-profile/etc/profile.d/nix.sh
       set -x
       IN_CI_ENVIRONMENT=1 \\
-      nix-shell --run \'${cmd}\' ${_getNixCommandArgs(opts, true)}
-  """)
+      nix-shell --run \'${clean_cmd}\' ${_getNixCommandArgs(opts, true)}
+  """
+  println "CMD: ${full}"
+  sh(full)
 }
 
 /**

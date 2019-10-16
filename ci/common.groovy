@@ -87,11 +87,10 @@ def uploadArtifact(path) {
     passwordVariable: 'DO_SECRET_KEY'
   )]) {
     nix.shell("""
-      s3cmd \\
+      s3cmd ${customOpts} \\
         --acl-public \\
-        ${customOpts} \\
-        --host='${domain}' \\
-        --host-bucket='%(bucket)s.${domain}' \\
+        --host="${domain}" \\
+        --host-bucket="%(bucket)s.${domain}" \\
         --access_key=${DO_ACCESS_KEY} \\
         --secret_key=${DO_SECRET_KEY} \\
         put ${path} s3://${bucket}/
