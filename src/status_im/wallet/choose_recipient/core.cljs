@@ -30,6 +30,7 @@
                (fn [{old-symbol :symbol :as old-transaction}]
                  (let [symbol-changed? (not= old-symbol symbol)]
                    (cond-> (assoc old-transaction :to address :to-name name :public-key public-key)
+                     (ens/is-valid-eth-name? address) (assoc :to (ens/get-addr :mainnet address nil))
                      value (assoc :amount value)
                      symbol (assoc :symbol symbol)
                      (and gas symbol-changed?) (assoc :gas (money/bignumber gas))
