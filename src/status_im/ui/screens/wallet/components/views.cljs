@@ -289,7 +289,7 @@
    [react/view {:accessibility-label :choose-recipient-button}
     (if name
       [recipient-contact address name request?]
-      (if (= address nil) [recipient-address address modal?] [#(re-frame/dispatch [:wallet.send/set-recipient-2 address])]))]])
+      [recipient-address address modal?])]])
 
 (defn amount-input [{:keys [input-options amount amount-text disabled?]}
                     {:keys [symbol decimals]}]

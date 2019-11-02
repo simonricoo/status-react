@@ -91,7 +91,7 @@
         {:ui/show-error (i18n/label :t/wallet-invalid-address {:data recipient})}))))
 
 (fx/defn set-recipient-from-qr
-  {:events [:wallet.send/set-recipient-qr]}
+  {:events [:wallet.send/set-recipient-from-qr]}
   [{:keys [db]} recipient]
   (let [chain (ethereum/chain-keyword db)]
     (if (ens/is-valid-eth-name? recipient)
@@ -122,7 +122,7 @@
         new-gas                                (:gas details)
         symbol-changed?                        (and old-symbol new-symbol (not= old-symbol new-symbol))]
     (cond-> {:db db}
-      (not= :deep-link origin) (assoc :dispatch [:navigate-back]) ;; Only navigate-back when called from within wallet
+      (not= :deep-link origin) (assoc :dispatch [:wallet.send/set-recipient address]) ;; Only navigate-back when called from within wallet
       (and address valid-network?) (update :db #(fill-request-details % details false))
       symbol-changed? (changed-asset old-symbol new-symbol)
       (and old-amount new-amount (not= old-amount new-amount)) (changed-amount-warning old-amount new-amount)
