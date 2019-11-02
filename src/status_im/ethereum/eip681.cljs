@@ -43,8 +43,10 @@
       arguments)))
 
 (defn parse-uri
-  "Parse a EIP 681 URI as a map (keyword / strings). Parsed map will contain at least the key `address` which will be either a valid ENS or Ethereum address.
-   Note that values are not decoded and you might need to rely on specific methods for some fields (parse-value, parse-number).
+  "Parse a EIP 681 URI as a map (keyword / strings). Parsed map will contain at least the key `address` 
+   which will be either a valid ENS or Ethereum address.
+   Note that values are not decoded and you might need to rely on specific methods for some fields 
+   (parse-value, parse-number).
    Invalid URI will be parsed as `nil`."
   [s]
   (when (string? s)
@@ -56,9 +58,14 @@
                       (let [pay-address (string/replace-first raw-address "pay-" "")]
                         (or (ens/is-valid-eth-name? pay-address)
                             (ethereum/address? pay-address)))))
-            (let [address (if (string/starts-with? raw-address "pay-") (string/replace-first raw-address "pay-" "") raw-address)]
+            (let [address (if (string/starts-with? raw-address "pay-") 
+                            (string/replace-first raw-address "pay-" "") 
+                            raw-address)]
               (when-let [arguments (parse-arguments function-name query)]
-                (merge {:address address :chain-id (if chain-id (js/parseInt chain-id) (ethereum/chain-keyword->chain-id :mainnet))}
+                (merge {:address address 
+                        :chain-id (if chain-id 
+                                    (js/parseInt chain-id) 
+                                    (ethereum/chain-keyword->chain-id :mainnet))}
                        arguments)))))))))
 
 (defn parse-eth-value [s]
