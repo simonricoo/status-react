@@ -30,7 +30,6 @@
                (fn [{old-symbol :symbol :as old-transaction}]
                  (let [symbol-changed? (not= old-symbol symbol)]
                    (cond-> (assoc old-transaction :to address :to-name name :public-key public-key)
-                     (ens/is-valid-eth-name? address) (assoc :to (ens/get-addr :mainnet address nil))
                      value (assoc :amount value)
                      symbol (assoc :symbol symbol)
                      (and gas symbol-changed?) (assoc :gas (money/bignumber gas))
@@ -88,6 +87,24 @@
                            (assoc-in [:wallet :send-transaction :to] checksum)
                            (assoc-in [:wallet :send-transaction :to-name] nil))
              :dispatch [:navigate-back]}
+            {:ui/show-error (i18n/label :t/wallet-invalid-address-checksum {:data recipient})}))
+        {:ui/show-error (i18n/label :t/wallet-invalid-address {:data recipient})}))))
+
+(fx/defn set-recipient-from-qr
+  {:events [:wallet.send/set-recipient-qr]}
+  [{:keys [db]} recipient]
+  (let [chain (ethereum/chain-keyword db)]
+    (if (ens/is-valid-eth-name? recipient)
+      {:resolve-address {:registry (get ens/ens-registries chain)
+                         :ens-name recipient
+                         :cb       #(re-frame/dispatch [:wallet.send/set-recipient-2 %])}}
+      (if (ethereum/address? recipient)
+        (let [checksum (eip55/address->checksum recipient)]
+          (if (eip55/valid-address-checksum? checksum)
+            {:db       (-> db
+                           (assoc-in [:wallet :send-transaction :to] checksum)
+                           (assoc-in [:wallet :send-transaction :to-name] nil))
+             }
             {:ui/show-error (i18n/label :t/wallet-invalid-address-checksum {:data recipient})}))
         {:ui/show-error (i18n/label :t/wallet-invalid-address {:data recipient})}))))
 

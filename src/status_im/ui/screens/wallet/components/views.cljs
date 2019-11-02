@@ -24,6 +24,7 @@
             [status-im.ui.screens.wallet.choose-recipient.views
              :as
              choose-recipient]
+            [status-im.ethereum.ens :as ens]
             [status-im.ui.screens.wallet.components.styles :as styles]
             [status-im.wallet.utils :as wallet.utils]
             [status-im.utils.core :as utils.core]
@@ -162,10 +163,12 @@
 (defn- recipient-address [address modal?]
   [react/text {:style               (merge styles/recipient-address (when-not address styles/recipient-no-address))
                :accessibility-label :recipient-address-text}
-   (or (eip55/address->checksum (ethereum/normalized-address address))
-       (if modal?
-         (i18n/label :t/new-contract)
-         (i18n/label :t/specify-recipient)))])
+   (if (ens/is-valid-eth-name? address)
+     address
+     (or (eip55/address->checksum (ethereum/normalized-address address))
+         (if modal?
+           (i18n/label :t/new-contract)
+           (i18n/label :t/specify-recipient))))])
 
 (views/defview recipient-contact [address name request?]
   (views/letsubs [contact [:contacts/contact-by-address address]]
@@ -286,7 +289,7 @@
    [react/view {:accessibility-label :choose-recipient-button}
     (if name
       [recipient-contact address name request?]
-      [recipient-address address modal?])]])
+      (if (= address nil) [recipient-address address modal?] [#(re-frame/dispatch [:wallet.send/set-recipient-2 address])]))]])
 
 (defn amount-input [{:keys [input-options amount amount-text disabled?]}
                     {:keys [symbol decimals]}]
