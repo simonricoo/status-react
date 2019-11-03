@@ -58,13 +58,13 @@
                       (let [pay-address (string/replace-first raw-address "pay-" "")]
                         (or (ens/is-valid-eth-name? pay-address)
                             (ethereum/address? pay-address)))))
-            (let [address (if (string/starts-with? raw-address "pay-") 
-                            (string/replace-first raw-address "pay-" "") 
+            (let [address (if (string/starts-with? raw-address "pay-")
+                            (string/replace-first raw-address "pay-" "")
                             raw-address)]
               (when-let [arguments (parse-arguments function-name query)]
-                (merge {:address address 
-                        :chain-id (if chain-id 
-                                    (js/parseInt chain-id) 
+                (merge {:address address
+                        :chain-id (if chain-id
+                                    (js/parseInt chain-id)
                                     (ethereum/chain-keyword->chain-id :mainnet))}
                        arguments)))))))))
 

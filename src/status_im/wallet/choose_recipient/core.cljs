@@ -90,7 +90,6 @@
             {:ui/show-error (i18n/label :t/wallet-invalid-address-checksum {:data recipient})}))
         {:ui/show-error (i18n/label :t/wallet-invalid-address {:data recipient})}))))
 
-
 (fx/defn fill-request-from-url
   {:events [:wallet/fill-request-from-url]}
   [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} data origin]
