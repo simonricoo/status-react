@@ -13,6 +13,7 @@
   (is (= nil (eip681/parse-uri "ethereum:0x1234")))
   (is (= nil (eip681/parse-uri "ethereum:gimme.eth?value=1e18")))
   (is (= nil (eip681/parse-uri "ethereum:gimme.ether?value=1e18")))
+  (is (= nil (eip681/parse-uri "ethereum:pay-gimme.ether?value=1e18")))
   (is (= {:address "gimme.eth" :value "1e18" :chain-id 1} (eip681/parse-uri "ethereum:pay-gimme.eth?value=1e18")))
   (is (= {:address "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7" :value "1e18" :chain-id 1} (eip681/parse-uri "ethereum:pay-0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7?value=1e18")))
   (is (= {:address "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7" :chain-id 1} (eip681/parse-uri "ethereum:0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7")))
