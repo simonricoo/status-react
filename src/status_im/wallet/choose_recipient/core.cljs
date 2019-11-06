@@ -8,7 +8,8 @@
             [status-im.ethereum.ens :as ens]
             [status-im.i18n :as i18n]
             [status-im.utils.money :as money]
-            [status-im.utils.fx :as fx]))
+            [status-im.utils.fx :as fx]
+            [clojure.string :as string]))
 
 (fx/defn toggle-flashlight
   {:events [:wallet/toggle-flashlight]}
@@ -72,6 +73,13 @@
  (fn [{:keys [registry ens-name cb]}]
    (ens/get-addr registry ens-name cb)))
 
+(fx/defn resolve-token-address-from-qr
+  {:events [:wallet.send/resolve-token-address-from-qr]}
+  [{:keys [db]} address]
+  (let [raw-data "ethereum:pay-snt.thetoken.eth/transfer?address=acolytec3.stateofus.eth&uint256=1e2"
+        data (string/replace raw-data (subs raw-data (+ (string/index-of raw-data "pay-") 4) (+ (string/index-of raw-data ".eth") 4)) address)]
+    (re-frame/dispatch [:wallet/fill-request-from-url data :qr])))
+
 (fx/defn set-recipient
   {:events [:wallet.send/set-recipient]}
   [{:keys [db]} recipient]
@@ -93,29 +101,36 @@
 (fx/defn fill-request-from-url
   {:events [:wallet/fill-request-from-url]}
   [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} data origin]
-  (let [current-chain-id                       (get-in constants/default-networks [current-network :config :NetworkId])
-        {:keys [address chain-id] :as details} (extract-details data current-chain-id all-tokens)
-        valid-network?                         (boolean (= current-chain-id chain-id))
-        previous-state                         (get-in db [:wallet :send-transaction])
-        old-symbol                             (:symbol previous-state)
-        new-symbol                             (:symbol details)
-        old-amount                             (:amount previous-state)
-        new-amount                             (:value details)
-        new-gas                                (:gas details)
-        symbol-changed?                        (and old-symbol new-symbol (not= old-symbol new-symbol))]
-    (cond-> {:db db}
-      (not= :deep-link origin) (assoc :dispatch [:wallet.send/set-recipient address]) ;; Only navigate-back when called from within wallet
-      (and address valid-network?) (update :db #(fill-request-details % details false))
-      symbol-changed? (changed-asset old-symbol new-symbol)
-      (and old-amount new-amount (not= old-amount new-amount)) (changed-amount-warning old-amount new-amount)
+  (assoc-in db [:wallet :eip681] nil)
+  (if (and (string/includes? data "transfer")
+           (< (string/index-of data ".eth") (string/index-of data "transfer")))
+    {:resolve-address
+     {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
+      :ens-name  (get-in (eip681/parse-uri data) [:address])
+      :cb        #(re-frame/dispatch [:wallet.send/resolve-token-address-from-qr %])}}
+    (let [current-chain-id                       (get-in constants/default-networks [current-network :config :NetworkId])
+          {:keys [address chain-id] :as details} (extract-details data current-chain-id all-tokens)
+          valid-network?                         (boolean (= current-chain-id chain-id))
+          previous-state                         (get-in db [:wallet :send-transaction])
+          old-symbol                             (:symbol previous-state)
+          new-symbol                             (:symbol details)
+          old-amount                             (:amount previous-state)
+          new-amount                             (:value details)
+          new-gas                                (:gas details)
+          symbol-changed?                        (and old-symbol new-symbol (not= old-symbol new-symbol))]
+      (cond-> {:db db}
+        (not= :deep-link origin) (assoc :dispatch [:wallet.send/set-recipient address]) ;; Only navigate-back when called from within wallet
+        (and address valid-network?) (update :db #(fill-request-details % details false))
+        symbol-changed? (changed-asset old-symbol new-symbol)
+        (and old-amount new-amount (not= old-amount new-amount)) (changed-amount-warning old-amount new-amount)
        ;; NOTE(goranjovic) - the next line is there is because QR code scanning switches the amount to ETH
        ;; automatically, so we need to update the gas limit accordingly. The check for origin screen is there
        ;; so that we wouldn't also switch gas limit to ETH specific if the user pastes address as text.
        ;; We need to check if address is defined so that we wouldn't trigger this behavior when invalid QR is scanned
        ;; (e.g. public-key)
-      (and address (= origin :qr) (not new-gas) symbol-changed?) (use-default-eth-gas)
-      (not address) (assoc :ui/show-error (i18n/label :t/wallet-invalid-address {:data data}))
-      (and address (not valid-network?)) (assoc :ui/show-error (i18n/label :t/wallet-invalid-chain-id {:data data :chain current-chain-id})))))
+        (and address (= origin :qr) (not new-gas) symbol-changed?) (use-default-eth-gas)
+        (not address) (assoc :ui/show-error (i18n/label :t/wallet-invalid-address {:data data}))
+        (and address (not valid-network?)) (assoc :ui/show-error (i18n/label :t/wallet-invalid-chain-id {:data data :chain current-chain-id}))))))
 
 (fx/defn fill-request-from-contact
   {:events [:wallet/fill-request-from-contact]}
