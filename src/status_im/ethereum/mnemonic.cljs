@@ -41,5 +41,9 @@
        passphrase->words
        (every? valid-word?)))
 
+(defn bip39? [s]
+  (println "VALIDATE" s (.validateMnemonic js-dependencies/bip39 s (clj->js words-list)))
+  false);(.validateMnemonic js-dependencies/bip39 s (clj->js words-list)))
+
 (defn status-generated-phrase? [s]
   (every? dictionary (passphrase->words s)))

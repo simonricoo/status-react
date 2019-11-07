@@ -19,6 +19,7 @@
 (defn check-phrase-warnings [recovery-phrase]
   (cond (string/blank? recovery-phrase) :required-field
         (not (mnemonic/valid-words? recovery-phrase)) :recovery-phrase-invalid
+        (not (mnemonic/bip39? recovery-phrase)) :recovery-phrase-invalid
         (not (mnemonic/status-generated-phrase? recovery-phrase)) :recovery-phrase-unknown-words))
 
 (fx/defn set-phrase
@@ -28,9 +29,7 @@
     (fx/merge
      {:db (update db :intro-wizard assoc
                   :passphrase (string/lower-case recovery-phrase)
-                  :passphrase-error nil
-                  :next-button-disabled? (or (empty? recovery-phrase)
-                                             (not (mnemonic/valid-length? recovery-phrase))))})))
+                  :passphrase-error nil)})))
 
 (fx/defn validate-phrase-for-warnings
   [{:keys [db]}]
@@ -238,12 +237,10 @@
     {:db (assoc-in db [:intro-wizard :passphrase-word-count]
                    (mnemonic/words-count passphrase))}))
 
-(fx/defn run-validation
-  [{:keys [db] :as cofx}]
-  (let [passphrase (get-in db [:intro-wizard :passphrase])]
-    (when (= (last passphrase) " ")
-      (fx/merge cofx
-                (validate-phrase-for-warnings)))))
+(fx/defn next-button
+  [{:keys [db]}]
+  (let [{:keys [passphrase passphrase-error]} (:intro-wizard db)]
+    {:db (update db :intro-wizard assoc :next-button-disabled? (or (empty? passphrase) passphrase-error))}))
 
 (fx/defn enter-phrase-input-changed
   {:events [:multiaccounts.recover/enter-phrase-input-changed]}
@@ -251,4 +248,5 @@
   (fx/merge cofx
             (set-phrase input)
             (count-words)
-            (run-validation)))
+            (validate-phrase-for-warnings)
+            (next-button)))
