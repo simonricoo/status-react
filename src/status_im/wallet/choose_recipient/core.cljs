@@ -52,8 +52,8 @@
 ;; NOTE(janherich) - whenever changing assets, we want to clear the previusly set amount/amount-text
 (defn changed-asset [{:keys [db] :as fx} old-symbol new-symbol]
   (-> fx
-      (merge {:wallet/update-gas-price
-              {:success-event :wallet/update-gas-price-success
+      (merge {:signing/update-gas-price
+              {:success-event :signing/update-gas-price-success
                :edit?         false}})
       (assoc-in [:db :wallet :send-transaction :amount] nil)
       (assoc-in [:db :wallet :send-transaction :amount-text] nil)
@@ -73,11 +73,10 @@
  (fn [{:keys [registry ens-name cb]}]
    (ens/get-addr registry ens-name cb)))
 
-(fx/defn resolve-token-address-from-qr
-  {:events [:wallet.send/resolve-token-address-from-qr]}
-  [{:keys [db]} address]
-  (let [raw-data "ethereum:pay-snt.thetoken.eth/transfer?address=acolytec3.stateofus.eth&uint256=1e2"
-        data (string/replace raw-data (subs raw-data (+ (string/index-of raw-data "pay-") 4) (+ (string/index-of raw-data ".eth") 4)) address)]
+(fx/defn resolve-token-address-from-url
+  {:events [:wallet.send/resolve-token-address-from-url]}
+  [{:keys [db]} raw-data address]
+  (let [data (string/replace raw-data (subs raw-data (+ (string/index-of raw-data "pay-") 4) (+ (string/index-of raw-data ".eth") 4)) address)]
     (re-frame/dispatch [:wallet/fill-request-from-url data :qr])))
 
 (fx/defn set-recipient
@@ -101,13 +100,12 @@
 (fx/defn fill-request-from-url
   {:events [:wallet/fill-request-from-url]}
   [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} data origin]
-  (assoc-in db [:wallet :eip681] nil)
   (if (and (string/includes? data "transfer")
            (< (string/index-of data ".eth") (string/index-of data "transfer")))
     {:resolve-address
      {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
       :ens-name  (get-in (eip681/parse-uri data) [:address])
-      :cb        #(re-frame/dispatch [:wallet.send/resolve-token-address-from-qr %])}}
+      :cb        #(re-frame/dispatch [:wallet.send/resolve-token-address-from-url data %])}}
     (let [current-chain-id                       (get-in constants/default-networks [current-network :config :NetworkId])
           {:keys [address chain-id] :as details} (extract-details data current-chain-id all-tokens)
           valid-network?                         (boolean (= current-chain-id chain-id))
