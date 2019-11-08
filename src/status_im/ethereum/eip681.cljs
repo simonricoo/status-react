@@ -62,11 +62,14 @@
                             (string/replace-first raw-address "pay-" "")
                             raw-address)]
               (when-let [arguments (parse-arguments function-name query)]
-                (merge {:address address
-                        :chain-id (if chain-id
-                                    (js/parseInt chain-id)
-                                    (ethereum/chain-keyword->chain-id :mainnet))}
-                       arguments)))))))))
+                (let [contract-address (get-in arguments [:function-arguments :address])]
+                  (if-not (or (not contract-address) (or (ens/is-valid-eth-name? contract-address) (ethereum/address? contract-address)))
+                    nil
+                    (merge {:address address
+                            :chain-id (if chain-id
+                                        (js/parseInt chain-id)
+                                        (ethereum/chain-keyword->chain-id :mainnet))}
+                           arguments)))))))))))
 
 (defn parse-eth-value [s]
   "Takes a map as returned by `parse-uri` and returns value as BigNumber"
