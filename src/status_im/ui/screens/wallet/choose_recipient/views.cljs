@@ -9,7 +9,8 @@
             [status-im.ui.components.toolbar.actions :as actions]
             [status-im.ui.components.toolbar.view :as topbar]
             [status-im.ui.screens.wallet.choose-recipient.styles :as styles]
-            [status-im.utils.platform :as platform]))
+            [status-im.utils.platform :as platform]
+            [status-im.ethereum.eip681 :as eip681]))
 
 (defn- topbar [camera-flashlight]
   [topbar/toolbar
@@ -61,7 +62,7 @@
                        ;:torchMode     (camera/set-torch camera-flashlight)
                        :onBarCodeRead #(when-not @read-once?
                                          (reset! read-once? true)
-                                         (re-frame/dispatch [:wallet/fill-request-from-url (camera/get-qr-code-data %) :qr]))}]]
+                                         (eip681/parse-uri-2 (camera/get-qr-code-data %) :qr))}]]
       [viewfinder dimensions (size dimensions)]]
      [toolbar/toolbar
       {:center {:type                :secondary
