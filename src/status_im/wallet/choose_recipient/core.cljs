@@ -72,8 +72,6 @@
 (fx/defn resolve-ens-addresses
   {:events [:wallet.send/resolve-ens-addresses]}
   [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} message origin address]
-  (js/console.log message)
-  (js/console.log (str "resolved address - " address))
   (if address
     (if (ens/is-valid-eth-name? (get-in message [:address]))
       (if (ens/is-valid-eth-name? (get-in message [:function-arguments :address]))
@@ -82,9 +80,7 @@
           :ens-name  (get-in message [:function-arguments :address])
           :cb        #(re-frame/dispatch [:wallet.send/resolve-ens-addresses (merge message {:address address}) origin %])}}
         (re-frame/dispatch [:wallet/request-uri-parsed (merge message {:address address}) origin]))
-      (do
-        (js/console.log (get-in message [:function-arguments :uint256]))
-        (re-frame/dispatch [:wallet/request-uri-parsed (merge message {:function-arguments {:address address :uint256 (get-in message [:function-arguments :uint256])}}) origin])))
+      (re-frame/dispatch [:wallet/request-uri-parsed (merge message {:function-arguments {:address address :uint256 (get-in message [:function-arguments :uint256])}}) origin]))
     (if (ens/is-valid-eth-name? (get-in message [:address]))
       {:resolve-address
        {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
@@ -118,7 +114,6 @@
 (fx/defn request-uri-parsed
   {:events [:wallet/request-uri-parsed]}
   [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} data origin]
-  (js/console.log data)
   (let [current-chain-id                       (get-in constants/default-networks [current-network :config :NetworkId])
         {:keys [address chain-id] :as details} (extract-details data current-chain-id all-tokens)
         valid-network?                         (boolean (= current-chain-id chain-id))

@@ -85,7 +85,7 @@
       (navigation/navigate-to-cofx (assoc-in cofx [:db :contacts/identity] public-key) :profile nil))))
 
 (fx/defn handle-eip681 [cofx url]
-  (eip681/parse-uri-2 url :deep-link)
+  (eip681/parse-uri-handler url :deep-link)
   {:dispatch [:navigate-to :wallet-send-transaction]})
 
 (defn handle-not-found [full-url]

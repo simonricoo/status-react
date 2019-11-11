@@ -43,35 +43,6 @@
                {:function-arguments (apply dissoc m valid-native-arguments)}))
       arguments)))
 
-(defn parse-uri-2
-  "Parse a EIP 681 URI as a map (keyword / strings). Parsed map will contain at least the key `address` 
-   which will be either a valid ENS or Ethereum address.
-   Note that values are not decoded and you might need to rely on specific methods for some fields 
-   (parse-value, parse-number).
-   Invalid URI will be parsed as `nil`."
-  [s origin]
-  (when (string? s)
-    (let [[_ authority-path query] (re-find uri-pattern s)]
-      (when authority-path
-        (let [[_ raw-address chain-id function-name] (re-find authority-path-pattern authority-path)]
-          (when (or (ethereum/address? raw-address)
-                    (if (string/starts-with? raw-address "pay-")
-                      (let [pay-address (string/replace-first raw-address "pay-" "")]
-                        (or (ens/is-valid-eth-name? pay-address)
-                            (ethereum/address? pay-address)))))
-            (let [address (if (string/starts-with? raw-address "pay-")
-                            (string/replace-first raw-address "pay-" "")
-                            raw-address)]
-              (when-let [arguments (parse-arguments function-name query)]
-                (let [contract-address (get-in arguments [:function-arguments :address])]
-                  (if-not (or (not contract-address) (or (ens/is-valid-eth-name? contract-address) (ethereum/address? contract-address)))
-                    nil
-                    (re-frame/dispatch [:wallet.send/resolve-ens-addresses (merge {:address address
-                                                                                   :chain-id (if chain-id
-                                                                                               (js/parseInt chain-id)
-                                                                                               (ethereum/chain-keyword->chain-id :mainnet))}
-                                                                                  arguments) origin nil])))))))))))
-
 (defn parse-uri
   "Parse a EIP 681 URI as a map (keyword / strings). Parsed map will contain at least the key `address` 
    which will be either a valid ENS or Ethereum address.
@@ -100,6 +71,13 @@
                                         (js/parseInt chain-id)
                                         (ethereum/chain-keyword->chain-id :mainnet))}
                            arguments)))))))))))
+
+(defn parse-uri-handler
+  [s origin]
+  (let [m (parse-uri s)]
+    (if-not (= m nil)
+      (re-frame/dispatch [:wallet.send/resolve-ens-addresses m origin nil])
+      nil)))
 
 (defn parse-eth-value [s]
   "Takes a map as returned by `parse-uri` and returns value as BigNumber"

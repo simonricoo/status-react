@@ -62,7 +62,7 @@
                        ;:torchMode     (camera/set-torch camera-flashlight)
                        :onBarCodeRead #(when-not @read-once?
                                          (reset! read-once? true)
-                                         (eip681/parse-uri-2 (camera/get-qr-code-data %) :qr))}]]
+                                         (eip681/parse-uri-handler (camera/get-qr-code-data %) :qr))}]]
       [viewfinder dimensions (size dimensions)]]
      [toolbar/toolbar
       {:center {:type                :secondary
