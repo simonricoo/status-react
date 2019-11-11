@@ -172,8 +172,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
-        versionCode getVersionCode()
-        versionName getVersionName()
+        versionCode 9999
+        versionName '0.14.0'
         missingDimensionStrategy 'react-native-camera', 'general'
         /* this needs to be empty if we want APKs split by ABIs */
         if (!getEnvOrConfig('ANDROID_ABI_SPLIT').toBoolean()) {
@@ -206,7 +206,7 @@ android {
         pickFirst '**/x86_64/libc++_shared.so'
         pickFirst '**/x86/libjsc.so'
         pickFirst '**/armeabi-v7a/libjsc.so'
-        
+
         /** Fix for: Execution failed for task ':app:transformNativeLibsWithStripDebugSymbolForDebug'.
         *   with recent version of ndk (17.0.4754217)
         */
