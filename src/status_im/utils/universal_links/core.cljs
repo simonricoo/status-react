@@ -1,5 +1,6 @@
 (ns status-im.utils.universal-links.core
   (:require [cljs.spec.alpha :as spec]
+            [clojure.string :as string]
             [goog.string :as gstring]
             [re-frame.core :as re-frame]
             [status-im.multiaccounts.model :as multiaccounts.model]
@@ -43,6 +44,9 @@
            (re-matches regex)
            peek))
 
+(defn is-request-url? [url]
+  (string/starts-with? url "ethereum:"))
+
 (defn universal-link? [url]
   (boolean
    (re-matches constants/regx-universal-link url)))
@@ -81,8 +85,8 @@
       (navigation/navigate-to-cofx (assoc-in cofx [:db :contacts/identity] public-key) :profile nil))))
 
 (fx/defn handle-eip681 [cofx url]
-  {:dispatch-n [[:navigate-to :wallet-send-transaction]
-                [:wallet/fill-request-from-url url :deep-link]]})
+  (eip681/parse-uri-2 url :deep-link)
+  {:dispatch [:navigate-to :wallet-send-transaction]})
 
 (defn handle-not-found [full-url]
   (log/info "universal-links: no handler for " full-url))
@@ -107,7 +111,7 @@
     (match-url url browse-regex)
     (handle-browse cofx (match-url url browse-regex))
 
-    (some? (eip681/parse-uri url))
+    (is-request-url? url)
     (handle-eip681 cofx url)
 
     :else (handle-not-found url)))
