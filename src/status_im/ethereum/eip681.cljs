@@ -74,10 +74,9 @@
 
 (defn parse-uri-handler
   [s origin]
-  (let [m (parse-uri s)]
-    (if-not (= m nil)
-      (re-frame/dispatch [:wallet.send/resolve-ens-addresses m origin nil])
-      nil)))
+  (when-let [parsed-message (parse-uri s)]
+    (re-frame/dispatch [:wallet.send/resolve-ens-addresses parsed-message origin nil])
+    nil))
 
 (defn parse-eth-value [s]
   "Takes a map as returned by `parse-uri` and returns value as BigNumber"
