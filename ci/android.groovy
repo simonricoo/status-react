@@ -134,7 +134,8 @@ def uploadToSauceLabs() {
       keep: [
         'FASTLANE_DISABLE_COLORS', 'APK_PATHS',
         'SAUCE_ACCESS_KEY', 'SAUCE_USERNAME', 'SAUCE_LABS_NAME'
-      ]
+      ],
+      pure: false
     )
   }
   return env.SAUCE_LABS_NAME

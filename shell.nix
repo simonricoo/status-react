@@ -17,38 +17,27 @@ let
   stdenv = pkgs.stdenvNoCC;
   # those should always be present in a shell
   coreInputs = with pkgs; [
-    # utilities
-    bash
-    curl
-    file
-    flock
-    git
-    gnumake
-    jq
-    wget
+    bash curl file flock git gnumake jq wget
   ];
 
-in mkShell {
-  name = "status-react-shell";
-  # none means we shouldn't include project specific deps
-  buildInputs = if target-os == "none" then
-    coreInputs
-  else
-    with pkgs; [
-      unzip
-      ncurses
-      lsof # used in scripts/start-react-native.sh
-      ps # used in scripts/start-react-native.sh
-      clojure
-      leiningen
-      maven
-      watchman
-    ] ++ coreInputs;
+in let
+    inherit (stdenv.lib) catAttrs concatStrings optional optionals;
+  in mkShell {
+    name = "status-react-shell";
+    # none means we shouldn't include project specific deps
+    buildInputs = 
+      project.shell.buildInputs ++
+      coreInputs ++
+      optionals (target-os != "none") (with pkgs; [
+        unzip
+        ncurses
+        lsof # used in scripts/start-react-native.sh
+        ps # used in scripts/start-react-native.sh
+        clojure
+        leiningen
+        maven
+        watchman
+      ]);
 
-  inputsFrom = if target-os == "none" then
-    []
-  else
-    [ project.shell ];
-
-  shellHook = project.shell.shellHook;
-}
+    inherit (project.shell) shellHook;
+  }

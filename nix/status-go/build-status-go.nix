@@ -53,11 +53,8 @@ let
     '';
 
     # replace hardcoded paths to go package in /nix/store, otherwise Nix will fail the build
-    preFixup = ''
-      ${preFixup}
-
+    preFixup = preFixup + ''
       find $out -type f -exec ${removeExpr removeReferences} '{}' + || true
-      return
     '';
 
     passthru = { inherit owner version rev; };
