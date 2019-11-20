@@ -65,42 +65,66 @@
             ethereum/default-transaction-gas))
 
 (re-frame/reg-fx
- :resolve-address
+ ::resolve-address
  (fn [{:keys [registry ens-name cb]}]
    (ens/get-addr registry ens-name cb)))
 
+(re-frame/reg-fx
+ ::resolve-addresses
+ (fn [{:keys [registry ens-names callback]}]
+   ;; resolve all addresses then callt
+   (-> (js/Promise.all
+        (clj->js (mapv (fn [ens-name]
+                         (js/Promise.
+                          (fn [resolve reject]
+                            (ens/get-addr registry ens-name resolve))))
+                       ens-names)))
+       (.then callback)
+       (.catch (fn [error]
+                 (js/console.log error))))))
+
 (fx/defn resolve-ens-addresses
   {:events [:wallet.send/resolve-ens-addresses]}
-  [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db} message origin address]
-  (if address
-    (if (ens/is-valid-eth-name? (get-in message [:address]))
-      (if (ens/is-valid-eth-name? (get-in message [:function-arguments :address]))
-        {:resolve-address
-         {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
-          :ens-name  (get-in message [:function-arguments :address])
-          :cb        #(re-frame/dispatch [:wallet.send/resolve-ens-addresses (merge message {:address address}) origin %])}}
-        (re-frame/dispatch [:wallet/request-uri-parsed (merge message {:address address}) origin]))
-      (re-frame/dispatch [:wallet/request-uri-parsed (merge message {:function-arguments {:address address :uint256 (get-in message [:function-arguments :uint256])}}) origin]))
-    (if (ens/is-valid-eth-name? (get-in message [:address]))
-      {:resolve-address
-       {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
-        :ens-name  (get-in message [:address])
-        :cb        #(re-frame/dispatch [:wallet.send/resolve-ens-addresses message origin %])}}
-      (if (ens/is-valid-eth-name? (get-in message [:function-arguments :address]))
-        {:resolve-address
-         {:registry  (get ens/ens-registries (ethereum/chain-id->chain-keyword (get-in constants/default-networks [current-network :config :NetworkId])))
-          :ens-name  (get-in message [:function-arguments :address])
-          :cb        #(re-frame/dispatch [:wallet.send/resolve-ens-addresses message origin %])}}
-        (re-frame/dispatch [:wallet/request-uri-parsed message origin])))))
+  [{{:networks/keys [current-network] :wallet/keys [all-tokens] :as db} :db}
+   message origin address]
+  ;; first we get a vector of ens-names to resolve and a vector of paths of
+  ;; these names
+  (let [{:keys [paths ens-names]}
+        (reduce (fn [acc path]
+                  (let [address (get-in message path)]
+                    (if (ens/is-valid-eth-name? address)
+                      (-> acc
+                          (update :paths conj path)
+                          (update :ens-names conj address))
+                      acc)))
+                {:paths [] :ens-names []}
+                [[:address] [:function-arguments :address]])]
+    (if (empty? ens-names)
+      ;; if there is no ens-names, we dispatch request-uri-parsed immediately
+      (re-frame/dispatch [:wallet/request-uri-parsed message origin])
+      {::resolve-addresses
+       {:registry (get ens/ens-registries (ethereum/chain-keyword db))
+        :ens-names ens-names
+        :callback
+        (fn [addresses]
+          (re-frame/dispatch
+           [:wallet/request-uri-parsed
+            ;; we replace the ens-names at their path in the message by their
+            ;; actual address
+            (reduce (fn [message [path address]]
+                      (assoc-in message path address))
+                    message
+                    (map vector paths addresses))
+            origin]))}})))
 
 (fx/defn set-recipient
-  {:events [:wallet.send/set-recipient]}
+  {:events [:wallet.send/set-recipient ::recipient-address-resolved]}
   [{:keys [db]} recipient]
   (let [chain (ethereum/chain-keyword db)]
     (if (ens/is-valid-eth-name? recipient)
-      {:resolve-address {:registry (get ens/ens-registries chain)
-                         :ens-name recipient
-                         :cb       #(re-frame/dispatch [:wallet.send/set-recipient %])}}
+      {::resolve-address {:registry (get ens/ens-registries chain)
+                          :ens-name recipient
+                          :cb       #(re-frame/dispatch [::recipient-address-resolved %])}}
       (if (ethereum/address? recipient)
         (let [checksum (eip55/address->checksum recipient)]
           (if (eip55/valid-address-checksum? checksum)
