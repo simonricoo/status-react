@@ -28,27 +28,23 @@ let
     wget
   ];
 
-in mkShell {
-  name = "status-react-shell";
-  # none means we shouldn't include project specific deps
-  buildInputs = if target-os == "none" then
-    coreInputs
-  else
-    with pkgs; [
-      unzip
-      ncurses
-      lsof # used in scripts/start-react-native.sh
-      ps # used in scripts/start-react-native.sh
-      clojure
-      leiningen
-      maven
-      watchman
-    ] ++ coreInputs;
+in let
+    inherit (stdenv.lib) catAttrs concatStrings optional optionals;
+  in (mkShell {
+    name = "status-react-shell";
+    # none means we shouldn't include project specific deps
+    buildInputs =
+      coreInputs ++
+      optionals (target-os != "none") (with pkgs; [
+        unzip
+        ncurses
+        lsof # used in scripts/start-react-native.sh
+        ps # used in scripts/start-react-native.sh
+        clojure
+        leiningen
+        maven
+        watchman
+      ]);
 
-  inputsFrom = if target-os == "none" then
-    []
-  else
-    [ project.shell ];
-
-  shellHook = project.shell.shellHook;
-}
+    inputsFrom = optional (target-os != "none") project.shell;
+  }).overrideAttrs(attrs: { shellHook = concatStrings (catAttrs "shellHook" [ attrs project.shell ]); })
