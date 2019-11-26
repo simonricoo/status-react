@@ -20,24 +20,20 @@ let
     bash curl file flock git gnumake jq wget
   ];
 
-in let
-    inherit (stdenv.lib) catAttrs concatStrings optional optionals;
-  in mkShell {
-    name = "status-react-shell";
-    # none means we shouldn't include project specific deps
-    buildInputs = 
-      project.shell.buildInputs ++
-      coreInputs ++
-      optionals (target-os != "none") (with pkgs; [
-        unzip
-        ncurses
-        lsof # used in scripts/start-react-native.sh
-        ps # used in scripts/start-react-native.sh
-        clojure
-        leiningen
-        maven
-        watchman
-      ]);
-
-    inherit (project.shell) shellHook;
-  }
+in mkShell {
+  name = "status-react-shell";
+  # none means we shouldn't include project specific deps
+  buildInputs =
+    coreInputs ++
+    stdenv.lib.optionals (target-os != "none") (with pkgs; [
+      unzip
+      ncurses
+      lsof # used in scripts/start-react-native.sh
+      ps # used in scripts/start-react-native.sh
+      clojure
+      leiningen
+      maven
+      watchman
+    ]);
+  inputsFrom = stdenv.lib.optional (target-os != "none") project.shell;
+}
