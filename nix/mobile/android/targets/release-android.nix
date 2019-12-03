@@ -1,4 +1,4 @@
-{ stdenv, stdenvNoCC, lib, config, target-os, callPackage,
+{ stdenv, lib, config, target-os, callPackage,
   mkFilter, bash, file, gnumake, watchmanFactory, gradle,
   androidEnvShellHook, mavenAndNpmDeps,
   nodejs, openjdk, jsbundle, status-go, unzip, zlib }:

@@ -14,7 +14,7 @@ let
   };
   platform = pkgs.callPackage ./nix/platform.nix { inherit target-os; };
   # TODO: Try to use stdenv for iOS. The problem is with building iOS as the build is trying to pass parameters to Apple's ld that are meant for GNU's ld (e.g. -dynamiclib)
-  stdenv = pkgs.stdenvNoCC;
+  stdenv = pkgs.stdenv;
   # those should always be present in a shell
   coreInputs = with pkgs; [
     bash curl file flock git gnumake jq wget

@@ -1,4 +1,4 @@
-{ stdenvNoCC, fetchurl }:
+{ stdenv, fetchurl }:
 
 let
   # These versions should match node_modules/react-native/ReactAndroid/gradle.properties
@@ -29,7 +29,7 @@ let
     }
   ];
 
-in stdenvNoCC.mkDerivation {
+in stdenv.mkDerivation {
   name = "reactnative-android-native-deps";
   srcs = builtins.map (d: (fetchurl { inherit (d) url sha256; })) react-native-deps-sources;
   phases = [ "unpackPhase" ];

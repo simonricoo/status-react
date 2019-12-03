@@ -1,4 +1,4 @@
-{ config, stdenv, stdenvNoCC, target-os ? "android", callPackage, mkShell,
+{ config, stdenv, target-os ? "android", callPackage, mkShell,
   mkFilter, androidenv, fetchurl, flock, openjdk, nodejs, bash, maven, zlib,
   status-go, localMavenRepoBuilder, projectNodePackage, jsbundle }:
 
@@ -12,7 +12,7 @@ let
   watchmanFactory = callPackage ./watchman.nix { };
 
   # Import a local patched version of node_modules, together with a local version of the Maven repo
-  mavenAndNpmDeps = callPackage ./maven-and-npm-deps { inherit stdenv stdenvNoCC gradle bash nodejs zlib localMavenRepoBuilder mkFilter projectNodePackage; };
+  mavenAndNpmDeps = callPackage ./maven-and-npm-deps { inherit stdenv gradle bash nodejs zlib localMavenRepoBuilder mkFilter projectNodePackage; };
 
   # TARGETS
   release = callPackage ./targets/release-android.nix { inherit target-os config gradle mavenAndNpmDeps mkFilter nodejs jsbundle status-go zlib watchmanFactory; androidEnvShellHook = androidEnv.shellHook; };

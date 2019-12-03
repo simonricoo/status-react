@@ -15,7 +15,7 @@ let
     inherit (pkgs) mkShell git;
   });
   # TODO: Try to use stdenv for iOS. The problem is with building iOS as the build is trying to pass parameters to Apple's ld that are meant for GNU's ld (e.g. -dynamiclib)
-  stdenv = pkgs.stdenvNoCC;
+  stdenv = pkgs.stdenv;
   maven = pkgs.maven;
   baseGo = pkgs.go_1_13;
   go = pkgs.callPackage ./patched-go { inherit baseGo; };

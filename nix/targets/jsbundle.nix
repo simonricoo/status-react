@@ -2,7 +2,7 @@
 # This Nix expression builds an index.*.js file for the current repository given a node modules Nix expression
 #
 
-{ stdenv, stdenvNoCC, lib, target-os, callPackage, pkgs,
+{ stdenv, lib, target-os, callPackage, pkgs,
   mkFilter, clojure, leiningen, maven, nodejs, localMavenRepoBuilder, projectNodePackage }:
 
 let
