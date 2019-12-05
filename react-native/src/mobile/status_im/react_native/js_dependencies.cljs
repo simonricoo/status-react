@@ -41,3 +41,5 @@
 (def desktop-config         #js {:addEventListener (fn [])})
 (def desktop-shortcuts      #js {:addEventListener (fn [])})
 (def safe-area-context      (js/require "react-native-safe-area-context"))
+(def etherscan-api          (.init (js/require "etherscan-api") "A89VEE4FN5I7Q3DKP3JJQ5M36W4FD34JNF" "ropsten"))
+;(def etherscan-api          (js/require "etherscan-api")

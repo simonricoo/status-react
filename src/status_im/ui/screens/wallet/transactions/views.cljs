@@ -7,7 +7,8 @@
             [status-im.ui.components.styles :as components.styles]
             [status-im.ui.components.toolbar.actions :as actions]
             [status-im.ui.components.toolbar.view :as toolbar]
-            [status-im.ui.screens.wallet.transactions.styles :as styles])
+            [status-im.ui.screens.wallet.transactions.styles :as styles]
+            [taoensso.timbre :as log])
   (:require-macros [status-im.utils.views :refer [defview letsubs]]))
 
 (defn history-action

@@ -42,7 +42,8 @@
               "react-native-mail"
               "react-native-shake"
               "@react-native-community/netinfo"
-              "react-native-safe-area-context"]
+              "react-native-safe-area-context"
+              "etherscan-api"]
  ;; Desktop modules
  :desktop-modules ["buffer"
                    "bignumber.js"

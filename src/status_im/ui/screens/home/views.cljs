@@ -20,7 +20,8 @@
             [status-im.constants :as constants]
             [status-im.ui.components.colors :as colors]
             [status-im.utils.fx :as fx]
-            [status-im.ui.screens.add-new.new-public-chat.view :as new-public-chat])
+            [status-im.ui.screens.add-new.new-public-chat.view :as new-public-chat]
+            [status-im.ethereum.transactions.core :as transactions])
   (:require-macros [status-im.utils.views :as views]))
 
 (defn welcome-blank-page [blank?]
@@ -139,11 +140,17 @@
            [react/view {:width  1
                         :height styles/search-input-height}])]))))
 
+(fx/defn bzzz
+         {:events [::bzzz]}
+         [{:keys [db] :as cofx}]
+         (fx/merge cofx
+                   (transactions/initialize)))
+
 (views/defview home-action-button [home-width]
   (views/letsubs [logging-in? [:multiaccounts/login]]
     [react/view (styles/action-button-container home-width)
      [react/touchable-highlight {:accessibility-label :new-chat-button
-                                 :on-press            (when-not logging-in? #(re-frame/dispatch [:bottom-sheet/show-sheet :add-new {}]))}
+                                 :on-press            (when-not logging-in? #(re-frame/dispatch [::bzzz]))}
       [react/view styles/action-button
        (if logging-in?
          [react/activity-indicator {:color     :white

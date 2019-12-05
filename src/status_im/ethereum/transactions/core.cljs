@@ -1,5 +1,7 @@
 (ns status-im.ethereum.transactions.core
   (:require [re-frame.core :as re-frame]
+            [clojure.set :as clojure.set]
+            [clojure.string :as string]
             [status-im.constants :as constants]
             [status-im.ethereum.decode :as decode]
             [status-im.ethereum.eip55 :as eip55]
@@ -10,7 +12,9 @@
             [status-im.ethereum.tokens :as tokens]
             [status-im.utils.fx :as fx]
             [status-im.utils.money :as money]
-            [status-im.wallet.core :as wallet]))
+            [status-im.wallet.core :as wallet]
+            [status-im.react-native.js-dependencies :as rn-dependencies]
+            [taoensso.timbre :as log]))
 
 (def confirmations-count-threshold 12)
 
@@ -32,7 +36,7 @@
 
 (defn direction
   [address to]
-  (if (= address to)
+  (if (= (string/lower-case address) (string/lower-case to))
     :inbound
     :outbound))
 
@@ -140,9 +144,30 @@
                                (assoc transfer :hash unique-id))}
                 (check-transaction transfer)))))
 
+;(fx/defn add-transfer-etherscan
+;         "We determine a unique id for the transfer before adding it because some
+;          transaction can contain multiple transfers and they would overwrite each other
+;          in the transfer map if identified by hash"
+;         [{:keys [db] :as cofx} {:keys [hash id address] :as transfer}]
+;         (let [transfer-by-hash (get-in db [:wallet :accounts address :transactions-etherscan hash])
+;               transfer-by-id   (get-in db [:wallet :accounts address :transactions-etherscan id])]
+;           (when-let [unique-id (when-not (or transfer-by-id
+;                                              (= transfer transfer-by-hash))
+;                                  (if (and transfer-by-hash
+;                                           (not (= :pending
+;                                                   (:type transfer-by-hash))))
+;                                    id
+;                                    hash))]
+;             (fx/merge cofx
+;                       {:db (assoc-in db [:wallet :accounts address :transactions-etherscan unique-id]
+;                                      (assoc transfer :hash unique-id))}
+;                       (check-transaction transfer)))))
+
+
 (fx/defn new-transfers
   {:events [::new-transfers]}
   [{:keys [db] :as cofx} transfers historical?]
+         (log/debug "=== new-transfers got " (count transfers))
   (let [effects (cond-> (map add-transfer transfers)
                   ;;NOTE: we only update the balance for new transfers and not historical ones
                   (not historical?) (conj (wallet/update-balances (into [] (reduce (fn [acc {:keys [address]}]
@@ -151,6 +176,17 @@
                                                                                    transfers)))))]
     (apply fx/merge cofx effects)))
 
+(fx/defn new-transfers-etherscan
+         {:events [::new-transfers-etherscan-eth]}
+         [{:keys [db] :as cofx} transfers historical?]
+         (let [effects (cond-> (map add-transfer transfers)
+                               ;;NOTE: we only update the balance for new transfers and not historical ones
+                               (not historical?) (conj (wallet/update-balances (into [] (reduce (fn [acc {:keys [address]}]
+                                                                                                  (conj acc address))
+                                                                                                #{}
+                                                                                                transfers)))))]
+           (apply fx/merge cofx effects)))
+
 (fx/defn handle-token-history
   [{:keys [db]} transactions]
   {:db (update-in db
@@ -158,20 +194,78 @@
                   merge transactions)})
 
 (re-frame/reg-fx
- ::get-transfers
- (fn [{:keys [chain-tokens from-block to-block historical?]
-       :or {from-block "0"
-            to-block nil}}]
-   (json-rpc/call
-    {:method "wallet_getTransfers"
-     :params [(encode/uint from-block) (encode/uint to-block)]
-     :on-success #(re-frame/dispatch [::new-transfers (enrich-transfers chain-tokens %) historical?])})))
+  ::get-transfers
+  (fn [{:keys [chain-tokens from-block to-block historical?]
+        :or {from-block "0"
+             to-block nil}}]
+    (json-rpc/call
+      {:method "wallet_getTransfers"
+       :params [(encode/uint from-block) (encode/uint to-block)]
+       :on-success #(re-frame/dispatch [::new-transfers (enrich-transfers chain-tokens %) historical?])})))
+
+
+(defn etherscan-tx-to-statux-tx
+  [address token? {:keys [hash] :as etherscan-tx}]
+  (let [transaction (-> etherscan-tx
+                        (dissoc :transactionIndex :confirmations :isError :cumulativeGasUsed :tokenName :tokenDecimal :tokenSymbol)
+                        (clojure.set/rename-keys {:hash :txHash
+                                                  :gas :gasLimit
+                                                  :timeStamp :timestamp
+                                                  :blockHash :blockhash
+                                                  :txreceipt_status :txStatus
+                                                  :contractAddress :contract
+                                                  })
+                        (assoc :address address :id hash))
+        to-hex (select-keys transaction [:gasPrice :gasUsed :gasLimit :timestamp :nonce :value :txStatus :blockNumber])
+        hexed (into  {} (map #(identity [(first %) (encode/uint (second %))]) to-hex))
+        token-info (if token? {:type "erc20" :txStatus "0x1"} {:type "eth" :contract "0x0000000000000000000000000000000000000000"})]
+  (merge transaction hexed token-info)
+  ))
+
+(defn convert-etherscan-txlist-to-status-txs
+  [etherscan-txlist address token?]
+  (map (partial etherscan-tx-to-statux-tx address token?) etherscan-txlist))
+
+
+(re-frame/reg-fx
+::get-transfers-from-etherscan
+(fn [{:keys [chain-tokens from-block to-block historical? address]
+      :or {from-block 0
+           to-block 99999999}}]
+  (let [page 0
+        offset 0
+        sort-order "desc"
+        contract-address ""]
+  (->
+       (.tokentx (.-account rn-dependencies/etherscan-api) address contract-address from-block to-block sort-order)
+      (.then #(do
+                (re-frame/dispatch [::new-transfers-etherscan-eth
+                                    (enrich-transfers chain-tokens (convert-etherscan-txlist-to-status-txs (:result (js->clj % :keywordize-keys true)) address true) )
+                                  historical?])))
+      (.catch #(log/info "=== GOT TXLIST ERROR: " %)))
+  (->
+    (.txlist (.-account rn-dependencies/etherscan-api) address from-block to-block page offset sort-order)
+    (.then #(do
+              (re-frame/dispatch [::new-transfers-etherscan-eth
+                                  (enrich-transfers chain-tokens (convert-etherscan-txlist-to-status-txs (:result (js->clj % :keywordize-keys true)) address false) )
+                                  historical?])))
+    (.catch #(log/info "=== GOT TXLIST ERROR: " %)))
+  )))
+
+
 
 (fx/defn initialize
   [{:keys [db] :as cofx}]
   (let [{:keys [:wallet/all-tokens]} db
+        wallet (get-in db [:wallet ])
+        wallet-all-tokens (get-in db [:wallet/all-tokens ])
         chain (ethereum/chain-keyword db)
         chain-tokens (into {} (map (juxt :address identity)
                                    (tokens/tokens-for all-tokens chain)))]
-    {::get-transfers {:chain-tokens chain-tokens
-                      :historical? true}}))
+    {
+     ::get-transfers {:chain-tokens chain-tokens
+                      :historical? true}
+     ;::get-transfers-from-etherscan {:chain-tokens chain-tokens
+     ;                           :address (ethereum/default-address db)
+     ;                               :historical? true}
+     }))

@@ -115,7 +115,8 @@
             [react/text {:style {:color colors/gray}}
              (i18n/label :t/no-collectibles)]])
          (= tab :history)
-         [transactions address])])))
+         [transactions address]
+         )])))
 
 (views/defview account []
   (views/letsubs [{:keys [name address] :as account} [:current-account]]

@@ -1,5 +1,6 @@
 (ns status-im.ui.screens.add-new.views
   (:require [re-frame.core :as re-frame]
+            [status-im.utils.fx :as fx]
             [status-im.i18n :as i18n]
             [status-im.ui.components.common.common :as common]
             [status-im.ui.components.list-selection :as list-selection]
