@@ -16,6 +16,14 @@
   (when (and first? (not typing))
     {:padding-bottom 16}))
 
+(defn system-message-body
+  [_]
+  {:margin-top     4
+   :margin-left    8
+   :margin-right   8
+   :align-self     :center
+   :align-items    :center})
+
 (defn message-body
   [{:keys [outgoing] :as message}]
   (let [align     (if outgoing :flex-end :flex-start)
@@ -59,18 +67,21 @@
    :font-size   12
    :color       colors/text-gray})
 
-(defn group-message-wrapper [{:keys [outgoing] :as message}]
+(defn group-message-wrapper-base [message]
   (merge {:flex-direction   :column}
+         (last-message-padding message)))
+
+(defn group-message-wrapper [{:keys [outgoing] :as message}]
+  (merge (group-message-wrapper-base message)
          (if outgoing
            {:margin-left 96}
-           {:margin-right 52})
-         (last-message-padding message)))
+           {:margin-right 52})))
 
 (defn timestamp-content-wrapper [outgoing]
   {:flex-direction (if outgoing :row-reverse :row)})
 
 (defn group-message-view
-  [outgoing display-photo?]
+  [{:keys [outgoing display-photo?] :as message}]
   (let [align (if outgoing :flex-end :flex-start)]
     (merge {:flex-direction :column
             :flex-shrink    1
@@ -158,7 +169,11 @@
      {:border-bottom-right-radius 4}
      {:border-bottom-left-radius 4})
 
-   {:background-color (if outgoing colors/blue colors/blue-light)}
+   (cond
+     (= content-type constants/content-type-system-text) nil
+     outgoing {:background-color colors/blue}
+     :else {:background-color colors/blue-light})
+
    (when (= content-type constants/content-type-emoji)
      {:flex-direction :row})))
 
@@ -235,10 +250,19 @@
   (update default-text-style :style
           assoc :color colors/white))
 
-(defn text-style [outgoing]
-  (if outgoing
-    outgoing-text-style
-    default-text-style))
+(def system-text-style
+  (update default-text-style :style assoc
+          :color colors/gray
+          :line-height 20
+          :font-size 14
+          :text-align :center
+          :font-weight "400"))
+
+(defn text-style [outgoing content-type]
+  (cond
+    (= content-type constants/content-type-system-text) system-text-style
+    outgoing outgoing-text-style
+    :else default-text-style))
 
 (def emph-text-style
   (update default-text-style :style

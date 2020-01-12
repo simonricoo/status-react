@@ -25,23 +25,24 @@
 
 (defview mention-element [from]
   (letsubs [{:keys [ens-name alias]} [:contacts/contact-name-by-identity from]]
-    (str "@" (or ens-name alias))))
+    (if ens-name (str "@" ens-name) alias)))
 
 (defn message-timestamp
-  [t justify-timestamp? outgoing content content-type]
-  [react/text {:style (style/message-timestamp-text
-                       justify-timestamp?
-                       outgoing
-                       (:rtl? content)
-                       (= content-type constants/content-type-emoji))} t])
+  ([message]
+   [message-timestamp message false])
+  ([{:keys [timestamp-str outgoing content content-type]} justify-timestamp?]
+   [react/text {:style (style/message-timestamp-text
+                        justify-timestamp?
+                        outgoing
+                        (:rtl? content)
+                        (= content-type constants/content-type-emoji))} timestamp-str]))
 
 (defn message-view
-  [{:keys [timestamp-str outgoing content content-type] :as message}
-   message-content {:keys [justify-timestamp?]}]
-  [react/view (style/message-view message)
+  [message message-content appender]
+  [react/view
+   (style/message-view message)
    message-content
-   [message-timestamp timestamp-str justify-timestamp? outgoing
-    content content-type]])
+   appender])
 
 (defview quoted-message
   [message-id {:keys [from text]} outgoing current-public-key]
@@ -64,7 +65,7 @@
                :on-press #(re-frame/dispatch [:chat.ui/message-expand-toggled chat-id message-id])}
    (i18n/label (if expanded? :show-less :show-more))])
 
-(defn render-inline [message-text outgoing acc {:keys [type literal destination]}]
+(defn render-inline [message-text outgoing content-type acc {:keys [type literal destination]}]
   (case type
     ""
     (conj acc literal)
@@ -95,10 +96,12 @@
 
     "mention"
     (conj acc [react/text-class
-               {:style {:color (if outgoing colors/mention-outgoing colors/mention-incoming)}
-                :on-press
-                #(re-frame/dispatch
-                  [:chat.ui/start-chat literal {:navigation-reset? true}])}
+               (merge {:style {:color (cond
+                                        (= content-type constants/content-type-system-text) colors/black
+                                        outgoing colors/mention-outgoing
+                                        :else colors/mention-incoming)}}
+                      (when-not (= content-type constants/content-type-system-text)
+                        {:on-press #(re-frame/dispatch [:chat.ui/start-chat literal {:navigation-reset? true}])}))
                [mention-element literal]])
 
     "status-tag"
@@ -113,25 +116,25 @@
 
     (conj acc literal)))
 
-(defview message-content-status [{:keys [content]}]
+(defview message-content-status [{:keys [content content-type]}]
   [react/view style/status-container
    [react/text {:style style/status-text}
     (reduce
-     (fn [acc e] (render-inline (:text content) false acc e))
+     (fn [acc e] (render-inline (:text content) false content-type acc e))
      [react/text-class {:style style/status-text}]
      (-> content :parsed-text peek :children))]])
 
 (defn render-block [{:keys [chat-id message-id content
                             timestamp-str group-chat outgoing
-                            current-public-key expanded?] :as message}
+                            current-public-key expanded? content-type] :as message}
                     acc
                     {:keys [type literal children]}]
   (case type
 
     "paragraph"
     (conj acc (reduce
-               (fn [acc e] (render-inline (:text content) outgoing acc e))
-               [react/text-class (style/text-style outgoing)]
+               (fn [acc e] (render-inline (:text content) outgoing content-type acc e))
+               [react/text-class (style/text-style outgoing content-type)]
                children))
 
     "blockquote"
@@ -146,17 +149,17 @@
 
     acc))
 
-(defn render-parsed-text [{:keys [timestamp-str
-                                  outgoing] :as message}
+(defn render-parsed-text [message tree]
+  (reduce (fn [acc e] (render-block message acc e)) [react/view {}] tree))
 
-                          tree]
-  (let [elements (reduce (fn [acc e] (render-block message acc e)) [react/view {}] tree)
+(defn render-parsed-text-with-timestamp [{:keys [timestamp-str outgoing] :as message} tree]
+  (let [elements (render-parsed-text message tree)
         timestamp [react/text {:style (style/message-timestamp-placeholder outgoing)}
                    (str "  " timestamp-str)]
         last-element (peek elements)]
-      ;; Using `nth` here as slightly faster than `first`, roughly 30%
-      ;; It's worth considering pure js structures for this code path as
-      ;; it's perfomance critical
+    ;; Using `nth` here as slightly faster than `first`, roughly 30%
+    ;; It's worth considering pure js structures for this code path as
+    ;; it's perfomance critical
     (if (= react/text-class (nth last-element 0))
       ;; Append timestamp to last text
       (conj (pop elements) (conj last-element timestamp))
@@ -164,15 +167,20 @@
       (conj elements timestamp))))
 
 (defn text-message
-  [{:keys [chat-id message-id content
-           timestamp-str group-chat outgoing current-public-key expanded?] :as message}]
+  [{:keys [content outgoing current-public-key] :as message}]
   [message-view message
    (let [response-to (:response-to content)]
      [react/view
       (when (seq response-to)
         [quoted-message response-to (:quoted-message message) outgoing current-public-key])
-      [render-parsed-text message (:parsed-text content)]])
-   {:justify-timestamp? true}])
+      [render-parsed-text-with-timestamp message (:parsed-text content)]])
+   [message-timestamp message true]])
+
+(defn system-text-message
+  [{:keys [content] :as message}]
+  [message-view message
+   [react/view
+    [render-parsed-text message (:parsed-text content)]]])
 
 (defn emoji-message
   [{:keys [content current-public-key alias outgoing] :as message}]
@@ -182,27 +190,8 @@
       (when response-to
         [quoted-message response-to (:quoted-message message) alias outgoing current-public-key])
       [react/text {:style (style/emoji-message message)}
-       (:text content)]]]))
-
-(defmulti message-content (fn [_ message _] (message :content-type)))
-
-(defmethod message-content constants/content-type-text
-  [wrapper message]
-  [wrapper message [text-message message]])
-
-(defmethod message-content constants/content-type-status
-  [wrapper message]
-  [wrapper message [message-content-status message]])
-
-(defmethod message-content constants/content-type-emoji
-  [wrapper message]
-  [wrapper message [emoji-message message]])
-
-(defmethod message-content constants/content-type-sticker
-  [wrapper {:keys [content] :as message}]
-  [wrapper message
-   [react/image {:style {:margin 10 :width 140 :height 140}
-                 :source {:uri (contenthash/url (-> content :sticker :hash))}}]])
+       (:text content)]]
+     [message-timestamp message]]))
 
 (defn- final-status? [command-state]
   (or (= command-state constants/command-state-request-address-for-transaction-declined)
@@ -383,69 +372,6 @@
     (if outgoing :incoming :outgoing)
     (if outgoing :outgoing :incoming)))
 
-(defmethod message-content constants/content-type-command
-  [wrapper {:keys [message-id
-                   chat-id
-                   outgoing
-                   command-parameters
-                   timestamp-str] :as message}]
-  (let [{:keys [contract value address command-state transaction-hash]} command-parameters
-        direction (calculate-direction outgoing command-state)
-        transaction (when transaction-hash
-                      @(re-frame/subscribe
-                        [:wallet/account-by-transaction-hash
-                         transaction-hash]))]
-    [wrapper (assoc message :outgoing (= direction :outgoing))
-     [react/touchable-highlight
-      {:on-press #(when (:address transaction)
-                    (re-frame/dispatch [:wallet.ui/show-transaction-details
-                                        transaction-hash (:address transaction)]))}
-      [react/view {:padding-horizontal 12
-                   :padding-bottom 10
-                   :padding-top 10
-                   :margin-top 4
-                   :border-width 1
-                   :border-color colors/gray-lighter
-                   :border-radius 16
-                   (case direction
-                     :outgoing :border-bottom-right-radius
-                     :incoming :border-bottom-left-radius) 4
-                   :background-color :white}
-       [react/text {:style {:font-size 13
-                            :line-height 18
-                            :font-weight "500"
-                            :color colors/gray}}
-        (case direction
-          :outgoing (str "↑ " (i18n/label :t/outgoing-transaction))
-          :incoming (str "↓ " (i18n/label :t/incoming-transaction)))]
-       [command-transaction-info contract value]
-       [command-status-and-timestamp
-        command-state direction address timestamp-str (:type transaction)]
-       (when (not outgoing)
-         (cond
-           (= command-state constants/command-state-request-transaction)
-           [command-actions
-            :t/sign-and-send
-            #(re-frame/dispatch [:wallet.ui/accept-request-transaction-button-clicked-from-command chat-id command-parameters])
-            #(re-frame/dispatch [::commands/decline-request-transaction message-id])]
-
-           (= command-state constants/command-state-request-address-for-transaction-accepted)
-           [command-actions
-            :t/sign-and-send
-            #(re-frame/dispatch [:wallet.ui/accept-request-transaction-button-clicked-from-command chat-id command-parameters])]
-
-           (= command-state constants/command-state-request-address-for-transaction)
-           [command-actions
-            :t/accept-and-share-address
-            #(re-frame/dispatch [::commands/prepare-accept-request-address-for-transaction message])
-            #(re-frame/dispatch [::commands/decline-request-address-for-transaction message-id])]))]]]))
-
-(defmethod message-content :default
-  [wrapper {:keys [content-type] :as message}]
-  [wrapper message
-   [message-view message
-    [react/text (str "Unhandled content-type " content-type)]]])
-
 (defn message-activity-indicator
   []
   [react/view style/message-activity-indicator
@@ -510,7 +436,7 @@
          [react/touchable-highlight {:on-press #(when-not modal? (re-frame/dispatch [:chat.ui/show-profile from]))}
           [react/view
            [photos/member-photo from identicon]]])])
-    [react/view (style/group-message-view outgoing display-photo?)
+    [react/view (style/group-message-view message)
      (when display-username?
        [react/touchable-opacity {:style    style/message-author-touchable
                                  :on-press #(re-frame/dispatch [:chat.ui/show-profile from])}
@@ -520,12 +446,105 @@
    [react/view (style/delivery-status outgoing)
     [message-delivery-status message]]])
 
+(defn system-message-body
+  [message child]
+  [react/view (style/group-message-wrapper-base message)
+   [react/view (style/system-message-body message)
+    [react/view child]]])
+
+(defmulti message-content (fn [message] (message :content-type)))
+
+(defmethod message-content constants/content-type-text
+  [message]
+  [message-body message [text-message message]])
+
+(defmethod message-content constants/content-type-system-text
+  [message]
+  [system-message-body message [system-text-message message]])
+
+(defmethod message-content constants/content-type-status
+  [message]
+  [message-body message [message-content-status message]])
+
+(defmethod message-content constants/content-type-emoji
+  [message]
+  [message-body message [emoji-message message]])
+
+(defmethod message-content constants/content-type-sticker
+  [{:keys [content] :as message}]
+  [message-body message
+   [react/image {:style {:margin 10 :width 140 :height 140}
+                 :source {:uri (contenthash/url (-> content :sticker :hash))}}]])
+
+(defmethod message-content constants/content-type-command
+  [{:keys [message-id
+           chat-id
+           outgoing
+           command-parameters
+           timestamp-str] :as message}]
+  (let [{:keys [contract value address command-state transaction-hash]} command-parameters
+        direction (calculate-direction outgoing command-state)
+        transaction (when transaction-hash
+                      @(re-frame/subscribe
+                        [:wallet/account-by-transaction-hash
+                         transaction-hash]))]
+    [message-body (assoc message :outgoing (= direction :outgoing))
+     [react/touchable-highlight
+      {:on-press #(when (:address transaction)
+                    (re-frame/dispatch [:wallet.ui/show-transaction-details
+                                        transaction-hash (:address transaction)]))}
+      [react/view {:padding-horizontal 12
+                   :padding-bottom 10
+                   :padding-top 10
+                   :margin-top 4
+                   :border-width 1
+                   :border-color colors/gray-lighter
+                   :border-radius 16
+                   (case direction
+                     :outgoing :border-bottom-right-radius
+                     :incoming :border-bottom-left-radius) 4
+                   :background-color :white}
+       [react/text {:style {:font-size 13
+                            :line-height 18
+                            :font-weight "500"
+                            :color colors/gray}}
+        (case direction
+          :outgoing (str "↑ " (i18n/label :t/outgoing-transaction))
+          :incoming (str "↓ " (i18n/label :t/incoming-transaction)))]
+       [command-transaction-info contract value]
+       [command-status-and-timestamp
+        command-state direction address timestamp-str (:type transaction)]
+       (when (not outgoing)
+         (cond
+           (= command-state constants/command-state-request-transaction)
+           [command-actions
+            :t/sign-and-send
+            #(re-frame/dispatch [:wallet.ui/accept-request-transaction-button-clicked-from-command chat-id command-parameters])
+            #(re-frame/dispatch [::commands/decline-request-transaction message-id])]
+
+           (= command-state constants/command-state-request-address-for-transaction-accepted)
+           [command-actions
+            :t/sign-and-send
+            #(re-frame/dispatch [:wallet.ui/accept-request-transaction-button-clicked-from-command chat-id command-parameters])]
+
+           (= command-state constants/command-state-request-address-for-transaction)
+           [command-actions
+            :t/accept-and-share-address
+            #(re-frame/dispatch [::commands/prepare-accept-request-address-for-transaction message])
+            #(re-frame/dispatch [::commands/decline-request-address-for-transaction message-id])]))]]]))
+
+(defmethod message-content :default
+  [{:keys [content-type] :as message}]
+  [message-body message
+   [message-view message
+    [react/text (str "Unhandled content-type " content-type)]]])
+
 (defn open-chat-context-menu
   [{:keys [message-id content] :as message}]
   (list-selection/chat-message message-id (:text content) (i18n/label :t/message)))
 
 (defn chat-message
-  [{:keys [outgoing group-chat modal? current-public-key content-type content] :as message}]
+  [{:keys [outgoing group-chat modal? current-public-key content-type content system-message?] :as message}]
   (let [sticker (:sticker content)]
     [react/view
      [react/touchable-highlight
@@ -544,8 +563,9 @@
                          (open-chat-context-menu message))}
       [react/view {:accessibility-label :chat-item}
        (let [incoming-group (and group-chat (not outgoing))]
-         [message-content message-body (merge message
-                                              {:current-public-key current-public-key
-                                               :group-chat         group-chat
-                                               :modal?             modal?
-                                               :incoming-group     incoming-group})])]]]))
+         [message-content (merge message
+                                 (when system-message? {:content-type constants/content-type-system-text})
+                                 {:current-public-key current-public-key
+                                  :group-chat         group-chat
+                                  :modal?             modal?
+                                  :incoming-group     incoming-group})])]]]))
