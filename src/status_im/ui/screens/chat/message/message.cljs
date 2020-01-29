@@ -563,9 +563,4 @@
                          (open-chat-context-menu message))}
       [react/view {:accessibility-label :chat-item}
        (let [incoming-group (and group-chat (not outgoing))]
-         [message-content (merge message
-                                 (when system-message? {:content-type constants/content-type-system-text})
-                                 {:current-public-key current-public-key
-                                  :group-chat         group-chat
-                                  :modal?             modal?
-                                  :incoming-group     incoming-group})])]]]))
+         [message-content (assoc message :incoming-group incoming-group)])]]]))
