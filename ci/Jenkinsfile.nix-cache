@@ -1,3 +1,6 @@
+/* See: https://github.com/status-im/status-react-jenkins */
+library 'status-react-jenkins'
+
 pipeline {
   agent { label params.AGENT_LABEL }
 
@@ -25,11 +28,6 @@ pipeline {
   }
 
   stages {
-    stage('Prep') {
-      steps { script {
-        nix = load('ci/nix.groovy')
-      } }
-    }
     stage('Setup') {
       steps { script {
         nix.shell('nix-env -i openssh', pure: false)

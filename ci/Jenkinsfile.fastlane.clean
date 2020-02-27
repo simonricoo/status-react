@@ -1,3 +1,6 @@
+/* See: https://github.com/status-im/status-react-jenkins */
+library 'status-react-jenkins'
+
 pipeline {
   agent { label 'macos' }
 
@@ -26,7 +29,6 @@ pipeline {
   stages {
     stage('Prep') {
       steps { script {
-        nix = load('ci/nix.groovy')
         nix.shell(
           'bundle install --gemfile=fastlane/Gemfile',
           attr: 'shells.fastlane',
