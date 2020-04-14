@@ -97,8 +97,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @Override
     public void onHostDestroy() {
-        Intent intent = new Intent(getReactApplicationContext(), ForegroundService.class);
-        getReactApplicationContext().stopService(intent);
+        Log.d(TAG, "******************* ON HOST DESTROY *************************");
     }
 
     @ReactMethod
