@@ -40,7 +40,9 @@
             {:title       (i18n/label (:title translation))
              :description (i18n/label (:description translation))}])]))))
 
-(defn connect-keycard [{:keys [on-connect on-cancel connected? on-disconnect]}]
+(defn connect-keycard [{:keys [on-connect on-cancel
+                               connected? on-disconnect
+                               params]}]
   [react/view {:style {:flex            1
                        :align-items     :center
                        :justify-content :center}}
@@ -55,10 +57,18 @@
                            :color              colors/blue
                            :text-align         :center}}
        (i18n/label :t/cancel)]])
+   (when (:title params)
+     [react/view {:style {:align-self :flex-start :padding-left 16 :margin-bottom 24 :position :absolute :top 0 :left 0}}
+      [react/text {:style {:font-size (if (:small-screen? params) 15 17) :font-weight "700"}}
+       (:title params)]])
+   (when (:header params)
+     [(:header params)])
    (if @(re-frame/subscribe [:hardwallet/nfc-enabled?])
      [card-sync-flow {:connected? connected?
                       :on-card-disconnected
                       #(re-frame/dispatch [on-disconnect])
                       :on-card-connected
                       #(re-frame/dispatch [on-connect])}]
-     [turn-nfc/turn-nfc-on])])
+     [turn-nfc/turn-nfc-on])
+   (when (:footer params)
+     [(:footer params)])])

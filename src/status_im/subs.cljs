@@ -2071,7 +2071,8 @@
 (re-frame/reg-sub
  :signing/sign
  (fn [db]
-   (let [sign (:signing/sign db)]
+   (let [sign (assoc (:signing/sign db)
+                     :connected? (get-in db [:hardwallet :card-connected?]))]
      (if (= :pinless (:type sign))
        (let [message (get-in sign [:formatted-data :message])]
          (if (and (:amount message) (:currency message))
