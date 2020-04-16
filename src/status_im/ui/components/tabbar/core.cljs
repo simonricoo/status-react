@@ -1,7 +1,7 @@
 (ns status-im.ui.components.tabbar.core
   (:require
    [status-im.ui.components.animation :as animation]
-   [status-im.ui.components.reanimated :as reanimated]
+   [fiddle.gesture-handler :as gesture-handler]
    [status-im.ui.components.tabbar.styles :as tabs.styles]
    [reagent.core :as reagent]
    [oops.core :refer [oget]]
@@ -69,7 +69,7 @@
                accessibility-label count-subscription]}]
     (let [count (when count-subscription @(re-frame/subscribe [count-subscription]))]
       [react/view {:style tabs.styles/touchable-container}
-       [reanimated/touchable-without-feedback
+       [gesture-handler/touchable-without-feedback
         {:style               {:height "100%"
                                :width  "100%"}
          :on-press            on-press
