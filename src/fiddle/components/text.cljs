@@ -1,8 +1,7 @@
 (ns fiddle.components.text
   (:require [reagent.core :as reagent]
             [fiddle.react-native :as rn]
-            ;; TODO(Ferossgp): Move colors into fiddle
-            [status-im.ui.components.colors :as colors]
+            [fiddle.design-system.colors :as colors]
             [fiddle.design-system.typography :as typography]
             [fiddle.animated :as animated]))
 
@@ -17,8 +16,12 @@
            :semi-bold typography/font-semi-bold
            :bold      typography/font-bold)
          (case color
-           :link {:color colors/blue}
-           :main {:color colors/black})
+           :main              {:color (:text-01 @colors/theme)}
+           :secondary         {:color (:text-02 @colors/theme)}
+           :secondary-inverse {:color (:text-03 @colors/theme)}
+           :link              {:color (:text-04 @colors/theme)}
+           :positive          {:color (:positive-01 @colors/theme)}
+           :negative          {:color (:negative-01 @colors/theme)})
          (case size
            :tiny     typography/tiny
            :small    typography/small
