@@ -9,6 +9,7 @@
             [status-im.utils.gfycat.core :as gfycat]
             [status-im.utils.identicon :as identicon]
             [status-im.ui.components.colors :as colors]
+            [fiddle.theme :as fiddle-theme]
             [status-im.utils.theme :as theme]))
 
 (defn displayed-name
@@ -101,11 +102,12 @@
 
 (re-frame/reg-fx
  ::switch-theme
- (fn [theme]
-   (colors/set-theme
-    (if (or (= 2 theme) (and (= 0 theme) (theme/is-dark-mode)))
-      :dark
-      :light))))
+ (fn [theme-id]
+   (let [theme (if (or (= 2 theme-id) (and (= 0 theme-id) (theme/is-dark-mode)))
+                 :dark
+                 :light)]
+     (fiddle-theme/set-theme theme)
+     (colors/set-theme theme))))
 
 (fx/defn switch-appearance
   {:events [:multiaccounts.ui/appearance-switched]}

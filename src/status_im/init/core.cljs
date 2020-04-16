@@ -8,6 +8,7 @@
             [status-im.utils.fx :as fx]
             [status-im.utils.platform :as platform]
             [clojure.string :as string]
+            [fiddle.theme :as fiddle-theme]
             [status-im.utils.theme :as theme]
             [status-im.ui.components.colors :as colors]))
 
@@ -94,4 +95,5 @@
  (fn []
    (theme/add-mode-change-listener #(re-frame/dispatch [:system-theme-mode-changed %]))
    (when (theme/is-dark-mode)
+     (fiddle-theme/set-theme :dark)
      (colors/set-theme :dark))))
