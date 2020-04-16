@@ -182,7 +182,7 @@
       :error amount-error
       :accessories [[react/view {:style {:flex-direction :row}}
                      [react/nested-text {:style {:color colors/gray}}
-                      [{:style {:color colors/black}} (str amount)]
+                      [{:style {:color colors/black}} (utils/format-decimals amount 6)]
                       " "
                       (or display-symbol fee-display-symbol)
                       " • "]
