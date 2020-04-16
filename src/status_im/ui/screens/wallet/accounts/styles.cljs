@@ -1,6 +1,6 @@
 (ns status-im.ui.screens.wallet.accounts.styles
   (:require [status-im.ui.components.colors :as colors]
-            [status-im.ui.components.reanimated :as reanimated]
+            [fiddle.animated :as reanimated]
             [status-im.utils.platform :as platform]))
 
 (def ^:const tabbar-height 56)
