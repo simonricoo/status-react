@@ -11,7 +11,7 @@
             [status-im.wallet.utils :as wallet.utils]
             [reagent.core :as reagent]
             [re-frame.core :as re-frame]
-            [status-im.ui.components.reanimated :as reanimated]
+            [fiddle.animated :as reanimated]
             [oops.core :refer [oget]]
             [status-im.ui.screens.wallet.accounts.sheets :as sheets]
             [status-im.ui.screens.wallet.accounts.styles :as styles]
