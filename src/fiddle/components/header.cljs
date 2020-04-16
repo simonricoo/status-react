@@ -1,8 +1,7 @@
 (ns fiddle.components.header
   (:require [reagent.core :as reagent]
             [oops.core :refer [oget]]
-            ;; TODO(Ferossgp): Move colors into fiddle
-            [status-im.ui.components.colors :as colors]
+            [fiddle.design-system.colors :as colors]
             ;; TODO(Ferossgp): Move icon component to fiddle
             [status-im.ui.components.icons.vector-icons :as icons]
             [fiddle.design-system.spacing :as spacing]
@@ -13,9 +12,13 @@
 
 (def header-height 56)
 
-(defn header-wrapper-style [{:keys [height]}]
-  {:background-color colors/white
-   :height           height})
+(defn header-wrapper-style [{:keys [height border-bottom]}]
+  (merge
+   {:background-color (:ui-background @colors/theme)
+    :height           height}
+   (when border-bottom
+     {:border-bottom-width 1
+      :border-bottom-color (:ui-02 @colors/theme)})))
 
 (def absolute-fill {:position :absolute
                     :top      0
