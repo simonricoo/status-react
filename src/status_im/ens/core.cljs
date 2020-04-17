@@ -99,8 +99,6 @@
       :connected-with-different-key
       (ens/resolver registry-contract ens-name
                     #(re-frame/dispatch [::resolver-found %]))
-      :connected
-      (save-username cofx custom-domain? username)
       ;; for other states, we do nothing
       nil)))
 
