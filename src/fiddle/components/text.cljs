@@ -14,21 +14,25 @@
            :regular   typography/font-regular
            :medium    typography/font-medium
            :semi-bold typography/font-semi-bold
-           :bold      typography/font-bold)
+           :bold      typography/font-bold
+           :monospace typography/monospace
+           :inherit   nil)
          (case color
            :main              {:color (:text-01 @colors/theme)}
            :secondary         {:color (:text-02 @colors/theme)}
            :secondary-inverse {:color (:text-03 @colors/theme)}
            :link              {:color (:text-04 @colors/theme)}
            :positive          {:color (:positive-01 @colors/theme)}
-           :negative          {:color (:negative-01 @colors/theme)})
+           :negative          {:color (:negative-01 @colors/theme)}
+           :inherit           nil)
          (case size
            :tiny     typography/tiny
            :small    typography/small
            :base     typography/base
            :large    typography/large
            :x-large  typography/x-large
-           :xx-large typography/xx-large)
+           :xx-large typography/xx-large
+           :inherit  nil)
          {:text-align align}
          style))
 
