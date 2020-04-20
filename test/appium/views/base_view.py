@@ -533,13 +533,19 @@ class BaseView(object):
         element.locator = element.Locator.xpath_selector(xpath)
         return element
 
+    def element_by_id(self, resourse_id, element_type='button'):
+        self.driver.info("Looking for an element by xpath: '%s'" % resourse_id)
+        element = self.element_types[element_type](self.driver)
+        element.locator = element.Locator.id(resourse_id)
+        return element
+
     def swipe_up(self):
         size = self.driver.get_window_size()
         self.driver.swipe(size["width"]*0.5, size["height"]*0.8, size["width"]*0.5, size["height"]*0.2)
 
-    def swipe_down(self):
+    def swipe_down(self,start_y=0.2):
         size = self.driver.get_window_size()
-        self.driver.swipe(size["width"]*0.5, size["height"]*0.2, size["width"]*0.5, size["height"]*0.8)
+        self.driver.swipe(size["width"]*0.5, size["height"]*start_y, size["width"]*0.5, size["height"]*0.8)
 
     def swipe_left(self):
         size = self.driver.get_window_size()

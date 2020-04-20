@@ -405,6 +405,176 @@ class TestMessagesOneToOneChatMultiple(MultipleDeviceTestCase):
 
         self.errors.verify_no_errors()
 
+    @marks.testrail_id(5405)
+    @marks.high
+    @marks.skip
+    # TODO: temporary skipped due to 8601
+    def test_fiat_value_is_correctly_calculated_on_recipient_side(self):
+        sender = transaction_senders['Y']
+        recipient = transaction_recipients['I']
+
+        self.create_drivers(2)
+        signin_view1, signin_view2 = SignInView(self.drivers[0]), SignInView(self.drivers[1])
+        home_view1, home_view2 = signin_view1.recover_access(sender['passphrase']), signin_view2.recover_access(
+            recipient['passphrase'])
+
+        devices = [
+            {'home_view': home_view1, 'currency': 'AUD'},
+            {'home_view': home_view2, 'currency': 'EUR'},
+        ]
+
+        # changing currency for both devices
+        for device in devices:
+            wallet_view = device['home_view'].wallet_button.click()
+            wallet_view.set_up_wallet()
+            wallet_view.set_currency(device['currency'])
+            wallet_view.get_back_to_home_view()
+
+        device1 = devices[0]
+        device2 = devices[1]
+
+        # setting up device1 wallet
+        # wallet1 = device1['home_view'].wallet_button.click()
+        # wallet1.get_back_to_home_view()
+
+        # sending ETH to device2 in 1*1 chat
+        device1_chat = device1['home_view'].add_contact(recipient['public_key'])
+        send_amount = device1_chat.get_unique_amount()
+        device1_chat.send_transaction_in_1_1_chat('ETHro', send_amount)
+
+        sent_message = device1_chat.chat_element_by_text(send_amount)
+        if not sent_message.is_element_displayed() and not sent_message.contains_text(device1['currency']):
+            self.errors.append('Wrong currency fiat value while sending ETH in 1*1 chat.')
+
+        device2_chat = device2['home_view'].get_chat_with_user(sender['username']).click()
+        received_message = device2_chat.chat_element_by_text(send_amount)
+        if not received_message.is_element_displayed() and not received_message.contains_text(device2['currency']):
+            self.errors.append('Wrong currency fiat value while receiving ETH in 1*1 chat.')
+
+        # Currently disabled because sending / requesting funds from wallet is not shown in chat
+        # device1_chat.get_back_to_home_view()
+        # wallet1 = device1['home_view'].wallet_button.click()
+        # send_amount = device1_chat.get_unique_amount()
+
+        # Send and request some ETH from wallet and check whether the fiat currency value of
+        # the new messages is equal to user-selected
+        # wallet1.send_transaction(asset_name='ETHro', recipient=recipient['username'], amount=send_amount)
+        # wallet1.get_back_to_home_view()
+        # device1_chat = device1['home_view'].get_chat(recipient['username']).click()
+        #
+        # sent_message = device1_chat.chat_element_by_text(send_amount)
+        # received_message = device2_chat.chat_element_by_text(send_amount)
+        #
+        # if not sent_message.is_element_displayed() and not sent_message.contains_text(device1['currency']):
+        #     self.errors.append('Wrong currency fiat value while sending ETH from wallet.')
+        #
+        # if not received_message.is_element_displayed() and not sent_message.contains_text(device2['currency']):
+        #     self.errors.append('Wrong currency fiat value while receiving ETH sent via wallet.')
+
+        self.errors.verify_no_errors()
+
+    @marks.testrail_id(5405)
+    @marks.high
+    @marks.skip
+    # TODO: temporary skipped due to 8601
+    def test_fiat_value_is_correctly_calculated_on_recipient_side(self):
+        sender = transaction_senders['Y']
+        recipient = transaction_recipients['I']
+
+        self.create_drivers(2)
+        signin_view1, signin_view2 = SignInView(self.drivers[0]), SignInView(self.drivers[1])
+        home_view1, home_view2 = signin_view1.recover_access(sender['passphrase']), signin_view2.recover_access(
+            recipient['passphrase'])
+
+        devices = [
+            {'home_view': home_view1, 'currency': 'AUD'},
+            {'home_view': home_view2, 'currency': 'EUR'},
+        ]
+
+        # changing currency for both devices
+        for device in devices:
+            wallet_view = device['home_view'].wallet_button.click()
+            wallet_view.set_up_wallet()
+            wallet_view.set_currency(device['currency'])
+            wallet_view.get_back_to_home_view()
+
+        device1 = devices[0]
+        device2 = devices[1]
+
+        # setting up device1 wallet
+        # wallet1 = device1['home_view'].wallet_button.click()
+        # wallet1.get_back_to_home_view()
+
+        # sending ETH to device2 in 1*1 chat
+        device1_chat = device1['home_view'].add_contact(recipient['public_key'])
+        send_amount = device1_chat.get_unique_amount()
+        device1_chat.send_transaction_in_1_1_chat('ETHro', send_amount)
+
+        sent_message = device1_chat.chat_element_by_text(send_amount)
+        if not sent_message.is_element_displayed() and not sent_message.contains_text(device1['currency']):
+            self.errors.append('Wrong currency fiat value while sending ETH in 1*1 chat.')
+
+        device2_chat = device2['home_view'].get_chat_with_user(sender['username']).click()
+        received_message = device2_chat.chat_element_by_text(send_amount)
+        if not received_message.is_element_displayed() and not received_message.contains_text(device2['currency']):
+            self.errors.append('Wrong currency fiat value while receiving ETH in 1*1 chat.')
+
+        # Currently disabled because sending / requesting funds from wallet is not shown in chat
+        # device1_chat.get_back_to_home_view()
+        # wallet1 = device1['home_view'].wallet_button.click()
+        # send_amount = device1_chat.get_unique_amount()
+
+        # Send and request some ETH from wallet and check whether the fiat currency value of
+        # the new messages is equal to user-selected
+        # wallet1.send_transaction(asset_name='ETHro', recipient=recipient['username'], amount=send_amount)
+        # wallet1.get_back_to_home_view()
+        # device1_chat = device1['home_view'].get_chat(recipient['username']).click()
+        #
+        # sent_message = device1_chat.chat_element_by_text(send_amount)
+        # received_message = device2_chat.chat_element_by_text(send_amount)
+        #
+        # if not sent_message.is_element_displayed() and not sent_message.contains_text(device1['currency']):
+        #     self.errors.append('Wrong currency fiat value while sending ETH from wallet.')
+        #
+        # if not received_message.is_element_displayed() and not sent_message.contains_text(device2['currency']):
+        #     self.errors.append('Wrong currency fiat value while receiving ETH sent via wallet.')
+
+        self.errors.verify_no_errors()
+
+    @marks.testrail_id(6283)
+    @marks.high
+    def test_push_notification_in_1_1_chat(self):
+        self.create_drivers(2)
+        device_1, device_2 = SignInView(self.drivers[0]), SignInView(self.drivers[1])
+        device_1_home, device_2_home = device_1.create_user(), device_2.create_user()
+        profile_1 = device_1_home.profile_button.click()
+        default_username_1 = profile_1.default_username_text.text
+        device_1_home = profile_1.get_back_to_home_view()
+        profile_2 = device_2.profile_button.click()
+        device_2_public_key = profile_2.get_public_key_and_username()
+        profile_2.push_notification_toggle.click()
+        # self.driver[1].background_app(90)
+        device_2_home.click_system_back_button(3)
+
+        device_1_chat = device_1_home.add_contact(device_2_public_key)
+
+        message = 'hello'
+        device_1_chat.chat_message_input.send_keys(message)
+        device_1_chat.send_message_button.click()
+        device_2.swipe_down(start_y=0.02)
+        if not ("Status" in device_2.element_by_id("android:id/app_name_text").text and
+                device_2.element_by_text_part(default_username_1).is_element_displayed() and
+                    device_2.element_by_text_part(message).is_element_displayed()):
+            self.driver[1].fail("No push notification received!")
+
+        device_2.element_by_text_part(default_username_1).click()
+
+        device_2_chat = device_2.get_chat_view()
+        if not (device_2_chat.chat_message_input.is_element_displayed() and
+            device_2_chat.element_by_text_part(default_username_1).is_element_displayed() and
+                    device_2_chat.element_by_text_part(message).is_element_displayed()):
+            self.driver[1].fail("No redirect to 1-1 chat happened after tap on push notification")
+
 
 @marks.all
 @marks.chat

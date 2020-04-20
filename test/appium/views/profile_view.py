@@ -101,6 +101,13 @@ class ConfirmLogoutButton(BaseButton):
         self.locator = self.Locator.text_selector('LOG OUT')
 
 
+class PushNotificationToggle(BaseButton):
+
+    def __init__(self, driver):
+        super(PushNotificationToggle, self).__init__(driver)
+        self.locator = self.Locator.accessibility_id('notifications-button')
+
+
 class DefaultUserNameText(BaseText):
     def __init__(self, driver):
         super(DefaultUserNameText, self).__init__(driver)
@@ -574,6 +581,7 @@ class ProfileView(BaseView):
         self.logout_button = LogoutButton(self.driver)
         self.logout_dialog = LogoutDialog(self.driver)
         self.confirm_logout_button = ConfirmLogoutButton(self.driver)
+        self.push_notification_toggle = PushNotificationToggle(self.driver)
 
         self.main_currency_button = MainCurrencyButton(self.driver)
 
