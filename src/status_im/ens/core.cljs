@@ -6,6 +6,7 @@
             [status-im.utils.datetime :as datetime]
             [status-im.multiaccounts.update.core :as multiaccounts.update]
             [status-im.multiaccounts.model :as multiaccounts.model]
+            [status-im.utils.handlers :as handlers]
             [status-im.utils.config :as config]
             [status-im.ethereum.abi-spec :as abi-spec]
             [status-im.ethereum.contracts :as contracts]
@@ -18,6 +19,7 @@
             [status-im.utils.fx :as fx]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.utils.money :as money]
+            [status-im.utils.types :as types]
             [status-im.signing.core :as signing]
             [status-im.multiaccounts.update.core :as multiaccounts.update]
             [taoensso.timbre :as log]
@@ -28,6 +30,26 @@
   (if custom-domain?
     username
     (stateofus/subdomain username)))
+
+(handlers/register-handler-fx
+ :update-ens-tx-state
+ (fn [{:keys [db]} [_ new-state username custom-domain? tx-hash]]
+   {:db (assoc-in db [:ens/registrations tx-hash] {:state new-state
+                                                   :username username
+                                                   :custom-domain? custom-domain?})}))
+
+(handlers/register-handler-fx
+ :update-ens-tx-state-and-redirect
+ (fn [cofx [_ new-state username custom-domain? tx-hash]]
+   (fx/merge cofx
+             (re-frame/dispatch [:update-ens-tx-state new-state username custom-domain? tx-hash])
+             (re-frame/dispatch [::redirect-to-ens-summary]))))
+
+(handlers/register-handler-fx
+ :clear-ens-registration
+ (fn [{:keys [db]} [_ tx-hash]]
+   (let [registrations (get db :ens/registrations)]
+     {:db (assoc db :ens/registrations (dissoc registrations tx-hash))})))
 
 (re-frame/reg-fx
  ::resolve-address
@@ -81,7 +103,7 @@
     (fx/merge cofx
               (multiaccounts.update/multiaccount-update
                :usernames new-names
-               {:on-success #(re-frame/dispatch [::username-saved])})
+               {})
               (when (empty? names)
                 (multiaccounts.update/multiaccount-update
                  :preferred-name name {})))))
@@ -102,9 +124,9 @@
       ;; for other states, we do nothing
       nil)))
 
-(fx/defn username-saved
-  {:events [::username-saved]}
-  [{:keys [db] :as cofx}]
+(fx/defn redirect-to-ens-summary
+  {:events [::redirect-to-ens-summary]}
+  [cofx]
   ;; we reset navigation so that navigate back doesn't return
   ;; into the registration flow
   (navigation/navigate-reset cofx
@@ -162,7 +184,7 @@
                    (money/unit->token amount 18)
                    (abi-spec/encode "register(bytes32,address,bytes32,bytes32)"
                                     [(ethereum/sha3 username) address x y])]
-      :on-result  [::save-username custom-domain? username]
+      :on-result  [:update-ens-tx-state-and-redirect :submitted username custom-domain?]
       :on-error   [::on-registration-failure]})))
 
 (defn- valid-custom-domain? [username]

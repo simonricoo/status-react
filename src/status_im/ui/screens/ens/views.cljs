@@ -23,7 +23,8 @@
             [status-im.ui.screens.chat.photos :as photos]
             [status-im.multiaccounts.core :as multiaccounts]
             [status-im.utils.debounce :as debounce]
-            [status-im.ui.components.topbar :as topbar])
+            [status-im.ui.components.topbar :as topbar]
+            [taoensso.timbre :as log])
   (:require-macros [status-im.utils.views :as views]))
 
 (defn- button
@@ -626,9 +627,48 @@
              [name-item {:name name :hide-chevron? true :action action}]]
             [radio/radio (= name preferred-name)]]]))]]]])
 
-(defn- registered [names {:keys [preferred-name public-key name] :as account} show?]
+(views/defview in-progress-registrations [registrations address]
+  (views/letsubs [transactions [:wallet/transactions address]]
+    [react/view {:style {:margin-top 8}}
+     ;; Loop registrations to see if some of them were updated
+     (doseq [[hash {:keys [state username custom-domain?]}] registrations]
+       (when (or (= state :dismissed) (= state :submitted))
+         (doseq [[transaction-hash transaction] transactions]
+           (let [type (get transaction :type)
+                 transaction-success (get transaction :transfer)]
+             (when (= hash transaction-hash)
+               ; TODO Return from the loop once we find a match
+               (when (= transaction-success true)
+                 (re-frame/dispatch [:update-ens-tx-state :success username custom-domain? hash])
+                 (re-frame/dispatch [::status-im.ens.core/save-username custom-domain? username]))
+               (when (= type :failed)
+                 (re-frame/dispatch [:update-ens-tx-state :failure username custom-domain? hash])))))))
+
+     (for [[hash {:keys [state username custom-domain?]}] registrations]
+       (when-not (= state :dismissed)
+         ^{:key hash}
+         [list-item/list-item
+          {:title    (let [progress-msg (str username (i18n/label :t/ens-registration-in-progress))]
+                       (case state
+                         :submitted progress-msg
+                         :success (str username (i18n/label :t/ens-registration-complete))
+                         :failure (str username (i18n/label :t/ens-registration-failure))
+                         progress-msg))
+           :subtitle (i18n/label :t/ens-dismiss-message)
+           :on-press #(re-frame/dispatch (if (= state :submitted)
+                                           [:update-ens-tx-state :dismissed username custom-domain? hash]
+                                           [:clear-ens-registration hash]))
+           :icon     (case state
+                       :submitted :main-icons/change
+                       :success :main-icons/check
+                       :failure :main-icons/close
+                       :main-icons/change)}]))]))
+
+(views/defview registered [names {:keys [preferred-name public-key name] :as account} show? registrations address]
   [react/view {:style {:flex 1}}
    [react/scroll-view
+    (when registrations
+      [in-progress-registrations registrations address])
     [react/view {:style {:margin-top 8}}
      [list-item/list-item
       {:title    (i18n/label :t/ens-add-username)
@@ -643,7 +683,8 @@
         (for [name names]
           ^{:key name}
           [name-item {:name name :action #(re-frame/dispatch [::ens/navigate-to-name name])}])]
-       [react/text {:style {:color colors/gray :font-size 15}}
+       [react/text {:style {:color colors/gray :font-size 15
+                            :margin-horizontal 16}}
         (i18n/label :t/ens-no-usernames)])]
     [react/view {:style {:padding-vertical 22 :border-color colors/gray-lighter :border-top-width 1}}
      (when (> (count names) 1)
@@ -672,9 +713,10 @@
         [message/text-message message]]])]])
 
 (views/defview main []
-  (views/letsubs [{:keys [names multiaccount show?]} [:ens.main/screen]]
+  (views/letsubs [{:keys [names multiaccount show? registrations]} [:ens.main/screen]
+                  {:keys [address]} [:multiaccount/current-account]]
     [react/keyboard-avoiding-view {:style {:flex 1}}
      [topbar/topbar {:title :t/ens-usernames}]
-     (if (seq names)
-       [registered names multiaccount show?]
+     (if (or (seq names) registrations)
+       [registered names multiaccount show? registrations address]
        [welcome])]))
