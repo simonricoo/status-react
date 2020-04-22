@@ -24,10 +24,20 @@
        [rn/view {:style {:padding-vertical 8}}
         [rn/text (str "Preview " name)]]])]])
 
+(defonce navigation-state (atom nil))
+
+(defn- persist-state! [state-obj]
+  (js/Promise.
+   (fn [resolve _]
+     (reset! navigation-state state-obj)
+     (resolve true))))
+
 (defn preview-screens []
   (let [stack (navigation/create-stack)]
     [navigation/navigation-container
-     {:ref navigation/set-navigator-ref}
+     {:ref             navigation/set-navigator-ref
+      :initial-state   @navigation-state
+      :on-state-change persist-state!}
      [stack {}
       (into [{:name      :main
               :insets    {:top false}
