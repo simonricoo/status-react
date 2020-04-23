@@ -1,127 +1,13 @@
 (ns status-im.ui.screens.profile.components.views
   (:require [clojure.string :as string]
-            [re-frame.core :as re-frame]
-            [status-im.multiaccounts.core :as multiaccounts]
-            [status-im.ethereum.stateofus :as stateofus]
             [status-im.i18n :as i18n]
-            [status-im.ui.components.chat-icon.screen :as chat-icon.screen]
             [status-im.ui.components.colors :as colors]
             [status-im.ui.components.common.common :as common]
             [status-im.ui.components.icons.vector-icons :as vector-icons]
             [status-im.ui.components.react :as react]
-            [status-im.utils.gfycat.core :as gfy]
-            [status-im.ui.components.list-selection :as list-selection]
-            [status-im.ui.screens.profile.user.sheet.views :as sheets]
             [status-im.ui.screens.profile.components.styles :as styles]))
 
-;; profile header elements
-
-(defn- profile-name-input [name on-change-text-event & [props]]
-  [react/view
-   [react/text-input
-    (merge {:style               styles/profile-name-input-text
-            :placeholder         ""
-            :default-value       name
-            :auto-focus          true
-            :on-change-text      #(when on-change-text-event
-                                    (re-frame/dispatch [on-change-text-event %]))
-            :accessibility-label :username-input}
-           props)]])
-
-(defn- names [{:keys [usernames name public-key] :as contact}]
-  (let [generated-name (when public-key (gfy/generate-gfy public-key))]
-    [react/view styles/profile-header-name-container-with-subtitle
-     [react/text {:style styles/profile-name-text-with-subtitle
-                  :number-of-lines 2
-                  :ellipsize-mode  :tail}
-      (multiaccounts/displayed-name contact)]
-     [react/text {:style styles/profile-three-words
-                  :number-of-lines 1}
-      (if (seq usernames)
-        generated-name
-        public-key)]]))
-
-(defn chat-key-popover [public-key ens-name]
-  (re-frame/dispatch [:show-popover
-                      {:view :share-chat-key
-                       :address public-key
-                       :ens-name ens-name}]))
-
-(defn- profile-header-display
-  [{:keys [name public-key preferred-name ens-name] :as contact}
-   allow-icon-change? include-remove-action?]
-  [react/touchable-opacity
-   {:on-press #(chat-key-popover public-key (or ens-name
-                                                preferred-name))}
-   [react/view (merge styles/profile-header-display {:padding-horizontal 16})
-    (if allow-icon-change?
-      [react/view {:align-items     :center
-                   :align-self      :stretch
-                   :justify-content :center}
-       [react/touchable-highlight
-        {:accessibility-label :edit-profile-photo-button
-         :on-press
-         #(re-frame/dispatch
-           [:bottom-sheet/show-sheet
-            {:content        (sheets/profile-icon-actions include-remove-action?)
-             :content-height (if include-remove-action? 192 128)}])}
-        [react/view
-         [react/view {:background-color colors/white
-                      :border-radius    15
-                      :width            30
-                      :height           30
-                      :justify-content  :center
-                      :align-items      :center
-                      :position         :absolute
-                      :z-index          1
-                      :top              -5
-                      :right            -5}
-          [react/view {:background-color colors/blue
-                       :border-radius    12
-                       :width            24
-                       :height           24
-                       :justify-content  :center
-                       :align-items      :center}
-           [vector-icons/icon :tiny-edit {:color  colors/white
-                                          :width  16
-                                          :height 16}]]]
-         [chat-icon.screen/my-profile-icon {:multiaccount contact
-                                            :edit?        false}]]]]
-      ;; else
-      [chat-icon.screen/my-profile-icon {:multiaccount contact
-                                         :edit?        false}])
-    [names contact]]])
-
-(defn group-header-display [{:keys [chat-name color contacts]}]
-  [react/view (merge styles/profile-header-display {:padding-horizontal 16})
-   [chat-icon.screen/profile-icon-view nil chat-name color nil 64 nil]
-   [react/view styles/profile-header-name-container
-    [react/text {:style           styles/profile-name-text
-                 :number-of-lines 2
-                 :ellipsize-mode  :tail}
-     chat-name]
-    [react/view {:style {:flex-direction :row
-                         :align-items    :center}}
-     [vector-icons/icon :icons/tiny-group {:color           colors/gray
-                                           :width           16
-                                           :height          16
-                                           :container-style {:margin-right 4}}]
-     [react/text {:style {:line-height 22
-                          :color       colors/gray}}
-      (i18n/label :t/members-count {:count (count contacts)})]]]])
-
-(defn profile-header
-  [{:keys [contact allow-icon-change? include-remove-action?]}]
-  [profile-header-display contact allow-icon-change? include-remove-action?])
-
 ;; settings items elements
-
-(defn settings-item-separator []
-  [common/separator styles/settings-item-separator])
-
-(defn settings-title [title]
-  [react/text {:style styles/settings-title}
-   title])
 
 (defn settings-item
   [{:keys [item-text label-kw value action-fn active? destructive? hide-arrow?

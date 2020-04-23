@@ -36,6 +36,9 @@
 (def bezier (oget Easing "bezier"))
 (def linear (oget Easing "linear"))
 
+(def easings {:ease-in  (bezier 0.42 0 1 1)
+              :ease-out (bezier 0 0 0.58 1)})
+
 (defn set-value [anim val]
   (ocall anim "setValue" val))
 
@@ -118,3 +121,6 @@
 
 (defn on-scroll [opts]
   (ocall redash "onScroll" (clj->js opts)))
+
+(defn b-interpolate [anim-value a b]
+  (ocall redash "bInterpolate" anim-value a b))
