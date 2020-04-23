@@ -1,7 +1,7 @@
-(ns fiddle.gesture-handler
-  (:require [reagent.core :as reagent]
-            [fiddle.animated :as animated]
-            [oops.core :refer [oget]]
+(ns quo.gesture-handler
+  (:require [oops.core :refer [oget]]
+            [quo.animated :as animated]
+            [reagent.core :as reagent]
             [status-im.react-native.js-dependencies :as js-deps]))
 
 (def tap-gesture-handler

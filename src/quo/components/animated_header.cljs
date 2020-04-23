@@ -1,11 +1,12 @@
-(ns fiddle.components.animated-header
+(ns quo.components.animated-header
   (:require [oops.core :refer [oget]]
-            [reagent.core :as reagent]
-            [fiddle.react-native :as rn]
-            [fiddle.platform :as platform]
-            [fiddle.components.safe-area :as safe-area]
-            [fiddle.animated :as animated]
-            [fiddle.components.header :as header]))
+            [quo.animated :as animated]
+            [quo.components.header :as header]
+            [quo.components.safe-area :as safe-area]
+            [quo.design-system.colors :as colors]
+            [quo.platform :as platform]
+            [quo.react-native :as rn]
+            [reagent.core :as reagent]))
 
 (defn header-wrapper-style [{:keys [value offset]}]
   (merge

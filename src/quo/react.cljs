@@ -1,4 +1,4 @@
-(ns fiddle.react
+(ns quo.react
   (:require [oops.core :refer [oget]]
             [reagent.core :as reagent]
             [status-im.react-native.js-dependencies :refer [react]]))

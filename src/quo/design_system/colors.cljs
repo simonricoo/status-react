@@ -1,4 +1,4 @@
-(ns fiddle.design-system.colors
+(ns quo.design-system.colors
   (:require [reagent.core :as reagent]))
 
 (def white "#FFFFFF")

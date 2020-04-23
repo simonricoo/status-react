@@ -1,13 +1,13 @@
-# Fiddle Status Components
-All components in Fiddle should be independent of the app state. They should be pure,
+# Status Quo Components
+All components in **Quo** should be independent of the app state. They should be pure,
 and easy to reason about. This is required to make the library independent and
 easily pulled off as a separate repository when needed.
 Do avoid high coupling and direct use of internal styling, the components should be
-exported via namespace `fiddle.core` and used by status app only from here. This will
+exported via namespace `quo.core` and used by status app only from here. This will
 allow a more flexible way to update components without possible breakages into the
 app style.
 
-Fiddle components should and not have any dependency on the status app, this
+**Quo** components should and not have any dependency on the status app, this
 will avoid circular dependency and also benefit the independence of the components.
 
 All components are stored inside `components` namespaces. They are stateless and do

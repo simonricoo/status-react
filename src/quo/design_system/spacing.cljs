@@ -1,4 +1,4 @@
-(ns fiddle.design-system.spacing)
+(ns quo.design-system.spacing)
 
 (def spacing {:x-tiny   4
               :tiny     8

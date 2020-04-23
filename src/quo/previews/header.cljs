@@ -1,6 +1,6 @@
-(ns fiddle.previews.header
-  (:require [fiddle.core :as fiddle]
-            [fiddle.react-native :as rn]))
+(ns quo.previews.header
+  (:require [quo.core :as quo]
+            [quo.react-native :as rn]))
 
 (def accessories [nil
                   [{:icon     :main-icons/close
@@ -25,8 +25,8 @@
          title-align       [:left :center]]
      [rn/view {:border-bottom-color "#EEF2F5"
                :border-bottom-width 2}
-      [fiddle/header {:left-accessories  left-accessories
-                      :right-accessories right-accessories
-                      :title             title
-                      :subtitle          subtitle
-                      :title-align       title-align}]])])
+      [quo/header {:left-accessories  left-accessories
+                   :right-accessories right-accessories
+                   :title             title
+                   :subtitle          subtitle
+                   :title-align       title-align}]])])
