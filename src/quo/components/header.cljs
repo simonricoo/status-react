@@ -1,14 +1,13 @@
-(ns fiddle.components.header
-  (:require [reagent.core :as reagent]
-            [oops.core :refer [oget]]
-            [fiddle.design-system.colors :as colors]
-            ;; TODO(Ferossgp): Move icon component to fiddle
-            [status-im.ui.components.icons.vector-icons :as icons]
-            [fiddle.design-system.spacing :as spacing]
-            [fiddle.components.text :as text]
-            [fiddle.animated :as animated]
-            [fiddle.react :as react]
-            [fiddle.react-native :as rn]))
+(ns quo.components.header
+  (:require [oops.core :refer [oget]]
+            [quo.animated :as animated]
+            [quo.components.text :as text]
+            [quo.design-system.colors :as colors]
+            [quo.design-system.spacing :as spacing]
+            [quo.react :as react]
+            [quo.react-native :as rn]
+            [reagent.core :as reagent]
+            [status-im.ui.components.icons.vector-icons :as icons]))
 
 (def header-height 56)
 

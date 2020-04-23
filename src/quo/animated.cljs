@@ -1,4 +1,4 @@
-(ns fiddle.animated
+(ns quo.animated
   (:refer-clojure :exclude [set])
   (:require [reagent.core :as reagent]
             [oops.core :refer [oget ocall]]

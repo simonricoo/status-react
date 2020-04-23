@@ -1,15 +1,15 @@
 (ns status-im.multiaccounts.core
-  (:require [re-frame.core :as re-frame]
+  (:require [quo.theme :as quo-theme]
+            [re-frame.core :as re-frame]
             [status-im.ethereum.stateofus :as stateofus]
             [status-im.multiaccounts.update.core :as multiaccounts.update]
             [status-im.native-module.core :as native-module]
             [status-im.notifications.core :as notifications]
-            [status-im.utils.fx :as fx]
-            [status-im.utils.handlers]
-            [status-im.utils.gfycat.core :as gfycat]
-            [status-im.utils.identicon :as identicon]
             [status-im.ui.components.colors :as colors]
-            [fiddle.theme :as fiddle-theme]
+            [status-im.utils.fx :as fx]
+            [status-im.utils.gfycat.core :as gfycat]
+            status-im.utils.handlers
+            [status-im.utils.identicon :as identicon]
             [status-im.utils.theme :as theme]))
 
 (defn displayed-name
@@ -106,7 +106,7 @@
    (let [theme (if (or (= 2 theme-id) (and (= 0 theme-id) (theme/is-dark-mode)))
                  :dark
                  :light)]
-     (fiddle-theme/set-theme theme)
+     (quo-theme/set-theme theme)
      (colors/set-theme theme))))
 
 (fx/defn switch-appearance
