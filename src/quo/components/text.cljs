@@ -1,9 +1,9 @@
-(ns fiddle.components.text
-  (:require [reagent.core :as reagent]
-            [fiddle.react-native :as rn]
-            [fiddle.design-system.colors :as colors]
-            [fiddle.design-system.typography :as typography]
-            [fiddle.animated :as animated]))
+(ns quo.components.text
+  (:require [quo.animated :as animated]
+            [quo.design-system.colors :as colors]
+            [quo.design-system.typography :as typography]
+            [quo.react-native :as rn]
+            [reagent.core :as reagent]))
 
 (defn text-style [{:keys [size align weight color style]
                    :or   {size   :base

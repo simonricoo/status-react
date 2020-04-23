@@ -1,5 +1,5 @@
-(ns fiddle.theme
-  (:require [fiddle.design-system.colors :as colors]))
+(ns quo.theme
+  (:require [quo.design-system.colors :as colors]))
 
 (defn set-theme [theme]
   (reset! colors/theme (case theme

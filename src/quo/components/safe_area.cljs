@@ -1,4 +1,4 @@
-(ns fiddle.components.safe-area
+(ns quo.components.safe-area
   (:require [status-im.react-native.js-dependencies :refer [safe-area-context]]
             [reagent.core :as reagent]
             [oops.core :refer [oget]]))

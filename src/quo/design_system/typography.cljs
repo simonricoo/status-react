@@ -1,5 +1,5 @@
-(ns fiddle.design-system.typography
-  (:require [fiddle.platform :as platform]))
+(ns quo.design-system.typography
+  (:require [quo.platform :as platform]))
 
 (def tiny {:font-size    10
            :line-height 14})

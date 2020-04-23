@@ -1,9 +1,9 @@
-(ns fiddle.previews.main
-  (:require [reagent.core :as reagent]
-            [oops.core :refer [ocall]]
-            [fiddle.react-native :as rn]
-            [fiddle.previews.text :as text]
-            [fiddle.previews.header :as header]
+(ns quo.previews.main
+  (:require [oops.core :refer [ocall]]
+            [quo.previews.header :as header]
+            [quo.previews.text :as text]
+            [quo.react-native :as rn]
+            [reagent.core :as reagent]
             [status-im.react-native.js-dependencies :refer [react-native]]
             [status-im.ui.screens.routing.core :as navigation]))
 
