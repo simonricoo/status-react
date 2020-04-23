@@ -1,5 +1,5 @@
 { config, lib, stdenvNoCC, callPackage, mkShell,
-  status-go, mergeSh, xcodeWrapper }:
+  status-go, xcodeWrapper }:
 
 let
   inherit (lib) catAttrs concatStrings optional unique;
@@ -12,17 +12,17 @@ let
 
   android = callPackage ./android {
     inherit localMavenRepoBuilder projectNodePackage;
-    status-go = status-go.android;
+    status-go = status-go.mobile.android;
   };
 
   ios = callPackage ./ios {
     inherit xcodeWrapper projectNodePackage fastlane;
-    status-go = status-go.ios;
+    status-go = status-go.mobile.ios;
   };
 
   selectedSources = [
-    status-go.android
-    status-go.ios
+    status-go.mobile.android
+    status-go.mobile.ios
     fastlane
     android
     ios
@@ -31,7 +31,7 @@ let
 in {
   buildInputs = unique (catAttrs "buildInputs" selectedSources);
 
-  shell = mergeSh (mkShell {}) (catAttrs "shell" selectedSources);
+  shell = lib.mergeSh (mkShell {}) (catAttrs "shell" selectedSources);
 
   # TARGETS
   inherit android ios fastlane;
