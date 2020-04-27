@@ -35,7 +35,7 @@
   (let [scroll-x (r/atom 0)
         scroll-view-ref (atom nil)
         width (r/atom 0)
-        height (r/atom 0)
+        heights (map #(conj {:key (:title %) :atom (r/atom 0)}) slides)
         bottom-margin (if (> window-height 600) 32 16)]
     (fn []
       [react/view {:style {:align-items :center
@@ -62,7 +62,8 @@
                                 :justify-content :flex-end
                                 :align-items :center
                                 :padding-horizontal 32}}
-            (let [margin 32
+            (let [height (:atom (first (filterv #(= (:key %) (:title s)) heights)))
+                  margin 32
                   size (min @width @height) #_(- (min @width @height) #_(* 2 margin))]
               [react/view {:style {:flex 1}
                            :on-layout (fn [e]
