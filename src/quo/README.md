@@ -39,5 +39,11 @@ system to be used in too many way which can creating disjointed experiences.
 - Avoid external margins for atom components, it can be added on the wrapper
 where they are used but can't be removed without overriding.
 [Max Stoiber article on margins](https://mxstbr.com/thoughts/margin)
+- Design reusable components into [Layout Isolated Components](https://visly.app/blog/layout-isolated-components)
+(Article more relates to web, but ideas fits also to mobile dev**
 - Explicit is better than implicit, do not rely on platform default, if you expect
 a specific value, then override it
+
+**TBD:**
+- Components documentation
+- Check props using spec in pre conditions.
