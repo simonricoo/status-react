@@ -44,7 +44,7 @@
             :justify-content :center
             :align-items     :flex-end})
 
-(defn title-style [{:keys [left]} title-align]
+(defn title-style [{:keys [left right]} title-align]
   (merge
    {:position        :absolute
     :justify-content :center
@@ -52,8 +52,11 @@
     :bottom          0}
    (:tiny spacing/padding-horizontal)
    (case title-align
-     :left {:left (:width left)}
-     {:align-items :center})))
+     :left {:left  (:width left)
+            :right (:width right)}
+     {:align-items :center
+      :left        (max (:width left) (:width right))
+      :right       (max (:width left) (:width right))})))
 
 (def header-actions-style
   (merge
@@ -98,18 +101,24 @@
      :else
      [rn/view {:style header-action-placeholder}])])
 
-(defn header-title [{:keys [title subtitle component]}]
+(defn header-title [{:keys [title subtitle component title-align]}]
   [react/fragment
    (cond
      component component
 
      (and title subtitle)
      [react/fragment
-      [text/text {:weight :medium} title]
-      [text/text {:weight :regular} subtitle]]
+      [text/text {:weight          :medium
+                  :number-of-lines 1}
+       title]
+      [text/text {:weight          :regular
+                  :number-of-lines 1}
+       subtitle]]
 
-     title [text/text {:weight :bold
-                       :size   :large}
+     title [text/text {:weight          :bold
+                       :number-of-lines 2
+                       :align           title-align
+                       :size            :large}
             title])])
 
 (defn header []
@@ -154,9 +163,10 @@
             [rn/view {:style          (title-style @layout title-align)
                       :on-layout      (handle-layout :title get-layout)
                       :pointer-events :box-none}
-             [header-title {:title     title
-                            :subtitle  subtitle
-                            :component title-component}]]
+             [header-title {:title       title
+                            :subtitle    subtitle
+                            :title-align title-align
+                            :component   title-component}]]
 
             [rn/view {:style          right
                       :on-layout      (handle-layout :right get-layout)

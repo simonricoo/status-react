@@ -20,7 +20,7 @@
   [rn/scroll-view {:flex 1}
    (for [left-accessories  accessories
          right-accessories accessories
-         title             [nil "This is a title"]
+         title             [nil "This is a title" "This is a very long super title"]
          subtitle          [nil "This is a subtitle"]
          title-align       [:left :center]]
      [rn/view {:border-bottom-color "#EEF2F5"
