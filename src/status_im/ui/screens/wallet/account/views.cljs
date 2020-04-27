@@ -101,7 +101,8 @@
                   currency [:wallet/currency]
                   prices-loading? [:prices-loading?]]
     (let [{:keys [tab]} @state]
-      [react/view {:flex 1}
+      [react/view {:flex           1
+                   :padding-bottom (if (= tab :history) 0 button-group-height)}
        [react/view {:flex-direction :row :margin-bottom 8 :padding-horizontal 4}
         [accounts/tab-title state :assets (i18n/label :t/wallet-assets) (= tab :assets)]
         [accounts/tab-title state :nft (i18n/label :t/wallet-collectibles) (= tab :nft)]

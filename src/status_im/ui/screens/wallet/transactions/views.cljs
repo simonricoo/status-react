@@ -98,7 +98,11 @@
   (let [fetching-recent-history? @(re-frame/subscribe [:wallet/fetching-recent-tx-history? address])
         fetching-more-history? @(re-frame/subscribe [:wallet/fetching-tx-history? address])
         all-fetched? @(re-frame/subscribe [:wallet/tx-history-fetched? address])]
-    [react/view components.styles/flex
+    [react/view {:flex 1
+                 :padding-bottom (+ 52 (if (and (not fetching-recent-history?)
+                                                (not all-fetched?))
+                                         (if fetching-more-history? 8 0)
+                                         16))}
      [etherscan-link address]
      (when fetching-recent-history?
        [react/view
