@@ -1,4 +1,5 @@
-(ns mocks.js-dependencies)
+(ns mocks.js-dependencies
+  (:require [status-im.default-fleet :refer (default-fleets)]))
 
 (def action-button          #js {:default #js {:Item #js {}}})
 (def config                 #js {:default #js {}})
@@ -187,4 +188,5 @@
     "react-native-fs" fs
     "react-native-mail" react-native-mail
     "react-native-image-resizer" image-resizer
+    "./fleets.js" default-fleets
     nil))
