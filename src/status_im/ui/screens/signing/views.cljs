@@ -10,6 +10,7 @@
             [status-im.wallet.utils :as wallet.utils]
             [status-im.ui.components.list.views :as list]
             [status-im.hardwallet.common :as hardwallet.common]
+            [status-im.ui.screens.keycard.keycard-interaction :as keycard-sheet]
             [status-im.ui.components.chat-icon.screen :as chat-icon]
             [status-im.ui.components.icons.vector-icons :as icons]
             [status-im.ui.components.text-input.view :as text-input]
@@ -151,7 +152,7 @@
 
 (defn signature-request-header [amount currency small-screen? fiat-amount fiat-currency]
   (fn []
-    [react/view {:style {:align-self :stretch}}
+    [react/view {:style {:align-self :stretch :margin-vertical 30}}
      [react/nested-text {:style {:font-weight "500" :font-size (if small-screen? 34 44)
                                  :text-align :center}}
       (str amount " ")
@@ -186,18 +187,23 @@
                                  keycard-step connected?
                                  in-progress? enabled?] :as sign} small-screen?]
   (let [message (:message formatted-data)]
-    [react/view (assoc (styles/message) :padding-vertical 16 :align-items :center)
-     [hardwallet.common/keycard-sheet-content [:signing.ui/cancel-is-pressed] connected?
-      (if (:receiver message)
-        {:header (redeem-tx-header "0x123gbarbabw3vsdb234r2342342343434sdbdbv")
-         :title (i18n/label :t/confirmation-request)
-         :small-screen? small-screen?}
-        {:title (i18n/label :t/confirmation-request)
-         :header (signature-request-header (:formatted-amount message)
-                                           (:formatted-currency message)
-                                           small-screen? fiat-amount fiat-currency)
-         :footer (signature-request-footer keycard-step small-screen?)
-         :small-screen? small-screen?})]]))
+    [react/view (assoc (styles/message) :padding-vertical 16)
+     [keycard-sheet/connect-keycard
+      {:on-connect    ::hardwallet.common/on-card-connected
+       :on-disconnect ::hardwallet.common/on-card-disconnected
+       :connected?    connected?
+       :on-cancel     #(re-frame/dispatch [:signing.ui/cancel-is-pressed])
+       :params
+       (if (:receiver message)
+         {:header (redeem-tx-header (:receiver message))
+          :title (i18n/label :t/confirmation-request)
+          :small-screen? small-screen?}
+         {:title (i18n/label :t/confirmation-request)
+          :header (signature-request-header (:formatted-amount message)
+                                            (:formatted-currency message)
+                                            small-screen? fiat-amount fiat-currency)
+          :footer (signature-request-footer keycard-step small-screen?)
+          :small-screen? small-screen?})}]]))
 
 (defn- transaction-data-item [{:keys [label data]}]
   [react/view
