@@ -4,6 +4,21 @@
 (def white "#FFFFFF")
 (def black "#000000")
 
+;; Colors mapping from figma to code, note that theme is more extended and
+;; one can follow the comments from the light theme to choose what to use in a component.
+(comment
+  {"Accent blue, #4360DF"               [:interactive-01 :text-04]
+   "Accent blue as background, #ECEFFC" [:interactive-02]
+   "Dark grey, #939BA1"                 [:text-02 :icon-02]
+   "Black"                              [:text-01 :icon-01]
+   "Main Green/Success, #4EBC60"        [:positive-01]
+   "Shades 10% green, #EDFBEF"          [:positive-02]
+   "Main Red/Error, #FF2D55"            [:negative-01]
+   "Shades 10% Red, #FFEAEE"            [:negative-02]
+   "Light grey, #EEF2F5"                [:ui-01]
+   "White, #FFFFFF"                     [:ui-background :icon-04]
+   "Devider, 0.1 of black"              [:ui-02]})
+
 (def light-theme
   {:positive-01    "rgba(68,208,88,1)"     ; Primary Positive, text, icons color
    :positive-02    "rgba(78,188,96,0.1)"   ; Secondary Positive, Supporting color for success illustrations
