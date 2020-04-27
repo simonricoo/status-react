@@ -5,3 +5,8 @@
 
 ;; NOTE(Ferossgp): Available in new versions of reagent as `:<>`
 (def fragment (reagent/adapt-react-class (oget react "Fragment")))
+
+(def create-ref (oget react "createRef"))
+
+(defn current-ref [ref]
+  (oget ref "current"))

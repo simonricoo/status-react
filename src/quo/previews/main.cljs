@@ -2,6 +2,8 @@
   (:require [oops.core :refer [ocall]]
             [quo.previews.header :as header]
             [quo.previews.text :as text]
+            [quo.previews.text-input :as text-input]
+            [quo.previews.tooltip :as tooltip]
             [quo.react-native :as rn]
             [reagent.core :as reagent]
             [status-im.react-native.js-dependencies :refer [react-native]]
@@ -10,6 +12,12 @@
 (def screens [{:name      :texts
                :insets    {:top false}
                :component text/preview-text}
+              {:name      :tooltip
+               :insets    {:top false}
+               :component tooltip/preview-tooltip}
+              {:name      :text-input
+               :insets    {:top false}
+               :component text-input/preview-text}
               {:name      :headers
                :insets    {:top false}
                :component header/preview-header}])

@@ -13,3 +13,13 @@
 
 (def touchable-opacity (reagent/adapt-react-class (oget react-native "TouchableOpacity")))
 (def touchable-highlight (reagent/adapt-react-class (oget react-native "TouchableHighlight")))
+
+(def text-input (reagent/adapt-react-class (oget react-native "TextInput")))
+
+(def ui-manager (oget react-native "UIManager"))
+
+(def layout-animation (oget react-native "LayoutAnimation"))
+(def configure-next (oget layout-animation "configureNext"))
+(def layout-animation-presets {:ease-in-ease-out (oget layout-animation "Presets" "easeInEaseOut")
+                               :linear           (oget layout-animation "Presets" "linear")
+                               :spring           (oget layout-animation "Presets" "spring")})
