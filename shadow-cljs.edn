@@ -68,6 +68,7 @@
            :output-dir    "target/test"
            :optimizations :simple
            :target        :node-test
+           :chunks {:fleets status-im.default-fleet/default-fleets}
            :compiler-options {;; needed because we override require and it
                               ;; messes with source-map which reports callstack
                               ;; exceeded exceptions instead of real issues
