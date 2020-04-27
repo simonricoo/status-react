@@ -165,7 +165,7 @@
 
 (defmethod storage-gateway :ipfs
   [{:keys [hash]}]
-  (let [base32hash (-> (.encode hi-base32 (alphabase.base58/decode hash))
+  (let [base32hash (-> (.encode ^js hi-base32 (alphabase.base58/decode hash))
                        (string/replace #"=" "")
                        (string/lower-case))]
     (str base32hash ".infura.status.im")))

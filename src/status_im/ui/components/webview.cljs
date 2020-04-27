@@ -7,9 +7,7 @@
             ["react-native-webview" :default webview]))
 
 (def webview-class
-  (memoize
-   (fn []
-     (reagent/adapt-react-class webview))))
+  (reagent/adapt-react-class webview))
 
 (defn module [] (.-WebViewModule ^js (.-NativeModules react-native)))
 
@@ -27,5 +25,5 @@
         :reagent-render
         (fn [opts]
           (when @dapp-name-sent?
-            [(webview-class) opts]))}))
-    [(webview-class) opts]))
+            [webview-class opts]))}))
+    [webview-class opts]))

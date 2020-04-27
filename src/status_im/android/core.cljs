@@ -12,9 +12,12 @@
             ["react-native-screens" :refer (enableScreens)]
             ["react-native-languages" :default react-native-languages]
             ["react-native-shake" :as react-native-shake]
+            ["react-native" :as rn]
             [status-im.utils.snoopy :as snoopy]
             [status-im.i18n :as i18n]
             [status-im.ui.screens.routing.core :as routing]))
+
+(def splash-screen (-> rn .-NativeModules .-SplashScreen))
 
 (defn app-state-change-handler [state]
   (dispatch [:app-state-change state]))
@@ -39,7 +42,7 @@
                       "keyboardDidHide"
                       (fn [_]
                         (dispatch-sync [:set :keyboard-height 0])))
-        (.hide ^js react/splash-screen)
+        (.hide ^js splash-screen)
         (.addEventListener ^js react/app-state "change" app-state-change-handler)
         (.addEventListener react-native-languages "change" on-languages-change)
         (.addEventListener react-native-shake
