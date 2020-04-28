@@ -6,7 +6,7 @@
   [rn/scroll-view {:flex               1
                    :padding-horizontal 16}
    (for [size   [:tiny :small :base :large :x-large :xx-large]
-         weight [:regular :medium :semi-bold :bold]]
+         weight [:regular :medium :semi-bold :bold :monospace]]
      ^{:key (str)}
      [rn/view {:padding-vertical 16}
       [quo/text {:weight weight

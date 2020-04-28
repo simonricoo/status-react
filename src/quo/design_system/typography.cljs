@@ -27,4 +27,4 @@
 
 (def font-bold {:font-family "Inter-Bold"}) ; 700
 
-(def monospace (if platform/ios? "Menlo-Regular" "monospace"))
+(def monospace {:font-family "InterStatus-Regular"})
