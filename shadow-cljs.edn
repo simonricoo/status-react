@@ -53,6 +53,7 @@
                  ;; in the SHADOW_HOST env variable to make sure that
                  ;; it will use the right interface
                  :local-ip #shadow/env "SHADOW_HOST"}
+           :chunks {:fleets status-im.default-fleet/default-fleets}
            :release {:compiler-options {:output-feature-set :es6
                                         :warnings-as-errors true
                                         :infer-externs :auto
